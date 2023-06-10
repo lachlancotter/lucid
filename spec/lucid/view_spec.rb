@@ -4,6 +4,32 @@ require "lucid/route"
 module Lucid
   describe View do
 
+    describe ".config" do
+      context "default" do
+        it "sets the default" do
+          view = Class.new(View) do
+            config do
+              option :foo, "bar"
+            end
+          end.new
+          expect(view.foo).to eq("bar")
+        end
+      end
+
+      context "override" do
+        it "overrides the default" do
+          view = Class.new(View) do
+            config do
+              option :foo, "bar"
+            end
+          end.new do |config|
+            config.foo = "baz"
+          end
+          expect(view.foo).to eq("baz")
+        end
+      end
+    end
+
     describe ".link" do
       it 'defines a link' do
         view = Class.new(View) do
