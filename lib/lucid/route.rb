@@ -12,18 +12,20 @@ module Lucid
     #
     class Map
 
-      def initialize
+      def initialize (opts = {})
+        @opts  = opts
         @rules = []
       end
 
       attr_reader :rules
 
       def encode (state, buffer = Buffer.new)
-        buffer.tap do |buffer|
+        buffer.tap do |buf|
           @rules.each do |rule|
-            rule.apply(state, buffer)
+            rule.apply(state, buf)
           end
-        end.to_s
+        end
+        @opts.fetch(:path_root, "") + buffer.to_s
       end
 
       #
@@ -33,6 +35,8 @@ module Lucid
         def initialize (key)
           @key = key
         end
+
+        attr_reader :key
       end
 
       #
@@ -111,15 +115,16 @@ module Lucid
         end
       end
 
-      def self.build (&block)
-        Docile.dsl_eval(Builder.new, &block).build
+      def self.build (opts = {}, &block)
+        Docile.dsl_eval(Builder.new(opts), &block).build
       end
 
       #
       # DSL for building a Route::Map.
       #
       class Builder
-        def initialize
+        def initialize(opts)
+          @opts  = opts
           @rules = []
         end
 
@@ -140,7 +145,7 @@ module Lucid
         end
 
         def build
-          Map.new.tap do |map|
+          Map.new(@opts).tap do |map|
             map.rules.concat(@rules)
           end
         end

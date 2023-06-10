@@ -1,5 +1,3 @@
-require "spec_helper"
-
 describe "LinkCounter app", type: :feature do
   scenario "new counter" do
     visit "/counter"

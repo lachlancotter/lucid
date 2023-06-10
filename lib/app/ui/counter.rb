@@ -12,23 +12,23 @@ class LinkCounter < Lucid::View
   #   end
   # end
 
-  # route do
-  #   path :count
-  # end
+  route do
+    param :count
+  end
 
-  link :inc, "Inc" do |state|
+  link :inc do |state|
     state.count += 1
   end
 
-  link :dec, "Dec" do |state|
+  link :dec do |state|
     state.count -= 1
   end
 
   def render
     <<~HTML
       <p>Count: #{state.count}</p>
-      <p>#{links.inc}</p>
-      <p>#{links.dec}</p>
+      <p>#{inc.text("Inc")}</p>
+      <p>#{dec.text("Dec")}</p>
     HTML
   end
 end

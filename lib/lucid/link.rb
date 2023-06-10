@@ -1,25 +1,16 @@
 module Lucid
   class Link
-    def initialize (state, text)
+    def initialize (state, routes)
       @state = state
-      # @route = Route.for(state)
+      @routes = routes
     end
 
-    # def initialize (route, text)
-    #   @route = route
-    #   @text = text
-    # end
-
-    def to_s
-      "<a href='#{href}'>#{@text}</a>"
+    def text (string)
+      "<a href='#{href}'>#{string}</a>"
     end
 
     def href
-      @route
-    end
-
-    def route
-      Route.for(state, config)
+      @routes.encode(@state)
     end
 
     def attrs

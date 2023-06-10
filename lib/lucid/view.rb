@@ -1,46 +1,41 @@
-require "lucid/link"
+require "lucid/state"
 require "lucid/route"
+require "lucid/link"
 
 module Lucid
   class View
-    class MyRoute
-      def initialize (params)
-        @params = params
-      end
-      def to_s
-        "/counter?#{@params}"
-      end
-    end
-
     class << self
-      def state (&block)
-      end
+      def state (&block) end
 
       def route (&block)
+        @routes = Route::Map.build(route_config, &block)
       end
 
-      def link (name, text = nil, &block)
+      def route_config
+        {
+           path_root: "/counter"
+        }
+      end
+
+      def link (name, &block)
         define_method(name) do
-          new_state = state.dup
-          block.call(new_state) if block_given?
-          route = Route.for(new_state, config)
-
-          Link.new(new_state, text)
-
-          # params = Route::Params.new(new_state.to_h).to_s
-          # route = MyRoute.new(params)
-          Link.new(route, text)
+          new_state = state.mutate(&block)
+          Link.new(new_state, routes)
         end
       end
     end
 
     def initialize (state = {})
-      @state = OpenStruct.new(state)
-      @links = SimpleDelegator.new(self)
+      @state  = State.new(state)
+      @links  = SimpleDelegator.new(self)
     end
 
     attr_reader :state
     attr_reader :links
+
+    def routes
+      self.class.instance_variable_get(:@routes)
+    end
 
     def to_s
       render

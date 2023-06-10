@@ -2,8 +2,8 @@ require "sinatra"
 require "capybara/rspec"
 require "capybara-screenshot/rspec"
 require "rack/test"
-require_relative "../server"
+require "lucid/demo_app"
 
-Capybara.app = LucidTest
+Capybara.app = DemoApp
 Capybara.default_driver = :rack_test
 Capybara.save_path = "/tmp/capybara"

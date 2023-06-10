@@ -1,18 +1,9 @@
 module Lucid
-  class State < SimpleDelegator
-    def initialize (component)
-      super(component)
-      @component = component
-    end
-
-    attr_reader :component
-
-    def route
-      Route.new(data)
-    end
-
-    def data
-      @component
+  class State < OpenStruct
+    def mutate (&block)
+      new_state = self.dup
+      block.call(new_state) if block_given?
+      new_state
     end
   end
 end

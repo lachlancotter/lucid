@@ -101,6 +101,17 @@ module Lucid
         expect(route.to_s).to eq("/lit/foo")
       end
     end
+
+    context "path root" do
+      it "prepends the path root" do
+        map = Route::Map.build(path_root: "/root") do
+          path "foo"
+        end
+        state = {}
+        route = map.encode(state)
+        expect(route.to_s).to eq("/root/foo")
+      end
+    end
   end
 
 end
