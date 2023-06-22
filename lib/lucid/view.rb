@@ -19,7 +19,11 @@ module Lucid
       # parameters that are exposed to the client.
       #
       def state (&block)
-        nil
+        @state_class = Class.new(State, &block)
+      end
+
+      def state_class
+        @state_class ||= Class.new(State)
       end
 
       # ===================================================== #
@@ -92,10 +96,22 @@ module Lucid
       option :path_root, "/"
     end
 
-    def initialize (state = {}, &config)
-      @state  = State.new(state)
+    def initialize (data = {}, &config)
+      @state  = build_state(data)
       @config = Configure.new(&config).to_h
       @links  = SimpleDelegator.new(self)
+    end
+
+    def build_state (data)
+      self.class.state_class.new(data)
+    end
+
+    #
+    # Default routes configuration. Overridden by using the
+    # routes class method to define a mapping.
+    #
+    def routes
+      Route::Map.new
     end
 
     #

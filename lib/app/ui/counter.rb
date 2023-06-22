@@ -4,25 +4,16 @@ require "lucid/view"
 # Counter that keeps track of state via request params.
 #
 class LinkCounter < Lucid::View
-  # state do
-  #   attribute :count, :integer, default: 0
-  #
-  #   validate do
-  #     required(:count).filled
-  #   end
-  # end
-
-  route do
-    param :count
+  state do
+    attribute :count, default: 0
+    validate do
+      required(:count).filled(:integer)
+    end
   end
 
-  link :inc do |state|
-    state.count += 1
-  end
-
-  link :dec do |state|
-    state.count -= 1
-  end
+  route { param :count }
+  link(:inc) { |state| state.count += 1 }
+  link(:dec) { |state| state.count -= 1 }
 
   def render
     <<~HTML

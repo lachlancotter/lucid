@@ -16,8 +16,7 @@ class DemoApp < Sinatra::Base
   # end
 
   get "/counter/?" do
-    state = { count: params[:count].to_i }
-    LinkCounter.new(state) do |config|
+    LinkCounter.new(params) do |config|
       config.path_root = "/counter"
     end.to_s
   end
