@@ -2,28 +2,23 @@ require "sinatra/base"
 require "awesome_print"
 # require "sinatra/reloader"
 
-require "app/ui/counter"
-
+require "app/ui/link_counter"
+require "app/ui/action_counter"
 
 class DemoApp < Sinatra::Base
   configure do
     set :show_exceptions, true
   end
 
-  # configure :development do
-  #   register Sinatra::Reloader
-  #   also_reload "*.rb"
-  # end
-
-  get "/counter/?" do
+  get "/link_counter/?" do
     LinkCounter.new(params) do |config|
-      config.path_root = "/counter"
+      config.path_root = "/link_counter"
     end.to_s
   end
 
-  # get "/:component/:state" do |component, state|
-  #   klass     = Object.const_get(component.capitalize)
-  #   component = klass.new(state.capitalize)
-  #   component.render
-  # end
+  get "/action_counter/?" do
+    ActionCounter.new(params) do |config|
+      config.path_root = "/action_counter"
+    end.to_s
+  end
 end

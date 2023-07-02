@@ -107,6 +107,41 @@ module Lucid
     end
 
     # ===================================================== #
+    #    Actions
+    # ===================================================== #
+
+    describe ".post" do
+      context "class reference" do
+        it 'defines a post action' do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            post :foo, action_class
+          end.new
+          # expect(view.foo).to be_a(View::Endpoint)
+          expect(view.foo.action_route.to_s).to eq("/foo")
+          expect(view.foo.action_method).to eq(:post)
+          expect(view.foo.action_class).to eq(action_class)
+        end
+      end
+
+      context "inline definition" do
+        it 'defines a post action' do
+          view = Class.new(View) do
+            post :foo do
+              def call
+                "bar"
+              end
+            end
+          end.new
+          # expect(view.foo).to be_a(View::Endpoint)
+          expect(view.foo.action_route.to_s).to eq("/foo")
+          expect(view.foo.action_method).to eq(:post)
+          expect(view.foo.action_class.new.call).to eq("bar")
+        end
+      end
+    end
+
+    # ===================================================== #
     #    Rendering
     # ===================================================== #
 

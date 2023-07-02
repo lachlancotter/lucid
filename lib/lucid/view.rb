@@ -1,6 +1,8 @@
 require "lucid/state"
 require "lucid/route"
 require "lucid/link"
+require "lucid/button"
+require "lucid/action"
 
 module Lucid
   #
@@ -90,6 +92,59 @@ module Lucid
       #    Actions
       # ===================================================== #
 
+      #
+      # Provide access to an Action.
+      #
+      class Endpoint
+        def initialize (action_method, action_route, action_class)
+          @action_method = action_method
+          @action_route  = action_route
+          @action_class  = action_class
+        end
+
+        attr_reader :action_class
+        attr_reader :action_method
+        attr_reader :action_route
+
+        # def route
+        #   @routes.encode(@state)
+        # end
+
+        def link (string)
+          # Link.new().text(string)
+        end
+
+        def button (label)
+          Button.new(self, label).to_s
+        end
+      end
+
+      def post (name, action_class = nil, &block)
+        action(:post, name, action_class, &block)
+      end
+
+      #
+      # Defines a named action that will run on the server.
+      # The action can be defined by a provided class, or
+      # inline with the block.
+      #
+      def action (method, name, action_class = nil, &block)
+        action_class = Class.new(Action, &block) if action_class.nil?
+        define_method(name) do
+          Endpoint.new(method, path.extend(name), action_class)
+        end
+      end
+
+      # ===================================================== #
+      #    Events
+      # ===================================================== #
+
+      #
+      # Defines a handler function that will respond to
+      # notifications with the given class. Block is passed
+      # the event instance, and the current view state.
+      #
+      def on (event_class, &block) end
     end
 
     config do
@@ -112,6 +167,28 @@ module Lucid
     #
     def routes
       Route::Map.new
+    end
+
+    class Path
+      def initialize(components = [])
+        @components = components
+      end
+
+      def extend (component)
+        Path.new(@components + [component])
+      end
+
+      def to_s
+        "/" + @components.join("/")
+      end
+    end
+
+    #
+    # The from the root view component to this component.
+    # Used to encoding routes to actions.
+    #
+    def path
+      Path.new
     end
 
     #

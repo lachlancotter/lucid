@@ -8,11 +8,17 @@ module Lucid
   class State < OpenStruct
 
     class << self
+      #
+      # Define an attribute.
+      #
       def attribute (name, options = {})
         @defaults       ||= {}
         @defaults[name] = options[:default]
       end
 
+      #
+      # Define validation rules.
+      #
       def validate (&block)
         @schema = Dry::Schema.Params(&block)
       end
