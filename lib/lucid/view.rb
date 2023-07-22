@@ -3,6 +3,7 @@ require "lucid/route"
 require "lucid/link"
 require "lucid/button"
 require "lucid/action"
+require "lucid/endpoint"
 
 module Lucid
   #
@@ -60,6 +61,17 @@ module Lucid
       end
 
       # ===================================================== #
+      #    Nested Views
+      # ===================================================== #
+
+      def nest (name, &block)
+        define_method(name) do
+          @nested_views       ||= {}
+          @nested_views[name] ||= Class.new(View, &block).new
+        end
+      end
+
+      # ===================================================== #
       #    Routes
       # ===================================================== #
 
@@ -84,40 +96,13 @@ module Lucid
       def link (name, &block)
         define_method(name) do
           new_state = state.mutate(&block)
-          Link.new(new_state, routes)
+          Link.new(Route.new(new_state, routes))
         end
       end
 
       # ===================================================== #
       #    Actions
       # ===================================================== #
-
-      #
-      # Provide access to an Action.
-      #
-      class Endpoint
-        def initialize (action_method, action_route, action_class)
-          @action_method = action_method
-          @action_route  = action_route
-          @action_class  = action_class
-        end
-
-        attr_reader :action_class
-        attr_reader :action_method
-        attr_reader :action_route
-
-        # def route
-        #   @routes.encode(@state)
-        # end
-
-        def link (string)
-          # Link.new().text(string)
-        end
-
-        def button (label)
-          Button.new(self, label).to_s
-        end
-      end
 
       def post (name, action_class = nil, &block)
         action(:post, name, action_class, &block)
@@ -131,7 +116,9 @@ module Lucid
       def action (method, name, action_class = nil, &block)
         action_class = Class.new(Action, &block) if action_class.nil?
         define_method(name) do
-          Endpoint.new(method, path.extend(name), action_class)
+          action_name = path.extend(name)
+          route       = Route.new(state, routes)
+          Endpoint.new(method.to_sym, route, action_name, action_class)
         end
       end
 
@@ -148,7 +135,14 @@ module Lucid
     end
 
     config do
-      option :path_root, "/"
+      # The path from the web root to the application root.
+      # # Used to encode URLs for the webserver. Useful
+      # if you want to nest your application under a subdirectory.
+      option :app_root, "/"
+
+      # The path from the root view component to this component.
+      # Used to identify components and actions.
+      option :path, "/"
     end
 
     def initialize (data = {}, &config)
@@ -161,6 +155,10 @@ module Lucid
       self.class.state_class.new(data)
     end
 
+    def encode_state
+      JSON.encode(@state.to_h)
+    end
+
     #
     # Default routes configuration. Overridden by using the
     # routes class method to define a mapping.
@@ -169,26 +167,16 @@ module Lucid
       Route::Map.new
     end
 
-    class Path
-      def initialize(components = [])
-        @components = components
-      end
-
-      def extend (component)
-        Path.new(@components + [component])
-      end
-
-      def to_s
-        "/" + @components.join("/")
-      end
-    end
-
     #
     # The from the root view component to this component.
     # Used to encoding routes to actions.
     #
     def path
-      Path.new
+      Path.new(@config[:path])
+    end
+
+    def full_path
+      Path.new(@config[:app_root]).extend(path).to_s
     end
 
     #
@@ -224,10 +212,29 @@ module Lucid
       render
     end
 
+    def render
+      "Lucid::View"
+    end
+
+    def perform_action (action_path, params)
+      get_action(action_path).build(params).call
+    end
+
+    def get_action (action_path)
+      segments = action_path.split("/").reject(&:empty?)
+      if segments.length == 1
+        send(segments.first)
+      else
+        first_segment   = segments.shift
+        child_component = send(first_segment)
+        child_component.get_action(segments.join("/"))
+      end
+    end
+
     private
 
     def routes_config
-      { path_root: path_root }
+      { app_root: app_root }
     end
   end
 end

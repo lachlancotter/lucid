@@ -3,9 +3,11 @@ require "lucid/view"
 
 class CountChanged < Lucid::Event
   params do
-    attribute :count
+    attribute :old_count
+    attribute :new_count
     validate do
-      required(:count).filled(:integer)
+      required(:old_count).filled(:integer)
+      required(:new_count).filled(:integer)
     end
   end
 end
@@ -19,28 +21,35 @@ class ActionCounter < Lucid::View
   end
 
   route { param :count }
-  # link(:inc) { |state| state.count += 1 }
-  # link(:dec) { |state| state.count -= 1 }
 
   post :inc do
     source :counter_store
+
     def call
+      puts "INC"
+      old_count = counter_store.count
       counter_store.inc!
-      CountChanged.notify(new_count: counter_store.count)
+      CountChanged.notify(
+         old_count: old_count,
+         new_count: counter_store.count
+      )
     end
   end
 
   post :dec do
     source :counter_store
+
     def call
+      old_count = counter_store.count
       counter_store.dec!
-      CountChanged.notify(new_count: counter_store.count)
+      CountChanged.notify(
+         old_count: old_count,
+         new_count: counter_store.count
+      )
     end
   end
 
-  on CountChanged do |event, state|
-    refresh
-  end
+  on(CountChanged) { |event, state| refresh }
 
   def render
     <<~HTML

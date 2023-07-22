@@ -4,6 +4,7 @@ require "awesome_print"
 
 require "app/ui/link_counter"
 require "app/ui/action_counter"
+require "lucid/controller"
 
 class DemoApp < Sinatra::Base
   configure do
@@ -12,13 +13,14 @@ class DemoApp < Sinatra::Base
 
   get "/link_counter/?" do
     LinkCounter.new(params) do |config|
-      config.path_root = "/link_counter"
+      config.app_root = "/link_counter"
     end.to_s
   end
 
-  get "/action_counter/?" do
-    ActionCounter.new(params) do |config|
-      config.path_root = "/action_counter"
-    end.to_s
+  %i(get post).each do |method|
+    send(method, "/action_counter/?*") do
+      controller = Lucid::Controller.new(ActionCounter, "/action_counter")
+      controller.call(params)
+    end
   end
 end

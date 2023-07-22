@@ -1,8 +1,7 @@
 module Lucid
   class Link
-    def initialize (state, routes)
-      @state = state
-      @routes = routes
+    def initialize (route)
+      @route = route
     end
 
     def text (string)
@@ -10,7 +9,7 @@ module Lucid
     end
 
     def href
-      @routes.encode(@state)
+      @route.to_s
     end
 
     def attrs
@@ -18,7 +17,7 @@ module Lucid
          href: href,
          data: {
             lucid: {
-               state: JSON.encode(state.to_h)
+               state: JSON.encode(@route.state.to_h)
             }
          }
       }

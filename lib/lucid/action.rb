@@ -11,5 +11,9 @@ module Lucid
 
       end
     end
+
+    def initialize (params)
+      @params = params
+    end
   end
 end

@@ -1,3 +1,5 @@
+require "lucid/form"
+
 module Lucid
   class Button
     def initialize (endpoint, label)
@@ -6,11 +8,11 @@ module Lucid
     end
 
     def to_s
-      <<~HTML
-        <form action="#{@endpoint.action_route}">
+      Form.new(@endpoint).to_s do
+        <<~HTML
           <button type="submit">#{@label}</button>
-        </form>
-      HTML
+        HTML
+      end
     end
   end
 end

@@ -3,7 +3,7 @@ require "lucid/route"
 
 module Lucid
   describe View do
-    
+
     # ===================================================== #
     #    State
     # ===================================================== #
@@ -47,11 +47,11 @@ module Lucid
 
       end
     end
-    
+
     # ===================================================== #
     #    Config
     # ===================================================== #
-    
+
     describe ".config" do
       context "default" do
         it "sets the default" do
@@ -77,7 +77,7 @@ module Lucid
         end
       end
     end
-    
+
     # ===================================================== #
     #    Routes
     # ===================================================== #
@@ -114,12 +114,29 @@ module Lucid
       context "class reference" do
         it 'defines a post action' do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             post :foo, action_class
           end.new
           # expect(view.foo).to be_a(View::Endpoint)
-          expect(view.foo.action_route.to_s).to eq("/foo")
           expect(view.foo.action_method).to eq(:post)
+          expect(view.foo.action_route.to_s).to eq("/")
+          expect(view.foo.action_name.to_s).to eq("/foo")
+          expect(view.foo.action_class).to eq(action_class)
+        end
+      end
+
+      context "with a root path" do
+        it 'includes the root path' do
+          action_class = Class.new(Action)
+          view_class   = Class.new(View) do
+            post :foo, action_class
+          end
+          view         = view_class.new do |config|
+            config.app_root = "/bar"
+          end
+          expect(view.app_root).to eq("/bar")
+          expect(view.foo.action_route.to_s).to eq("/")
+          expect(view.foo.action_name.to_s).to eq("/foo")
           expect(view.foo.action_class).to eq(action_class)
         end
       end
@@ -134,10 +151,54 @@ module Lucid
             end
           end.new
           # expect(view.foo).to be_a(View::Endpoint)
-          expect(view.foo.action_route.to_s).to eq("/foo")
           expect(view.foo.action_method).to eq(:post)
-          expect(view.foo.action_class.new.call).to eq("bar")
+          expect(view.foo.action_route.to_s).to eq("/")
+          expect(view.foo.action_name.to_s).to eq("/foo")
+          expect(view.foo.action_class.new({}).call).to eq("bar")
         end
+      end
+    end
+
+    describe ".perform_action" do
+      context "top level action" do
+        it "performs the action" do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            post :foo, action_class
+          end.new
+          expect_any_instance_of(action_class).to receive(:call)
+          view.perform_action("/foo", {})
+        end
+      end
+
+      context "nested action" do
+        it "performs the action" do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            nest :bar do
+              post :foo, action_class
+            end
+          end.new
+          expect_any_instance_of(action_class).to receive(:call)
+          view.perform_action("/bar/foo", {})
+        end
+      end
+    end
+    
+    # ===================================================== #
+    #    Nesting
+    # ===================================================== #
+
+    describe ".nest" do
+      it "nests a child component" do
+        view = Class.new(View) do
+          nest :foo do
+            def render
+              "Nested"
+            end
+          end
+        end.new
+        expect(view.foo).to be_a(View)
       end
     end
 

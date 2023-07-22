@@ -1,5 +1,6 @@
 require "rack"
 require "docile"
+require "lucid/path"
 
 module Lucid
   #
@@ -7,11 +8,21 @@ module Lucid
   # state (or partial state) as a URL.
   #
   class Route
+    def initialize (state, map)
+      @state  = state
+      @map    = map
+    end
+
+    attr_reader :state
+
+    def to_s
+      @map.encode(@state)
+    end
+
     #
     # Encapsulates rules to map between view states and URLs.
     #
     class Map
-
       def initialize (opts = {})
         @opts  = opts
         @rules = []
@@ -25,7 +36,7 @@ module Lucid
             rule.apply(state, buf)
           end
         end
-        @opts.fetch(:path_root, "") + buffer.to_s
+        @opts.fetch(:app_root, "") + buffer.to_s
       end
 
       #
