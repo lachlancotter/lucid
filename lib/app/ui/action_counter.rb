@@ -1,6 +1,9 @@
 require "lucid/event"
 require "lucid/view"
 
+#
+# Event
+#
 class CountChanged < Lucid::Event
   params do
     attribute :old_count
@@ -12,21 +15,48 @@ class CountChanged < Lucid::Event
   end
 end
 
-class ActionCounter < Lucid::View
-  state do
-    attribute :count, default: 0
-    validate do
-      required(:count).filled(:integer)
+#
+# Store
+#
+class CounterStore
+  attr_reader :count
+
+  def initialize
+    @file_path = File.join(Dir.pwd, 'counter.txt')
+    @count = if File.exists?(@file_path)
+      File.read(@file_path).to_i
+    else
+      0
     end
   end
 
-  route { param :count }
+  def inc!
+    @count += 1
+    write_to_file
+  end
+
+  def dec!
+    @count -= 1
+    write_to_file
+  end
+
+  private
+
+  def write_to_file
+    File.open(@file_path, 'w') { |file| file.write(@count) }
+  end
+end
+
+#
+# App
+#
+class ActionCounter < Lucid::View
+  store :counter_store, CounterStore
 
   post :inc do
-    source :counter_store
+    store :counter_store, CounterStore
 
     def call
-      puts "INC"
       old_count = counter_store.count
       counter_store.inc!
       CountChanged.notify(
@@ -37,7 +67,7 @@ class ActionCounter < Lucid::View
   end
 
   post :dec do
-    source :counter_store
+    store :counter_store, CounterStore
 
     def call
       old_count = counter_store.count
@@ -49,13 +79,20 @@ class ActionCounter < Lucid::View
     end
   end
 
-  on(CountChanged) { |event, state| refresh }
+  on(CountChanged) { |event, state| nil }
 
   def render
     <<~HTML
-      <p>Count: #{state.count}</p>
-      <p>#{inc.button("Inc")}</p>
-      <p>#{dec.button("Dec")}</p>
+      <html>
+        <head>
+          <title>Counter</title>
+        </head>
+        <body>
+          <p>Count: #{counter_store.count}</p>
+          <p>#{inc.button("Inc")}</p>
+          <p>#{dec.button("Dec")}</p>
+        </body>
+      </html>
     HTML
   end
 end

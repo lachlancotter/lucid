@@ -1,3 +1,5 @@
+require "lucid/store"
+
 module Lucid
   #
   # Execute code on the server.
@@ -7,8 +9,11 @@ module Lucid
       #
       #
       #
-      def source (name)
-
+      def store (name, class_name)
+        define_method(name) do
+          @stores       ||= {}
+          @stores[name] ||= class_name.new
+        end
       end
     end
 

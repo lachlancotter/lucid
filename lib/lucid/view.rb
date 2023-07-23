@@ -4,6 +4,7 @@ require "lucid/link"
 require "lucid/button"
 require "lucid/action"
 require "lucid/endpoint"
+require "lucid/event_handler"
 
 module Lucid
   #
@@ -25,6 +26,10 @@ module Lucid
         @state_class = Class.new(State, &block)
       end
 
+      #
+      # Access the state class. Provides a default if none
+      # has been defined.
+      #
       def state_class
         @state_class ||= Class.new(State)
       end
@@ -101,6 +106,17 @@ module Lucid
       end
 
       # ===================================================== #
+      #    Stores
+      # ===================================================== #
+
+      def store (name, store_class = nil, &block)
+        define_method(name) do
+          @stores       ||= {}
+          @stores[name] ||= store_class.new
+        end
+      end
+
+      # ===================================================== #
       #    Actions
       # ===================================================== #
 
@@ -131,12 +147,17 @@ module Lucid
       # notifications with the given class. Block is passed
       # the event instance, and the current view state.
       #
-      def on (event_class, &block) end
+      def on (event_class, &block)
+        @event_handlers ||= []
+        @event_handlers << EventHandler.new(event_class, &block)
+      end
+
+      attr_reader :event_handlers
     end
 
     config do
       # The path from the web root to the application root.
-      # # Used to encode URLs for the webserver. Useful
+      # Used to encode URLs for the webserver. Useful
       # if you want to nest your application under a subdirectory.
       option :app_root, "/"
 
@@ -149,6 +170,13 @@ module Lucid
       @state  = build_state(data)
       @config = Configure.new(&config).to_h
       @links  = SimpleDelegator.new(self)
+    end
+
+    attr_reader :state
+    attr_reader :links
+
+    def event_handlers
+      self.class.event_handlers || []
     end
 
     def build_state (data)
@@ -164,7 +192,7 @@ module Lucid
     # routes class method to define a mapping.
     #
     def routes
-      Route::Map.new
+      Route::Map.new(routes_config)
     end
 
     #
@@ -204,9 +232,6 @@ module Lucid
         end
       end
     end
-
-    attr_reader :state
-    attr_reader :links
 
     def to_s
       render
