@@ -177,6 +177,27 @@ module Lucid
       def templates
         @templates ||= {}
       end
+
+      # ===================================================== #
+      #    Templates
+      # ===================================================== #
+
+      #
+      # Defines a template with a name and a block that gives
+      # the template definition.
+      #
+      def template (name = :main, &block)
+        @templates       ||= {}
+        @templates[name] = block
+      end
+
+      #
+      # Access the templates hash. Provides a default if none
+      # has been defined.
+      #
+      def templates
+        @templates ||= {}
+      end
     end
 
     config do
@@ -188,6 +209,14 @@ module Lucid
       # The path from the root view component to this component.
       # Used to identify components and actions.
       option :path, "/"
+    end
+
+    #
+    # Access the templates hash. Provides a default if none
+    # has been defined.
+    #
+    def templates
+      self.class.templates
     end
 
     def initialize (data = {}, &config)
