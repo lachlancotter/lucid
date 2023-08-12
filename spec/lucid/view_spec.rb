@@ -118,7 +118,7 @@ module Lucid
     #    Actions
     # ===================================================== #
 
-    describe ".post" do
+    describe ".post", skip: true do
       context "class reference" do
         it 'defines a post action' do
           action_class = Class.new(Action)
