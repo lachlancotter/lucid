@@ -156,6 +156,27 @@ module Lucid
       end
 
       attr_reader :event_handlers
+
+      # ===================================================== #
+      #    Templates
+      # ===================================================== #
+
+      #
+      # Defines a template with a name and a block that gives
+      # the template definition.
+      #
+      def template (name = :main, &block)
+        @templates       ||= {}
+        @templates[name] = block
+      end
+
+      #
+      # Access the templates hash. Provides a default if none
+      # has been defined.
+      #
+      def templates
+        @templates ||= {}
+      end
     end
 
     config do
