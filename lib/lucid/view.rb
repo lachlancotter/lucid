@@ -299,7 +299,7 @@ module Lucid
     end
 
     def render
-      html = template.render
+      html = template.call
       doc  = Nokogiri::HTML(html)
       doc.to_xhtml(indent: 2, indent_text: ' ')
     end
