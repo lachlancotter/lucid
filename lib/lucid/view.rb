@@ -177,27 +177,6 @@ module Lucid
       def templates
         @templates ||= {}
       end
-
-      # ===================================================== #
-      #    Templates
-      # ===================================================== #
-
-      #
-      # Defines a template with a name and a block that gives
-      # the template definition.
-      #
-      def template (name = :main, &block)
-        @templates       ||= {}
-        @templates[name] = block
-      end
-
-      #
-      # Access the templates hash. Provides a default if none
-      # has been defined.
-      #
-      def templates
-        @templates ||= {}
-      end
     end
 
     config do
@@ -299,7 +278,7 @@ module Lucid
     end
 
     def render
-      html = template.call
+      html = template.call(self)
       doc  = Nokogiri::HTML(html)
       doc.to_xhtml(indent: 2, indent_text: ' ')
     end
