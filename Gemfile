@@ -2,10 +2,11 @@ source "https://rubygems.org"
 
 gem "rack"
 gem "sinatra"
-gem "docile"        # Helps us build DSLs.
-gem "dry-struct"    # Helps us build state.
-gem "dry-schema"    # Helps us validate state.
-
+gem "docile"        # Build DSLs.
+gem "dry-struct"    # Build state.
+gem "dry-schema"    # Validate state.
+gem "papercraft"    # Generate HTML from Ruby.
+gem "nokogiri"      # Pretty-print HTML.
 
 group :test do
   gem "rspec"

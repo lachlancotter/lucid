@@ -31,6 +31,10 @@ module Lucid
       Button.new(self, label).to_s
     end
 
+    def form (data = {}, &block)
+      Form.new(self, data).template(&block)
+    end
+
     def build (params)
       @action_class.new(params)
     end

@@ -1,4 +1,7 @@
 describe "ActionCounter app", type: :feature do
+  before do
+    CounterStore.new.reset!
+  end
   scenario "new counter" do
     visit "/action_counter"
     expect(page).to have_content("Count: 0")

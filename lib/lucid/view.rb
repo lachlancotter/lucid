@@ -1,3 +1,6 @@
+require "papercraft"
+require "nokogiri"
+
 require "lucid/state"
 require "lucid/route"
 require "lucid/link"
@@ -238,11 +241,18 @@ module Lucid
     end
 
     def render
-      "Lucid::View"
+      html = template.render
+      doc  = Nokogiri::HTML(html)
+      doc.to_xhtml(indent: 2, indent_text: ' ')
     end
 
     def perform_action (action_path, params)
-      get_action(action_path).build(params).call
+      action = get_action(action_path)
+      if action.nil?
+        raise "Action not found: #{action_path}"
+      else
+        action.build(params).call
+      end
     end
 
     def get_action (action_path)

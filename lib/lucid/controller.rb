@@ -15,10 +15,10 @@ module Lucid
     def call (params)
       action_path = params.delete("action")
       @app        = build(params)
-      with_bus do
-        @app.perform_action(action_path, params) unless action_path.nil?
-        @app.to_s
+      unless action_path.nil?
+        with_bus { @app.perform_action(action_path, params) }
       end
+      @app.to_s
     end
 
     def with_bus (&block)

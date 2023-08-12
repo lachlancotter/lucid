@@ -40,6 +40,11 @@ class CounterStore
     write_to_file
   end
 
+  def reset!
+    @count = 0
+    write_to_file
+  end
+
   private
 
   def write_to_file
