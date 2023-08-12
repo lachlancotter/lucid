@@ -167,7 +167,7 @@ module Lucid
       #
       def template (name = :main, &block)
         @templates       ||= {}
-        @templates[name] = Template.new(&block)
+        @templates[name] = Template.new(self, &block)
       end
 
       #

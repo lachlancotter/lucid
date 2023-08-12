@@ -1,6 +1,7 @@
 module Lucid
   class Template
-    def initialize(&block)
+    def initialize(view, &block)
+      @view = view
       @block = block
     end
 
