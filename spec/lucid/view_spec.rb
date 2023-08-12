@@ -192,6 +192,30 @@ module Lucid
         end
       end
     end
+
+    # ===================================================== #
+    #    Templates
+    # ===================================================== #
+
+    describe ".template" do
+      it "defines a template" do
+        view = Class.new(View) do
+          template :foo do
+            "Hello, World"
+          end
+        end.new
+        expect(view.templates[:foo]).to be_a(Proc)
+      end
+
+      it "renders the template" do
+        view = Class.new(View) do
+          template :foo do
+            "Hello, World"
+          end
+        end.new
+        expect(view.templates[:foo].call).to eq("Hello, World")
+      end
+    end
     
     # ===================================================== #
     #    Nesting
