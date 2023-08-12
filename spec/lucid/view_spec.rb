@@ -216,6 +216,17 @@ module Lucid
         expect(view.templates[:foo].call).to eq("Hello, World")
       end
     end
+
+    describe "#render" do
+      it "renders the main template" do
+        view = Class.new(View) do
+          template do
+            "Main template content"
+          end
+        end.new
+        expect(view.render).to eq("Main template content")
+      end
+    end
     
     # ===================================================== #
     #    Nesting
