@@ -16,7 +16,7 @@ Capybara.server_errors = [StandardError]
 # HTML Screenshots.
 #
 RSpec.configure do |config|
-  config.after do |example|
+  config.after(type: :feature) do |example|
     if example.exception
       filename = File.join(Capybara.save_path, "screenshot-#{Time.now.strftime('%Y%m%d%H%M%S')}.html")
       page.save_page(filename)
