@@ -1,3 +1,4 @@
 /.idea/
 /counter.txt
 /spec/tmp/capybara/*
+.aider*
