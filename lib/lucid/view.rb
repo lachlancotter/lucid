@@ -219,6 +219,14 @@ module Lucid
       self.class.templates
     end
 
+    #
+    # Access the main template. Provides a default if none
+    # has been defined.
+    #
+    def template
+      templates[:main]
+    end
+
     def initialize (data = {}, &config)
       @state  = build_state(data)
       @config = Configure.new(&config).to_h
