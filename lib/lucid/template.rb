@@ -7,7 +7,7 @@ module Lucid
 
     def call(*args)
       result = @block.call(*args)
-      result.is_a?(Papercraft::Template) ? result.to_html : result
+      result.is_a?(Papercraft::Template) ? result.apply : result
     end
   end
 end
