@@ -15,5 +15,18 @@ module Lucid
       template = Template.new(view, &block)
       expect(template.call).to eq("Hello, World")
     end
+
+    it "renders a Papercraft template" do
+      view = double("View")
+      block = Proc.new do
+        Papercraft::Template.new do
+          div do
+            text "Hello, World"
+          end
+        end
+      end
+      template = Template.new(view, &block)
+      expect(template.call).to eq("<div>Hello, World</div>")
+    end
   end
 end
