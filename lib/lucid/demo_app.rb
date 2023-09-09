@@ -33,9 +33,9 @@ class DemoApp < Sinatra::Base
 
   %i(get post).each do |method|
     send(method, "/multi_counter/?*") do
-      Lucid::Controller.new(MultiCounter::View, "/multi_counter").call(params)
+      Lucid::Controller.new(MultiCounter::CounterApp, "/multi_counter").call(params)
     end
   end
 end
 
-MultiCounter::Store.reset!
+# MultiCounter::Store.reset!

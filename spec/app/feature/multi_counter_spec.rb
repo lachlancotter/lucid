@@ -17,7 +17,8 @@ describe "MultiCounter app", type: :feature do
 
   scenario "increment counter" do
     MultiCounter::Store.create("Foo")
-    visit "/multi_counter/foo"
+    visit "/multi_counter"
+    puts page.body
     click_button "Inc"
     expect(page).to have_content("Foo Count: 1")
   end

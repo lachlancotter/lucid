@@ -13,32 +13,36 @@ module Lucid
         form action: endpoint.action_route, method: endpoint.action_method do
           input type: :hidden, name: :state, value: endpoint.encode_state
           input type: :hidden, name: :action, value: endpoint.action_name
-          emit_yield Builder.new(data)
+          emit_yield Builder.new(data, self)
         end
       end.apply(@endpoint, @data, &block)
     end
 
     class Builder
-      def initialize (data)
+      def initialize (data, renderer)
         @data = data
+        @renderer = renderer
       end
 
       def label (field_name, options = {})
-        Papercraft.html do |name|
+        proc = Papercraft.html do |name|
           label(field_name.capitalize, { for: name }.merge(options))
         end.apply(field_name)
+        @renderer.emit proc
       end
 
       def text (field_name, options = {})
-        Papercraft.html do |name, value|
+        proc = Papercraft.html do |name, value|
           input({ type: :text, name: name, value: value, id: name }.merge(options))
         end.apply(field_name, @data.fetch(field_name, ""))
+        @renderer.emit proc
       end
 
       def submit (label)
-        Papercraft.html do |label|
-          input type: :submit, value: label
+        proc = Papercraft.html do |l|
+          input type: :submit, value: l
         end.apply(label)
+        @renderer.emit proc
       end
     end
   end

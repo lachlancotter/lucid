@@ -1,8 +1,90 @@
 require_relative "store"
 
 module MultiCounter
-  class View < Lucid::View
+  # ===================================================== #
+  #    Events
+  # ===================================================== #
+
+  class CounterCreated < Lucid::Event
+    params do
+      attribute :name
+      validate do
+        required(:name).filled(:string)
+      end
+    end
+  end
+
+  class CounterChanged < Lucid::Event
+    params do
+      attribute :new_count
+      validate do
+        required(:new_count).filled(:integer)
+      end
+    end
+  end
+
+  # ===================================================== #
+  #    Sub
+  # ===================================================== #
+
+  class CounterView < Lucid::View
+    # store :counters, Store
+
+    config do
+      option :counter, nil
+    end
+
+    # delegate :counter, to: :config
+
+    post :inc do
+      store :counters, Store
+
+      # config do
+      #   option :counter, nil
+      # end
+
+      # params do
+      #   attribute :id
+      #   validate do
+      #     required(:id).filled(:string)
+      #   end
+      # end
+
+      def call
+        counters.inc(params[:id])
+      end
+    end
+
+    post :dec do
+      store :counters, Store
+
+      def call
+        counters.dec(params[:id])
+      end
+    end
+
+    template do
+      h2 "#{counter.name}: #{counter.count}"
+      div { emit action(:inc).button('Inc') }
+      div { emit action(:dec).button('Dec') }
+    end
+  end
+
+  # ===================================================== #
+  #    Main
+  # ===================================================== #
+
+  class CounterApp < Lucid::View
+    
+    # ===================================================== #
+    #    Data
+    # ===================================================== #
+    
     store :counters, Store
+
+    # ===================================================== #
+    #    Action
+    # ===================================================== #
 
     post :create do
       store :counters, Store
@@ -15,44 +97,51 @@ module MultiCounter
       end
 
       def call
-        counters.create(params[:name])
+        counters.create(params.name)
+        CounterCreated.notify(name: params.name)
       end
     end
 
-    def template
-      view             = self
-      form_template    = self.form_template
-      counter_template = self.counter_template
-      
-      Papercraft.html do
-        head { title 'Multi Counter' }
-        body {
-          h1 'Multi Counter'
-          if view.counters.all.empty?
-            p "No Counters"
-          else
-            view.counters.all.each do |counter|
-              emit counter_template.apply(counter)
-            end
+    # ===================================================== #
+    #    Events
+    # ===================================================== #
+
+    on(CounterCreated) do |event|
+      # Rerender...
+    end
+
+    # ===================================================== #
+    #    Subviews
+    # ===================================================== #
+
+    nest :counter_view, CounterView, in: :counters, as: :counter
+
+    # ===================================================== #
+    #    Template
+    # ===================================================== #
+
+    template do
+      head { title 'Multi Counter' }
+      body {
+        h1 'Multi Counter'
+        if counters.none?
+          p "No Counters"
+        else
+          counters.all.each_with_index do |counter, index|
+            emit_view counter_view(index)
           end
-          emit form_template
-        }
-      end
-    end
-
-    def counter_template
-      Papercraft.html do |counter|
-        h2 "#{counter.name} Count: #{counter.count}"
-      end
-    end
-
-    def form_template
-      create.form({ name: "Test" }) { |f|
-        h2 'Inside Form'
-        emit f.label(:name)
-        emit f.text(:name)
-        emit f.submit('Create Counter')
+        end
+        emit_template :form
       }
+    end
+
+    template :form do
+      emit create.form({ name: "Test" }) do |f|
+        h2 'Inside Form'
+        f.label(:name)
+        f.text(:name)
+        f.submit('Create Counter')
+      end
     end
   end
 end

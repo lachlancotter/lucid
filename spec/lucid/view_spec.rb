@@ -167,6 +167,48 @@ module Lucid
       end
     end
 
+    describe ".get_action" do
+      context "top level action" do
+        it "returns the action" do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            post :foo, action_class
+          end.new
+          endpoint = view.get_action("/foo")
+          expect(endpoint).to be_a(Endpoint)
+          expect(endpoint.action_class).to eq(action_class)
+        end
+      end
+
+      context "nested action" do
+        it "returns the action" do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            nest :bar do
+              post :foo, action_class
+            end
+          end.new
+          endpoint = view.get_action("/bar/foo")
+          expect(endpoint).to be_a(Endpoint)
+          expect(endpoint.action_class).to eq(action_class)
+        end
+      end
+
+      context "nested in collection" do
+        it "returns the action" do
+          action_class = Class.new(Action)
+          view = Class.new(View) do
+            nest :bar, in: [1, 2] do
+              post :foo, action_class
+            end
+          end
+          endpoint = view.new.get_action("/bar[1]/foo")
+          expect(endpoint).to be_a(Endpoint)
+          expect(endpoint.action_class).to eq(action_class)
+        end
+      end
+    end
+
     describe ".perform_action" do
       context "top level action" do
         it "performs the action" do
@@ -198,33 +240,14 @@ module Lucid
     # ===================================================== #
 
     describe ".template" do
-      it "defines a template" do
-        view = Class.new(View) do
-          template :foo do
-            "Hello, World"
-          end
-        end.new
-        expect(view.templates[:foo]).to be_a(Proc)
-      end
-
-      it "renders the template" do
-        view = Class.new(View) do
-          template :foo do
-            "Hello, World"
-          end
-        end.new
-        expect(view.templates[:foo].call).to eq("Hello, World")
-      end
-    end
-
-    describe "#render" do
-      it "renders the main template" do
-        view = Class.new(View) do
-          template do
-            "Main template content"
-          end
-        end.new
-        expect(view.render).to eq("Main template content")
+      context "main template" do
+        it "renders the main template" do
+          view = Class.new(View) do
+            state { attribute :name }
+            template { div { text "Hello, #{state.name}" } }
+          end.new(name: "World")
+          expect(view.template.render).to eq("<div>Hello, World</div>")
+        end
       end
     end
     
@@ -233,15 +256,105 @@ module Lucid
     # ===================================================== #
 
     describe ".nest" do
-      it "nests a child component" do
-        view = Class.new(View) do
-          nest :foo do
-            def render
-              "Nested"
+      context "inline" do
+        it "nests a child component" do
+          view = Class.new(View) do
+            nest :foo do
+              def render
+                "Nested"
+              end
             end
+          end.new
+          expect(view.foo).to be_a(View)
+          ap view.foo.method(:render)
+          expect(view.foo.render).to eq("Nested")
+        end
+
+        it "nests a child component over an array" do
+          view = Class.new(View) do
+            nest :foo, in: %w[english spanish], as: :bar do
+              def render
+                "Nested #{@config[:bar]}"
+              end
+            end
+          end.new do |config|
+            config.app_root = "/app/root"
           end
-        end.new
-        expect(view.foo).to be_a(View)
+
+          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0).render).to eq("Nested english")
+          expect(view.foo(0).config.app_root).to eq("/app/root")
+          expect(view.foo(0).config.path).to eq("/foo[0]")
+          expect(view.foo(0).config.bar).to eq("english")
+
+          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1).render).to eq("Nested spanish")
+          expect(view.foo(1).config.app_root).to eq("/app/root")
+          expect(view.foo(1).config.path).to eq("/foo[1]")
+          expect(view.foo(1).config.bar).to eq("spanish")
+        end
+
+        it "nests a child component over a collection reference" do
+          view = Class.new(View) do
+            def languages
+              %w[english spanish]
+            end
+
+            nest :foo, in: :languages, as: :bar do
+              def render
+                "Nested #{@config[:bar]}"
+              end
+            end
+          end.new do |config|
+            config.app_root = "/app/root"
+          end
+          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0).render).to eq("Nested english")
+          expect(view.foo(0).config.app_root).to eq("/app/root")
+          expect(view.foo(0).config.path).to eq("/foo[0]")
+          expect(view.foo(0).config.bar).to eq("english")
+
+          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1).render).to eq("Nested spanish")
+          expect(view.foo(1).config.app_root).to eq("/app/root")
+          expect(view.foo(1).config.path).to eq("/foo[1]")
+          expect(view.foo(1).config.bar).to eq("spanish")
+        end
+      end
+
+      context "named constant" do
+        class NamedNestedView < View
+          def render
+            "Nested #{@config[:bar]}"
+          end
+        end
+        it "nests a child component" do
+          view = Class.new(View) do
+            nest :foo, NamedNestedView
+          end.new
+          expect(view.foo).to be_a(View)
+        end
+
+        it "nests a child component over an array" do
+          view = Class.new(View) do
+            nest :foo, NamedNestedView, in: %w[english spanish], as: :bar
+          end.new do |config|
+            config.app_root = "/app/root"
+          end
+
+          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0).render).to eq("Nested english")
+          expect(view.foo(0).config.app_root).to eq("/app/root")
+          expect(view.foo(0).config.path).to eq("/foo[0]")
+          expect(view.foo(0).config.bar).to eq("english")
+
+          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1).render).to eq("Nested spanish")
+          expect(view.foo(1).config.app_root).to eq("/app/root")
+          expect(view.foo(1).config.path).to eq("/foo[1]")
+          expect(view.foo(1).config.bar).to eq("spanish")
+        end
+
       end
     end
 

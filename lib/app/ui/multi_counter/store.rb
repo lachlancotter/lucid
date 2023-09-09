@@ -8,28 +8,41 @@ module MultiCounter
         @counters = {}
       end
 
+      attr_reader :counters
+
+      def none?
+        all.empty?
+      end
+
       def all
         @counters.values
       end
 
-      def find(name)
-        @counters[name]
+      def [](index)
+        all[index]
+      end
+
+      def find(id)
+        @counters[id]
       end
 
       def create(name)
-        @counters[name] = Counter.new(name)
+        Counter.new(name).tap do |counter|
+          @counters[counter.id] = counter
+        end
       end
 
-      def delete(name)
-        @counters.delete(name)
+      def delete(id)
+        @counters.delete(id)
       end
 
-      def inc(name)
-        @counters[name].inc
+      def inc(id)
+        puts "INC: #{id}"
+        @counters[id].inc
       end
 
-      def dec(name)
-        @counters[name].dec
+      def dec(id)
+        @counters[id].dec
       end
     end
 
@@ -43,9 +56,10 @@ module MultiCounter
     end
 
     class Counter
-      attr_reader :name, :count
+      attr_reader :id, :name, :count
 
       def initialize(name)
+        @id    = SecureRandom.uuid
         @name  = name
         @count = 0
       end

@@ -1,13 +1,16 @@
 require "papercraft"
 require "nokogiri"
 
+require "lucid/config"
 require "lucid/state"
 require "lucid/route"
 require "lucid/link"
 require "lucid/button"
 require "lucid/action"
+require "lucid/action_path"
 require "lucid/endpoint"
 require "lucid/event_handler"
+require "lucid/template"
 
 module Lucid
   #
@@ -72,12 +75,62 @@ module Lucid
       #    Nested Views
       # ===================================================== #
 
-      def nest (name, &block)
-        define_method(name) do
-          @nested_views       ||= {}
-          @nested_views[name] ||= Class.new(View, &block).new
+      def nest (name, view_class = nil, in: nil, as: nil, &view_def)
+        values     = binding.local_variable_get(:in)
+        config_key = binding.local_variable_get(:as) || :model
+
+        if values.nil?
+          define_method(name) do
+            @nest       ||= {}
+            @nest[name] ||= build_nested_view(view_class, view_def)
+          end
+        else
+          define_method(name) do |collection_key|
+            @nest                       ||= {}
+            @nest[name]                 ||= []
+            value                       = values.is_a?(Symbol) ? send(values)[collection_key] : values[collection_key]
+            path_component              = "#{name}[#{collection_key}]"
+            @nest[name][collection_key] ||= build_nested_view(view_class, view_def) do |config|
+              config[config_key] = value
+              config.app_root    = app_root
+              config.path        = path.extend(path_component).to_s
+            end
+          end
         end
       end
+
+      # class Nest
+      #   def initialize (target_class, *args, **options, &block)
+      #     @target_class = target_class
+      #     @args         = args
+      #     @options      = options
+      #     @block        = block
+      #   end
+      #
+      #   def install
+      #     values     = binding.local_variable_get(:in)
+      #     config_key = binding.local_variable_get(:as) || :model
+      #
+      #     if values.nil?
+      #       @target_class.define_method(name) do
+      #         @nest       ||= {}
+      #         @nest[name] ||= build_nested_view(view_class, view_def)
+      #       end
+      #     else
+      #       @target_class.define_method(name) do |collection_key|
+      #         @nest                       ||= {}
+      #         @nest[name]                 ||= []
+      #         value                       = values.is_a?(Symbol) ? send(values)[collection_key] : values[collection_key]
+      #         path_component              = "#{name}[#{collection_key}]"
+      #         @nest[name][collection_key] ||= build_nested_view(view_class, view_def) do |config|
+      #           config[config_key] = value
+      #           config.app_root    = app_root
+      #           config.path        = path.extend(path_component).to_s
+      #         end
+      #       end
+      #     end
+      #   end
+      # end
 
       # ===================================================== #
       #    Routes
@@ -166,8 +219,9 @@ module Lucid
       # the template definition.
       #
       def template (name = :main, &block)
+        raise "Attempt to define template without a block" if block.nil?
         @templates       ||= {}
-        @templates[name] = Template.new(self, &block)
+        @templates[name] = block
       end
 
       #
@@ -190,6 +244,11 @@ module Lucid
       option :path, "/"
     end
 
+    def build_nested_view (view_class, view_def)
+      view_class = Class.new(View, &view_def) if view_class.nil?
+      view_class.new { |config| yield config if block_given? }
+    end
+
     #
     # Access the templates hash. Provides a default if none
     # has been defined.
@@ -199,21 +258,25 @@ module Lucid
     end
 
     #
-    # Access the main template. Provides a default if none
-    # has been defined.
+    # Access a template/partial to be rendered. Defaults
+    # to the main template if no name is provided.
     #
-    def template
-      templates[:main]
+    def template (name = :main)
+      template_def = templates.fetch(name.to_sym) do
+        raise "Could not find template `#{name}` in #{self.class} at #{config.path}. Available templates: #{templates.keys}"
+      end
+      Template.new(self, &template_def)
     end
 
     def initialize (data = {}, &config)
       @state  = build_state(data)
-      @config = Configure.new(&config).to_h
+      @config = Configure.new(&config).build
       @links  = SimpleDelegator.new(self)
     end
 
     attr_reader :state
     attr_reader :links
+    attr_reader :config
 
     def event_handlers
       self.class.event_handlers || []
@@ -240,7 +303,7 @@ module Lucid
     # Used to encoding routes to actions.
     #
     def path
-      Path.new(@config[:path])
+      Path.new(@config[:path] || "/")
     end
 
     def full_path
@@ -262,6 +325,14 @@ module Lucid
         @store
       end
 
+      def build
+        Config.new(@store)
+      end
+
+      def []= (key, value)
+        @store[key] = value
+      end
+
       private
 
       def method_missing(symbol, *args)
@@ -273,12 +344,8 @@ module Lucid
       end
     end
 
-    def to_s
-      render
-    end
-
     def render
-      html = template.call(self)
+      html = template.render
       doc  = Nokogiri::HTML(html)
       doc.to_xhtml(indent: 2, indent_text: ' ')
     end
@@ -293,14 +360,7 @@ module Lucid
     end
 
     def get_action (action_path)
-      segments = action_path.split("/").reject(&:empty?)
-      if segments.length == 1
-        send(segments.first)
-      else
-        first_segment   = segments.shift
-        child_component = send(first_segment)
-        child_component.get_action(segments.join("/"))
-      end
+      ActionPath.new(action_path, self).resolve
     end
 
     private

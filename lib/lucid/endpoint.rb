@@ -28,7 +28,7 @@ module Lucid
     end
 
     def button (label)
-      Button.new(self, label).to_s
+      Button.new(self, label).template
     end
 
     def form (data = {}, &block)

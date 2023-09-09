@@ -7,11 +7,10 @@ module Lucid
       @label    = label
     end
 
-    def to_s
-      Form.new(@endpoint).to_s do
-        <<~HTML
-          <button type="submit">#{@label}</button>
-        HTML
+    def template
+      button_label = @label
+      Form.new(@endpoint, {}).template do |f|
+        f.submit(button_label)
       end
     end
   end
