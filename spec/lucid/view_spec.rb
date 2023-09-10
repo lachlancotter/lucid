@@ -362,14 +362,14 @@ module Lucid
     #    Rendering
     # ===================================================== #
 
-    describe "#to_s" do
+    describe "#render" do
       it "renders the view" do
         view = Class.new(View) do
           def render
             "Hello, World"
           end
         end.new
-        expect(view.to_s).to eq("Hello, World")
+        expect(view.render).to eq("Hello, World")
       end
     end
 

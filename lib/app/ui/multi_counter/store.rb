@@ -33,15 +33,17 @@ module MultiCounter
       end
 
       def delete(id)
+        raise "invalid id: #{id}" unless @counters[id]
         @counters.delete(id)
       end
 
       def inc(id)
-        puts "INC: #{id}"
+        raise "invalid id: #{id}" unless @counters[id]
         @counters[id].inc
       end
 
       def dec(id)
+        raise "invalid id: #{id}" unless @counters[id]
         @counters[id].dec
       end
     end

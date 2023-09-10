@@ -17,6 +17,10 @@ module Lucid
         @params_class ||= Class.new(State)
       end
 
+      def config (&block)
+        DSL::Config.new(self, &block).install
+      end
+
       #
       # Define a store.
       #
@@ -28,8 +32,9 @@ module Lucid
       end
     end
 
-    def initialize (params)
-      @params  = build_params(params)
+    def initialize (params, &config_block)
+      @params = build_params(params)
+      @config = DSL::Config::Store.new(&config_block)
     end
 
     attr_reader :params

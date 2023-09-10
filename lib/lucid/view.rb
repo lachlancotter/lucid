@@ -1,7 +1,8 @@
 require "papercraft"
 require "nokogiri"
 
-require "lucid/config"
+require "lucid/dsl/config"
+require "lucid/dsl/nest"
 require "lucid/state"
 require "lucid/route"
 require "lucid/link"
@@ -49,88 +50,16 @@ module Lucid
       # and defaults that are available to instances.
       #
       def config (&block)
-        Docile.dsl_eval(ConfigDef.new(self), &block).build
-      end
-
-      #
-      # Configuration options DSL.
-      #
-      class ConfigDef
-        def initialize (klass)
-          @klass = klass
-        end
-
-        def option (name, default)
-          @klass.define_method(name) do
-            @config.fetch(name, default)
-          end
-        end
-
-        def build
-          @klass
-        end
+        DSL::Config.new(self, &block).install
       end
 
       # ===================================================== #
       #    Nested Views
       # ===================================================== #
 
-      def nest (name, view_class = nil, in: nil, as: nil, &view_def)
-        values     = binding.local_variable_get(:in)
-        config_key = binding.local_variable_get(:as) || :model
-
-        if values.nil?
-          define_method(name) do
-            @nest       ||= {}
-            @nest[name] ||= build_nested_view(view_class, view_def)
-          end
-        else
-          define_method(name) do |collection_key|
-            @nest                       ||= {}
-            @nest[name]                 ||= []
-            value                       = values.is_a?(Symbol) ? send(values)[collection_key] : values[collection_key]
-            path_component              = "#{name}[#{collection_key}]"
-            @nest[name][collection_key] ||= build_nested_view(view_class, view_def) do |config|
-              config[config_key] = value
-              config.app_root    = app_root
-              config.path        = path.extend(path_component).to_s
-            end
-          end
-        end
+      def nest (*args, **options, &block)
+        DSL::Nest.new(self, *args, **options, &block).install
       end
-
-      # class Nest
-      #   def initialize (target_class, *args, **options, &block)
-      #     @target_class = target_class
-      #     @args         = args
-      #     @options      = options
-      #     @block        = block
-      #   end
-      #
-      #   def install
-      #     values     = binding.local_variable_get(:in)
-      #     config_key = binding.local_variable_get(:as) || :model
-      #
-      #     if values.nil?
-      #       @target_class.define_method(name) do
-      #         @nest       ||= {}
-      #         @nest[name] ||= build_nested_view(view_class, view_def)
-      #       end
-      #     else
-      #       @target_class.define_method(name) do |collection_key|
-      #         @nest                       ||= {}
-      #         @nest[name]                 ||= []
-      #         value                       = values.is_a?(Symbol) ? send(values)[collection_key] : values[collection_key]
-      #         path_component              = "#{name}[#{collection_key}]"
-      #         @nest[name][collection_key] ||= build_nested_view(view_class, view_def) do |config|
-      #           config[config_key] = value
-      #           config.app_root    = app_root
-      #           config.path        = path.extend(path_component).to_s
-      #         end
-      #       end
-      #     end
-      #   end
-      # end
 
       # ===================================================== #
       #    Routes
@@ -244,11 +173,6 @@ module Lucid
       option :path, "/"
     end
 
-    def build_nested_view (view_class, view_def)
-      view_class = Class.new(View, &view_def) if view_class.nil?
-      view_class.new { |config| yield config if block_given? }
-    end
-
     #
     # Access the templates hash. Provides a default if none
     # has been defined.
@@ -268,9 +192,9 @@ module Lucid
       Template.new(self, &template_def)
     end
 
-    def initialize (data = {}, &config)
+    def initialize (data = {}, &config_block)
       @state  = build_state(data)
-      @config = Configure.new(&config).build
+      @config = DSL::Config::Store.new(&config_block)
       @links  = SimpleDelegator.new(self)
     end
 
@@ -308,40 +232,6 @@ module Lucid
 
     def full_path
       Path.new(@config[:app_root]).extend(path).to_s
-    end
-
-    #
-    # Provides a scope to set configuration options during
-    # initialization, which can then be encapsulated in the
-    # view instance.
-    #
-    class Configure
-      def initialize
-        @store = {}
-        yield self if block_given?
-      end
-
-      def to_h
-        @store
-      end
-
-      def build
-        Config.new(@store)
-      end
-
-      def []= (key, value)
-        @store[key] = value
-      end
-
-      private
-
-      def method_missing(symbol, *args)
-        if symbol.to_s =~ /=$/
-          @store[symbol.to_s.gsub(/=$/, "").to_sym] = args.first
-        else
-          super
-        end
-      end
     end
 
     def render
