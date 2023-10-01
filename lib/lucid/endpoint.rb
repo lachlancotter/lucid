@@ -2,10 +2,20 @@ require "base64"
 
 module Lucid
   #
-  # Provide access to an Action.
+  # Provide access to instantiate and run an action via HTTP.
+  # The Endpoint class is used to encode action state in the
+  # view with form and link elements. And also to instantiate
+  # and run the actions that are called via those elements.
   #
   class Endpoint
-    def initialize (action_method, action_route, action_name, action_class)
+    #
+    # action_method - HTTP method for the request (get, post, etc.)
+    # action_route  - Full URL encoding the application state.
+    # action_name   - App path identifying the action to run.
+    # action_class  - Class that implements the action.
+    #
+    def initialize (context, action_method, action_route, action_name, action_class)
+      @context       = context
       @action_method = action_method
       @action_route  = action_route
       @action_name   = action_name
@@ -36,7 +46,9 @@ module Lucid
     end
 
     def build (params)
-      @action_class.new(params)
+      @action_class.new(params) do |config|
+        config.delegate(@context.config)
+      end
     end
   end
 end
