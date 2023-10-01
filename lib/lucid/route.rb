@@ -31,12 +31,12 @@ module Lucid
       attr_reader :rules
 
       def encode (state, buffer = Buffer.new)
-        buffer.tap do |buf|
-          @rules.each do |rule|
-            rule.apply(state, buf)
-          end
-        end
-        @opts.fetch(:app_root, "") + buffer.to_s
+        @rules.each { |rule| rule.apply(state, buffer) }
+        app_root + buffer.to_s
+      end
+
+      def app_root
+        @opts.fetch(:app_root, "").sub(/^\/$/, "")
       end
 
       #

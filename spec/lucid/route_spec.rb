@@ -102,14 +102,27 @@ module Lucid
       end
     end
 
-    context "path root" do
-      it "prepends the path root" do
-        map = Route::Map.build(path_root: "/root") do
-          path "foo"
+    context "app_root" do
+      context "base path" do
+        it "prepends the path root" do
+          map = Route::Map.build(app_root: "/root") do
+            path "foo"
+          end
+          state = {}
+          route = map.encode(state)
+          expect(route.to_s).to eq("/root/foo")
         end
-        state = {}
-        route = map.encode(state)
-        expect(route.to_s).to eq("/root/foo")
+      end
+
+      context "empty path" do
+        it "prepends the path root" do
+          map = Route::Map.build(app_root: "/") do
+            path "foo"
+          end
+          state = {}
+          route = map.encode(state)
+          expect(route.to_s).to eq("/foo")
+        end
       end
     end
   end
