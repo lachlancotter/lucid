@@ -37,23 +37,16 @@ module MultiCounter
     # delegate :counter, to: :config
 
     post :inc do
-      config do
-        option :counter, nil
-        # validate do
-        #   required(:counter).filled(:object)
-        # end
-      end
-
       def call
-        config.counter.inc
+        raise "invalid counter" unless counter
+        counter.inc
       end
     end
 
     post :dec do
-      # store :counters, Store
-
       def call
-        config.counter.dec
+        raise "invalid counter" unless counter
+        counter.dec
         # counters.dec(params[:id])
       end
     end
