@@ -118,7 +118,7 @@ module Lucid
     #    Actions
     # ===================================================== #
 
-    describe ".post", skip: true do
+    describe ".post" do
       context "class reference" do
         it 'defines a post action' do
           action_class = Class.new(Action)
@@ -131,21 +131,21 @@ module Lucid
           expect(view.foo.action_name.to_s).to eq("/foo")
           expect(view.foo.action_class).to eq(action_class)
         end
-      end
 
-      context "with a root path" do
-        it 'includes the root path' do
-          action_class = Class.new(Action)
-          view_class   = Class.new(View) do
-            post :foo, action_class
+        context "with a root path" do
+          it 'includes the root path' do
+            action_class = Class.new(Action)
+            view_class   = Class.new(View) do
+              post :foo, action_class
+            end
+            view         = view_class.new do |config|
+              config.app_root = "/bar"
+            end
+            expect(view.app_root).to eq("/bar")
+            expect(view.foo.action_route.to_s).to eq("/bar/")
+            expect(view.foo.action_name.to_s).to eq("/foo")
+            expect(view.foo.action_class).to eq(action_class)
           end
-          view         = view_class.new do |config|
-            config.app_root = "/bar"
-          end
-          expect(view.app_root).to eq("/bar")
-          expect(view.foo.action_route.to_s).to eq("/")
-          expect(view.foo.action_name.to_s).to eq("/foo")
-          expect(view.foo.action_class).to eq(action_class)
         end
       end
 
@@ -164,6 +164,22 @@ module Lucid
           expect(view.foo.action_name.to_s).to eq("/foo")
           expect(view.foo.action_class.new({}).call).to eq("bar")
         end
+
+        context "with view configuration" do
+          it 'inherits the configuration' do
+            view = Class.new(View) do
+              config do
+                option :bar, "baz"
+              end
+              post :foo do
+                def call
+                  "bar"
+                end
+              end
+            end.new
+            expect(view.foo.build({}).bar).to eq("baz")
+          end
+        end
       end
     end
 
@@ -171,10 +187,10 @@ module Lucid
       context "top level action" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             post :foo, action_class
           end.new
-          endpoint = view.get_action("/foo")
+          endpoint     = view.get_action("/foo")
           expect(endpoint).to be_a(Endpoint)
           expect(endpoint.action_class).to eq(action_class)
         end
@@ -183,12 +199,12 @@ module Lucid
       context "nested action" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             nest :bar do
               post :foo, action_class
             end
           end.new
-          endpoint = view.get_action("/bar/foo")
+          endpoint     = view.get_action("/bar/foo")
           expect(endpoint).to be_a(Endpoint)
           expect(endpoint.action_class).to eq(action_class)
         end
@@ -197,12 +213,12 @@ module Lucid
       context "nested in collection" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             nest :bar, in: [1, 2] do
               post :foo, action_class
             end
           end
-          endpoint = view.new.get_action("/bar[1]/foo")
+          endpoint     = view.new.get_action("/bar[1]/foo")
           expect(endpoint).to be_a(Endpoint)
           expect(endpoint.action_class).to eq(action_class)
         end
@@ -213,7 +229,7 @@ module Lucid
       context "top level action" do
         it "performs the action" do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             post :foo, action_class
           end.new
           expect_any_instance_of(action_class).to receive(:call)
@@ -224,7 +240,7 @@ module Lucid
       context "nested action" do
         it "performs the action" do
           action_class = Class.new(Action)
-          view = Class.new(View) do
+          view         = Class.new(View) do
             nest :bar do
               post :foo, action_class
             end
@@ -250,7 +266,7 @@ module Lucid
         end
       end
     end
-    
+
     # ===================================================== #
     #    Nesting
     # ===================================================== #
@@ -328,6 +344,7 @@ module Lucid
             "Nested #{@config[:bar]}"
           end
         end
+
         it "nests a child component" do
           view = Class.new(View) do
             nest :foo, NamedNestedView
