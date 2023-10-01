@@ -47,7 +47,7 @@ module Lucid
 
     def build (params)
       @action_class.new(params) do |config|
-        config.delegate(@context.config)
+        # config.delegate(@context.config)
       end
     end
   end

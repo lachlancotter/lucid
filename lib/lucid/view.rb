@@ -119,7 +119,7 @@ module Lucid
         define_method(name) do
           action_name = path.extend(name)
           route       = Route.new(state, routes)
-          Endpoint.new(method.to_sym, route, action_name, action_class)
+          Endpoint.new(self, method.to_sym, route, action_name, action_class)
         end
       end
 
@@ -194,7 +194,7 @@ module Lucid
 
     def initialize (data = {}, &config_block)
       @state  = build_state(data)
-      @config = DSL::Config::Store.new(&config_block)
+      @config = DSL::Config::Store.for_host(self, &config_block)
       @links  = SimpleDelegator.new(self)
     end
 

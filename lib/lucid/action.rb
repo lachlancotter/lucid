@@ -34,7 +34,7 @@ module Lucid
 
     def initialize (params, &config_block)
       @params = build_params(params)
-      @config = DSL::Config::Store.new(&config_block)
+      @config = DSL::Config::Store.new({}, &config_block)
     end
 
     attr_reader :params

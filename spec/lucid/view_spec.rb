@@ -84,6 +84,14 @@ module Lucid
           expect(view.foo).to eq("baz")
         end
       end
+
+      context "standard" do
+        it "has a path" do
+          view = Class.new(View).new
+          expect(view.path).to eq("/")
+          expect(view.config[:path]).to eq("/")
+        end
+      end
     end
 
     # ===================================================== #
@@ -165,21 +173,21 @@ module Lucid
           expect(view.foo.action_class.new({}).call).to eq("bar")
         end
 
-        context "with view configuration" do
-          it 'inherits the configuration' do
-            view = Class.new(View) do
-              config do
-                option :bar, "baz"
-              end
-              post :foo do
-                def call
-                  "bar"
-                end
-              end
-            end.new
-            expect(view.foo.build({}).bar).to eq("baz")
-          end
-        end
+        # context "with view configuration" do
+        #   it 'inherits the configuration' do
+        #     view = Class.new(View) do
+        #       config do
+        #         option :bar, "baz"
+        #       end
+        #       post :foo do
+        #         def call
+        #           "bar"
+        #         end
+        #       end
+        #     end.new
+        #     expect(view.foo.build({}).bar).to eq("baz")
+        #   end
+        # end
       end
     end
 

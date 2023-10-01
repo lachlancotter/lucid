@@ -15,6 +15,10 @@ module Lucid
       end
     end
 
+    def == (other)
+      to_s == other.to_s
+    end
+
     def extend (component)
       Path.new(@components + [component])
     end
