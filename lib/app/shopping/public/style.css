@@ -1,0 +1,31 @@
+body {
+    font-family: sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+.branding {
+    border-bottom: 1px solid black;
+    padding: 1em;
+}
+
+.body {
+    padding: 1em;
+}
+
+.nav {
+    background-color: #eee;
+    padding: 1em;
+    width: 30%;
+}
+
+.nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav li {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}

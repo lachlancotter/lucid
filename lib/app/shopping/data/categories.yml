@@ -1,0 +1,25 @@
+---
+- id: 1
+  name: "Guitars & Basses"
+  slug: "guitars-basses"
+- id: 2
+  name: "Pianos & Keyboards"
+  slug: "pianos-keyboards"
+- id: 3
+  name: "Drums & Percussion"
+  slug: "drums-percussion"
+- id: 4
+  name: "Wind Instruments"
+  slug: "wind-instruments"
+- id: 5
+  name: "String Instruments"
+  slug: "string-instruments"
+- id: 6
+  name: "Studio & Recording Gear"
+  slug: "studio-recording-gear"
+- id: 7
+  name: "DJ Equipment"
+  slug: "dj-equipment"
+- id: 8
+  name: "Accessories & Supplies"
+  slug: "accessories-supplies"
