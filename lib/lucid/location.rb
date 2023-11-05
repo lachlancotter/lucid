@@ -7,7 +7,7 @@ module Lucid
   # In Lucid, a Route is a representation of the application
   # state (or partial state) as a URL.
   #
-  class Route
+  class Location
     def initialize (state, map)
       @state = state
       @map   = map

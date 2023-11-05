@@ -3,11 +3,11 @@ require "lucid/route"
 require "lucid/component"
 
 module Lucid
-  describe Route::Map do
+  describe Location::Map do
     describe "#encode" do
       context "no rules" do
         it "returns the root path" do
-          map   = Route::Map.new
+          map   = Location::Map.new
           state = {}
           route = map.encode(state)
           expect(route.to_s).to eq("/")
@@ -16,7 +16,7 @@ module Lucid
 
       context "path rule" do
         it "returns rule field in the path" do
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path :foo
           end
           state = { foo: "bar" }
@@ -27,7 +27,7 @@ module Lucid
 
       context "param rule" do
         it "returns rule field in the params" do
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             param :foo
           end
           state = { foo: "bar" }
@@ -39,10 +39,10 @@ module Lucid
       context "nested path rules" do
         it "builds a path from the nested fields" do
           state = { foo: "foo", bar: { baz: "baz" } }
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path :foo
             nest :bar do
-              Route::Map.build do
+              Location::Map.build do
                 path :baz
               end
             end
@@ -55,10 +55,10 @@ module Lucid
       context "nested param rules" do
         it "builds a path from the nested fields" do
           state = { foo: "foo", bar: { baz: "baz" } }
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             param :foo
             nest :bar do
-              Route::Map.build do
+              Location::Map.build do
                 param :baz
               end
             end
@@ -70,7 +70,7 @@ module Lucid
 
       context "multiple path components" do
         it "returns a route with multiple components" do
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path :foo, :bar
             path :baz
           end
@@ -82,7 +82,7 @@ module Lucid
 
       context "multiple params" do
         it "returns a route with multiple params" do
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             param :foo, :bar
             param :baz
           end
@@ -94,7 +94,7 @@ module Lucid
 
       context "literal path components" do
         it "returns a route with literal components" do
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path "lit", :foo
           end
           state = { foo: "foo" }
@@ -106,7 +106,7 @@ module Lucid
       context "app_root" do
         context "base path" do
           it "prepends the path root" do
-            map   = Route::Map.build(app_root: "/root") do
+            map   = Location::Map.build(app_root: "/root") do
               path "foo"
             end
             state = {}
@@ -117,7 +117,7 @@ module Lucid
 
         context "empty path" do
           it "prepends the path root" do
-            map   = Route::Map.build(app_root: "/") do
+            map   = Location::Map.build(app_root: "/") do
               path "foo"
             end
             state = {}
@@ -132,7 +132,7 @@ module Lucid
       context "empty query" do
         it "returns an empty state" do
           query = "/"
-          map   = Route::Map.build { path :foo }
+          map   = Location::Map.build { path :foo }
           state = map.decode(query)
           expect(state).to eq({})
         end
@@ -141,7 +141,7 @@ module Lucid
       context "single path component" do
         it "extracts state" do
           query = "/top-level"
-          map   = Route::Map.build { path :foo }
+          map   = Location::Map.build { path :foo }
           state = map.decode(query)
           expect(state).to eq({ foo: "top-level" })
         end
@@ -150,7 +150,7 @@ module Lucid
       context "multiple path components" do
         it "extracts state" do
           query = "/top-level/second-level"
-          map   = Route::Map.build { path :foo, :bar }
+          map   = Location::Map.build { path :foo, :bar }
           state = map.decode(query)
           expect(state).to eq({ foo: "top-level", bar: "second-level" })
         end
@@ -159,10 +159,10 @@ module Lucid
       context "nested maps" do
         it "extracts state" do
           query = "/top-level/second-level"
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path :foo
             nest :bar do
-              Route::Map.build do
+              Location::Map.build do
                 path :baz
               end
             end
@@ -175,7 +175,7 @@ module Lucid
       context "literal path components" do
         it "extracts state" do
           query = "/lit/foo"
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             path "lit", :foo
           end
           state = map.decode(query)
@@ -186,7 +186,7 @@ module Lucid
       context "single query param" do
         it "extracts state" do
           query = "/?foo=bar"
-          map   = Route::Map.build { param :foo }
+          map   = Location::Map.build { param :foo }
           state = map.decode(query)
           expect(state).to eq({ foo: "bar" })
         end
@@ -195,7 +195,7 @@ module Lucid
       context "multiple query params" do
         it "extracts state" do
           query = "/?foo=bar&baz=qux"
-          map   = Route::Map.build { param :foo, :baz }
+          map   = Location::Map.build { param :foo, :baz }
           state = map.decode(query)
           expect(state).to eq({ foo: "bar", baz: "qux" })
         end
@@ -204,9 +204,9 @@ module Lucid
       context "nested query params" do
         it "extracts state" do
           query = "/?foo[bar]=baz"
-          map   = Route::Map.build do
+          map   = Location::Map.build do
             nest :foo do
-              Route::Map.build do
+              Location::Map.build do
                 param :bar
               end
             end
@@ -219,7 +219,7 @@ module Lucid
       context "with app root" do
         it "extracts state" do
           query = "/root/foo"
-          map   = Route::Map.build(app_root: "/root") do
+          map   = Location::Map.build(app_root: "/root") do
             path :foo
           end
           state = map.decode(query)
