@@ -9,8 +9,8 @@ module Lucid
   #
   class Route
     def initialize (state, map)
-      @state  = state
-      @map    = map
+      @state = state
+      @map   = map
     end
 
     attr_reader :state
@@ -30,9 +30,22 @@ module Lucid
 
       attr_reader :rules
 
-      def encode (state, buffer = Buffer.new)
-        @rules.each { |rule| rule.apply(state, buffer) }
+      def encode (state, buffer = StateBuffer.new)
+        @rules.each { |rule| rule.encode(state, buffer) }
         app_root + buffer.to_s
+      end
+
+      def decode (buffer_or_query, state = {})
+        raise "state must be a hash" unless state.is_a?(Hash)
+        buffer = normalize(buffer_or_query)
+        state.tap do
+          @rules.each { |rule| rule.decode(buffer, state) }
+        end
+      end
+
+      def normalize (buffer_or_query)
+        buffer_or_query.is_a?(QueryBuffer) ?
+           buffer_or_query : QueryBuffer.new(buffer_or_query, app_root)
       end
 
       def app_root
@@ -54,9 +67,17 @@ module Lucid
       # Rule for a single path component of a URL.
       #
       class Path < Rule
-        def apply (state, buffer)
+        def encode (state, buffer)
           value = @key.is_a?(Symbol) ? state[@key] : @key.to_s
           buffer.add_component(value)
+        end
+
+        def decode (buffer, state)
+          buffer.shift_path_component.tap do |component|
+            if component.is_a?(String) && @key.is_a?(Symbol)
+              state[@key] = component
+            end
+          end
         end
       end
 
@@ -64,8 +85,14 @@ module Lucid
       # Rule for a single query parameter of a URL.
       #
       class Param < Rule
-        def apply (state, buffer)
+        def encode (state, buffer)
           buffer.add_param(@key, state[@key])
+        end
+
+        def decode (buffer, state)
+          buffer.shift_param(@key).tap do |param|
+            state[@key] = param unless param.nil?
+          end
         end
       end
 
@@ -78,33 +105,37 @@ module Lucid
           @block = block
         end
 
-        def apply (state, buffer)
+        def encode (state, buffer)
           buffer.push_scope(@key)
-          @block.call.encode(state[@key], buffer)
+          nested_map.encode(state[@key], buffer)
           buffer.pop_scope
+        end
+
+        def decode (buffer, state)
+          buffer.push_scope(@key)
+          state[@key] = {} unless state.key?(@key)
+          nested_map.decode(buffer, state[@key])
+          buffer.pop_scope
+        end
+
+        private
+
+        def nested_map
+          @block.call
         end
       end
 
       #
-      # Structure to accumulate the components of a URL.
+      # Shared base class for buffers. Maintain a stack of
+      # parameter scopes.
       #
-      class Buffer
-        def initialize
-          @components = []
-          @params     = {}
-          @scope      = [@params]
-        end
-
-        def add_component (component)
-          @components << component
-        end
-
-        def add_param (key, value)
-          @scope.last[key] = value
+      class ParamStack
+        def initialize (top = {})
+          @scope = [top]
         end
 
         def push_scope (key)
-          @scope.last[key] = {}
+          @scope.last[key] = {} unless @scope.last.key?(key)
           @scope << @scope.last[key]
         end
 
@@ -113,6 +144,68 @@ module Lucid
           @scope.pop
           # If no params were added to the scope, remove it.
           @scope.last.delete_if { |k, v| v.empty? }
+        end
+      end
+
+      #
+      # Extract components from a URL. Path components and query
+      # params may be consumed from the buffer to build up a state.
+      #
+      class QueryBuffer < ParamStack
+        def initialize (query_string, app_root)
+          query_string = query_string.sub(/^#{app_root}/, "")
+          path, params = query_string.split("?")
+          @components  = parse_components(path)
+          @params      = parse_params(params)
+          super(@params)
+        end
+
+        def shift_path_component
+          @components.shift
+        end
+
+        def shift_param (key)
+          @scope.last.delete(key)
+        end
+
+        private
+
+        def parse_components (path)
+          path.sub(/^\//, "").split("/")
+        end
+
+        def parse_params (param_string)
+          symbolize_keys(
+             Rack::Utils.parse_nested_query(param_string)
+          )
+        end
+
+        def symbolize_keys(hash)
+          hash.each_with_object({}) do |(key, value), result|
+            result[key.to_sym] = value.is_a?(Hash) ?
+               symbolize_keys(value) : value
+          end
+        end
+      end
+
+      #
+      # Accumulate the components of a URL from a state.
+      # Path components and query params may be added to
+      # the buffer to build up a URL.
+      #
+      class StateBuffer < ParamStack
+        def initialize
+          @components = []
+          @params     = {}
+          super(@params)
+        end
+
+        def add_component (component)
+          @components << component
+        end
+
+        def add_param (key, value)
+          @scope.last[key] = value
         end
 
         def to_s
