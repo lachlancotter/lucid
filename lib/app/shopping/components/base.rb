@@ -10,7 +10,10 @@ require "app/shopping/components/cart_detail"
 module Shopping
   class Base < Lucid::Component
     # /:category_slug/:product_id
-    route { path :category_slug, :product_id }
+    route do
+      path :category_slug
+      param :product_id
+    end
 
     state do
       attribute :category_slug
@@ -23,6 +26,17 @@ module Shopping
 
     visit ProductDetails do |link, delta|
       delta.product_id = link.product_id
+    end
+
+    perform AddProductToCart do |command|
+      puts "AddProductToCart: #{command.inspect}"
+      product = Product.find(command.product_id)
+      Cart.current.add_product(product)
+      CartItemChanged.notify({
+         product_id: product.id,
+         cart_id:    Cart.current.id,
+         quantity:   Cart.current.quantity_of(product)
+      })
     end
 
     # ===================================================== #
@@ -106,15 +120,29 @@ module Shopping
           h3 product.name
           p product.description
           p product.price
-          emit AddProductToCart.button("Add to cart", product_id: product.id)
+          emit AddProductToCart.button("Add to Cart", product_id: product.id)
         end
       }
     end
 
     template :cart do
       div(class: "cart") {
-        text "Cart: "
-        # text Cart.current.total
+        h2 "Your Cart"
+        table {
+          tr {
+            th "Product"
+            th "Quantity"
+            th "Price"
+          }
+          Cart.current.items.each do |item|
+            tr {
+              td item.product_name
+              td item.quantity
+              td item.price
+            }
+          end
+        }
+        text Cart.current.total
       }
     end
 
