@@ -29,9 +29,18 @@ module Shopping
     end
 
     perform AddProductToCart do |command|
-      puts "AddProductToCart: #{command.inspect}"
       product = Product.find(command.product_id)
       Cart.current.add_product(product)
+      CartItemChanged.notify({
+         product_id: product.id,
+         cart_id:    Cart.current.id,
+         quantity:   Cart.current.quantity_of(product)
+      })
+    end
+
+    perform RemoveProductFromCart do |command|
+      product = Product.find(command.product_id)
+      Cart.current.remove_product(product)
       CartItemChanged.notify({
          product_id: product.id,
          cart_id:    Cart.current.id,
@@ -133,17 +142,33 @@ module Shopping
             th "Product"
             th "Quantity"
             th "Price"
+            th "Actions"
           }
           Cart.current.items.each do |item|
             tr {
               td item.product_name
               td item.quantity
-              td item.price
+              td format_currency(item.price)
+              td {
+                emit AddProductToCart.button("+", product_id: item.product_id)
+                emit RemoveProductFromCart.button("-", product_id: item.product_id)
+              }
             }
           end
         }
-        text Cart.current.total
+        text format_currency(Cart.current.total)
       }
+    end
+
+    def format_currency(amount)
+      # Assure that the amount is a float (or cast it to float), format with two decimal places
+      formatted_amount = '%.2f' % amount.to_f
+      # Split the integer and decimal parts
+      integer, decimal = formatted_amount.split('.')
+      # Add commas to the integer part and join the formatted decimal part
+      integer_with_commas = integer.chars.to_a.reverse.each_slice(3).map(&:join).join(',').reverse
+      # Concatenate dollar sign, integer part, decimal point, and decimal part
+      "$#{integer_with_commas}.#{decimal}"
     end
 
   end

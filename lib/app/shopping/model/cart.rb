@@ -22,13 +22,30 @@ module Shopping
       end
     end
 
+    def remove_product (product)
+      item = @items.find { |item| item.product_id == product.id }
+      if item.nil?
+        # do nothing
+      elsif item.quantity == 1
+        @items.delete(item)
+      else
+        item.quantity -= 1
+      end
+    end
+
+    def empty
+      @items = []
+    end
+
     def quantity_of (product)
       item = @items.find { |item| item.product_id == product.id }
       item.nil? ? 0 : item.quantity
     end
 
     def total
-      0
+      @items.reduce(0) do |sum, item|
+        sum + (item.quantity * Product.find(item.product_id).price)
+      end
     end
   end
 end

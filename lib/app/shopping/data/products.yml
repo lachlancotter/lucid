@@ -1,19 +1,19 @@
 - id: 101
   name: "Stratocaster Electric Guitar"
   description: "A classic electric guitar known for its distinctive sound and style."
-  price: 699.99
+  price: 699.00
   category_id: 1
 
 - id: 102
   name: "Gibson Les Paul Guitar"
   description: "Iconic electric guitar with a solid mahogany body and warm, deep tone."
-  price: 2499.99
+  price: 2499.00
   category_id: 1
 
 - id: 103
   name: "Precision Bass Guitar"
   description: "The first electric bass, popular for its rich tone and musical versatility."
-  price: 649.99
+  price: 649.00
   category_id: 1
 
 - id: 201
@@ -31,35 +31,35 @@
 - id: 301
   name: "5-Piece Drum Set"
   description: "A complete drum set with cymbals and hardware included."
-  price: 499.99
+  price: 499.00
   category_id: 3
 
 - id: 401
   name: "Alto Saxophone"
   description: "A versatile woodwind instrument known for its use in jazz and classical music."
-  price: 899.99
+  price: 899.00
   category_id: 4
 
 - id: 501
   name: "Classic Violin"
   description: "A handcrafted violin with excellent sound quality for both beginners and professionals."
-  price: 299.99
+  price: 299.00
   category_id: 5
 
 - id: 601
   name: "Audio Interface PRO"
   description: "A high-quality audio interface for studio recording and music production."
-  price: 249.99
+  price: 249.00
   category_id: 6
 
 - id: 701
   name: "DJ Mixer Elite"
   description: "A professional DJ mixer allowing for seamless track transitions and effects."
-  price: 349.99
+  price: 349.00
   category_id: 7
 
 - id: 801
   name: "Guitar Strings Set"
   description: "High-quality nickel-plated steel strings for electric guitar."
-  price: 9.99
+  price: 9.00
   category_id: 8

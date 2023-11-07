@@ -1,7 +1,10 @@
+require "app/shopping/model/cart"
+
 describe "Shopping", type: :feature do
 
   before do
     visit "/"
+    Shopping::Cart.current.empty
   end
 
   scenario "browse guitars" do
@@ -32,6 +35,32 @@ describe "Shopping", type: :feature do
     click_button "Add to Cart"
     within ".cart" do
       expect(page).to have_content("Gibson Les Paul")
+      expect(page).to have_content("1")
+      expect(page).to have_content("$2,499")
+    end
+  end
+
+  scenario "increment product quantity" do
+    click_link "Guitars & Basses"
+    click_link "Gibson Les Paul"
+    click_button "Add to Cart"
+    within ".cart" do
+      click_button "+"
+      click_button "+"
+      expect(page).to have_content("3")
+      expect(page).to have_content("$7,497")
+    end
+  end
+
+  scenario "decrement product quantity" do
+    click_link "Guitars & Basses"
+    click_link "Gibson Les Paul"
+    click_button "Add to Cart"
+    within ".cart" do
+      click_button "+"
+      click_button "-"
+      expect(page).to have_content("1")
+      expect(page).to have_content("$2,499")
     end
   end
 
