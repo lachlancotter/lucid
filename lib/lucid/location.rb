@@ -4,8 +4,7 @@ require "lucid/path"
 
 module Lucid
   #
-  # In Lucid, a Route is a representation of the application
-  # state (or partial state) as a URL.
+  # Encode the state of a component tree as a URL.
   #
   class Location
     def initialize (state, map)
