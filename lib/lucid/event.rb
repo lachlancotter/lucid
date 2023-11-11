@@ -1,15 +1,13 @@
+require "lucid/busable"
+
 module Lucid
   #
   # Base class for events.
   #
   class Event
-    class << self
-      #
-      # Configure the event bus that will be used to notify the
-      # application of events.
-      #
-      attr_accessor :bus
+    extend Busable
 
+    class << self
       #
       # Define the event data.
       #
@@ -20,6 +18,8 @@ module Lucid
       def params_class
         @params_class ||= Class.new(State)
       end
+
+      def validate (&block) end
 
       def notify (data)
         new(data).notify
