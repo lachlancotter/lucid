@@ -3,24 +3,24 @@ module Lucid
   # Build form elements.
   #
   class Form
-    def initialize (endpoint, data)
-      @endpoint = endpoint
-      @data     = data
+    def initialize (command, data)
+      @command = command
+      @data    = data
     end
 
     def template (&block)
-      Papercraft.html do |endpoint, data|
-        form action: endpoint.action_route, method: endpoint.action_method do
-          input type: :hidden, name: :state, value: endpoint.encode_state
-          input type: :hidden, name: :action, value: endpoint.action_name
+      Papercraft.html do |command, data|
+        form action: command.href, method: command.http_method do
+          input type: :hidden, name: :state, value: command.encode_state
+          input type: :hidden, name: :command, value: command.class.name
           emit_yield Builder.new(data, self)
         end
-      end.apply(@endpoint, @data, &block)
+      end.apply(@command, @data, &block)
     end
 
     class Builder
       def initialize (data, renderer)
-        @data = data
+        @data     = data
         @renderer = renderer
       end
 
