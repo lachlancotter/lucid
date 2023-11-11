@@ -2,7 +2,7 @@ require "lucid/view"
 require "lucid/route"
 
 module Lucid
-  describe View do
+  describe Component do
 
     # ===================================================== #
     #    State
@@ -10,7 +10,7 @@ module Lucid
 
     describe ".state" do
       it "defines attributes" do
-        view = Class.new(View) do
+        view = Class.new(Component) do
           state do
             attribute :foo
           end
@@ -19,7 +19,7 @@ module Lucid
       end
 
       it "sets defaults" do
-        view = Class.new(View) do
+        view = Class.new(Component) do
           state do
             attribute :foo, default: "bar"
           end
@@ -31,7 +31,7 @@ module Lucid
     describe "validation" do
       context "valid state" do
         it "coerces the input" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             state do
               attribute :count
               validate do
@@ -63,7 +63,7 @@ module Lucid
     describe ".config" do
       context "default" do
         it "sets the default" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             config do
               option :foo, "bar"
             end
@@ -74,7 +74,7 @@ module Lucid
 
       context "override" do
         it "overrides the default" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             config do
               option :foo, "bar"
             end
@@ -87,7 +87,7 @@ module Lucid
 
       context "standard" do
         it "has a path" do
-          view = Class.new(View).new
+          view = Class.new(Component).new
           expect(view.path).to eq("/")
           expect(view.config[:path]).to eq("/")
         end
@@ -100,25 +100,12 @@ module Lucid
 
     describe "#routes" do
       it "returns the route map" do
-        view = Class.new(View) do
+        view = Class.new(Component) do
           route { path :foo }
         end.new
-        expect(view.routes).to be_a(Route::Map)
-        expect(view.routes.rules.first).to be_a(Route::Map::Path)
+        expect(view.routes).to be_a(Location::Map)
+        expect(view.routes.rules.first).to be_a(Location::Map::Path)
         expect(view.routes.rules.first.key).to eq(:foo)
-      end
-    end
-
-    # ===================================================== #
-    #    Links
-    # ===================================================== #
-
-    describe ".link" do
-      it 'defines a link' do
-        view = Class.new(View) do
-          link :foo
-        end.new
-        expect(view.foo).to be_a(Link)
       end
     end
 
@@ -130,10 +117,10 @@ module Lucid
       context "class reference" do
         it 'defines a post action' do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             post :foo, action_class
           end.new
-          # expect(view.foo).to be_a(View::Endpoint)
+          # expect(view.foo).to be_a(Component::Endpoint)
           expect(view.foo.action_method).to eq(:post)
           expect(view.foo.action_route.to_s).to eq("/")
           expect(view.foo.action_name.to_s).to eq("/foo")
@@ -143,7 +130,7 @@ module Lucid
         context "with a root path" do
           it 'includes the root path' do
             action_class = Class.new(Action)
-            view_class   = Class.new(View) do
+            view_class   = Class.new(Component) do
               post :foo, action_class
             end
             view         = view_class.new do |config|
@@ -159,14 +146,14 @@ module Lucid
 
       context "inline definition" do
         it 'defines a post action' do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             post :foo do
               def call
                 "bar"
               end
             end
           end.new
-          # expect(view.foo).to be_a(View::Endpoint)
+          # expect(view.foo).to be_a(Component::Endpoint)
           expect(view.foo.action_method).to eq(:post)
           expect(view.foo.action_route.to_s).to eq("/")
           expect(view.foo.action_name.to_s).to eq("/foo")
@@ -175,7 +162,7 @@ module Lucid
 
         # context "with view configuration" do
         #   it 'inherits the configuration' do
-        #     view = Class.new(View) do
+        #     view = Class.new(Component) do
         #       config do
         #         option :bar, "baz"
         #       end
@@ -195,7 +182,7 @@ module Lucid
       context "top level action" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             post :foo, action_class
           end.new
           endpoint     = view.get_action("/foo")
@@ -207,7 +194,7 @@ module Lucid
       context "nested action" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             nest :bar do
               post :foo, action_class
             end
@@ -221,7 +208,7 @@ module Lucid
       context "nested in collection" do
         it "returns the action" do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             nest :bar, in: [1, 2] do
               post :foo, action_class
             end
@@ -237,7 +224,7 @@ module Lucid
       context "top level action" do
         it "performs the action" do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             post :foo, action_class
           end.new
           expect_any_instance_of(action_class).to receive(:call)
@@ -248,7 +235,7 @@ module Lucid
       context "nested action" do
         it "performs the action" do
           action_class = Class.new(Action)
-          view         = Class.new(View) do
+          view         = Class.new(Component) do
             nest :bar do
               post :foo, action_class
             end
@@ -266,7 +253,7 @@ module Lucid
     describe ".template" do
       context "main template" do
         it "renders the main template" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             state { attribute :name }
             template { div { text "Hello, #{state.name}" } }
           end.new(name: "World")
@@ -282,20 +269,20 @@ module Lucid
     describe ".nest" do
       context "inline" do
         it "nests a child component" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             nest :foo do
               def render
                 "Nested"
               end
             end
           end.new
-          expect(view.foo).to be_a(View)
+          expect(view.foo).to be_a(Component)
           ap view.foo.method(:render)
           expect(view.foo.render).to eq("Nested")
         end
 
         it "nests a child component over an array" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             nest :foo, in: %w[english spanish], as: :bar do
               def render
                 "Nested #{@config[:bar]}"
@@ -305,13 +292,13 @@ module Lucid
             config.app_root = "/app/root"
           end
 
-          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0)).to be_a(Component)
           expect(view.foo(0).render).to eq("Nested english")
           expect(view.foo(0).config.app_root).to eq("/app/root")
           expect(view.foo(0).config.path).to eq("/foo[0]")
           expect(view.foo(0).config.bar).to eq("english")
 
-          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1)).to be_a(Component)
           expect(view.foo(1).render).to eq("Nested spanish")
           expect(view.foo(1).config.app_root).to eq("/app/root")
           expect(view.foo(1).config.path).to eq("/foo[1]")
@@ -319,7 +306,7 @@ module Lucid
         end
 
         it "nests a child component over a collection reference" do
-          view = Class.new(View) do
+          view = Class.new(Component) do
             def languages
               %w[english spanish]
             end
@@ -332,13 +319,13 @@ module Lucid
           end.new do |config|
             config.app_root = "/app/root"
           end
-          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0)).to be_a(Component)
           expect(view.foo(0).render).to eq("Nested english")
           expect(view.foo(0).config.app_root).to eq("/app/root")
           expect(view.foo(0).config.path).to eq("/foo[0]")
           expect(view.foo(0).config.bar).to eq("english")
 
-          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1)).to be_a(Component)
           expect(view.foo(1).render).to eq("Nested spanish")
           expect(view.foo(1).config.app_root).to eq("/app/root")
           expect(view.foo(1).config.path).to eq("/foo[1]")
@@ -347,33 +334,33 @@ module Lucid
       end
 
       context "named constant" do
-        class NamedNestedView < View
+        class NamedNestedComponent < Component
           def render
             "Nested #{@config[:bar]}"
           end
         end
 
         it "nests a child component" do
-          view = Class.new(View) do
-            nest :foo, NamedNestedView
+          view = Class.new(Component) do
+            nest :foo, NamedNestedComponent
           end.new
-          expect(view.foo).to be_a(View)
+          expect(view.foo).to be_a(Component)
         end
 
         it "nests a child component over an array" do
-          view = Class.new(View) do
-            nest :foo, NamedNestedView, in: %w[english spanish], as: :bar
+          view = Class.new(Component) do
+            nest :foo, NamedNestedComponent, in: %w[english spanish], as: :bar
           end.new do |config|
             config.app_root = "/app/root"
           end
 
-          expect(view.foo(0)).to be_a(View)
+          expect(view.foo(0)).to be_a(Component)
           expect(view.foo(0).render).to eq("Nested english")
           expect(view.foo(0).config.app_root).to eq("/app/root")
           expect(view.foo(0).config.path).to eq("/foo[0]")
           expect(view.foo(0).config.bar).to eq("english")
 
-          expect(view.foo(1)).to be_a(View)
+          expect(view.foo(1)).to be_a(Component)
           expect(view.foo(1).render).to eq("Nested spanish")
           expect(view.foo(1).config.app_root).to eq("/app/root")
           expect(view.foo(1).config.path).to eq("/foo[1]")
@@ -389,7 +376,7 @@ module Lucid
 
     describe "#render" do
       it "renders the view" do
-        view = Class.new(View) do
+        view = Class.new(Component) do
           def render
             "Hello, World"
           end

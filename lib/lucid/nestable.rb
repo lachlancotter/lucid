@@ -1,8 +1,28 @@
 module Lucid
-  module DSL
-    #
-    # Define a nested view within a parent view.
-    #
+  module Nestable
+    def self.included (base)
+      base.extend(ClassMethods)
+    end
+
+    def nested
+      self.class.nested
+    end
+
+    module ClassMethods
+      def nest (*args, **options, &block)
+        Nest.new(self, *args, **options, &block).install
+      end
+
+      def nested
+        @nested ||= {}
+      end
+
+      def set_nest (name, nested_class)
+        @nested       ||= {}
+        @nested[name] = nested_class
+      end
+    end
+
     class Nest
       #
       # target_class - The class that will contain the nested view.
@@ -13,11 +33,11 @@ module Lucid
       # nested_class_def - Optional block to define the nested view inline.
       #
       def initialize (target_class, name, nested_class = nil, **options, &nested_class_def)
-        @target_class     = target_class
-        @name             = name
-        @nested_class     = nested_class
-        @options          = options
-        @nested_class_def = nested_class_def
+        @target_class = target_class
+        @name         = name
+        @nested_class = nested_class
+        @options      = options
+        @nested_class = Class.new(Component, &nested_class_def)
       end
 
       def install
@@ -29,9 +49,9 @@ module Lucid
       end
 
       def install_single (nest)
-        @target_class.define_method(@name) do
-          @nest            ||= {}
-          @nest[nest.name] ||= nest.build
+        @target_class.set_nest(@name, @nested_class)
+        @target_class.define_method(@name) do |key|
+          self.class.get_nest(key)
           # TODO configure the view.
         end
       end
@@ -71,9 +91,11 @@ module Lucid
       end
 
       def build
-        @nested_class ||= Class.new(View, &@nested_class_def)
-        @nested_class.new { |config| yield config if block_given? }
+        @nested_class.new do |config|
+          yield config if block_given?
+        end
       end
     end
+
   end
 end
