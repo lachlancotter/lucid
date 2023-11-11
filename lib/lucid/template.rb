@@ -65,7 +65,7 @@ module Lucid
 
       def emit_view (name_or_instance, *a, **b, &block)
         puts "emit_view: #{name_or_instance.inspect}"
-        if name_or_instance.is_a?(View)
+        if name_or_instance.is_a?(Component)
           subview = name_or_instance
           emit subview.render(*a, **b, &block)
         else
