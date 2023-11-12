@@ -6,18 +6,30 @@ module Lucid
     #
     # Encapsulates the application state.
     #
-    class Base < OpenStruct
+    class Base
 
       def initialize(data = {})
+        @data = immutable(validated(data))
+      end
+
+      def immutable (data)
+        Immutable::Hash[data.map { |k, v| [k, v] }]
+      end
+
+      def validated (data)
         if schema
-          super(schema.call(defaults.merge(data)).to_h)
+          schema.call(defaults.merge(data)).to_h
         else
-          super(defaults.merge(data))
+          defaults.merge(data)
         end
       end
 
       def defaults
         self.class.defaults || {}
+      end
+
+      def to_h
+        @data.to_h
       end
 
       def == (other)
@@ -37,22 +49,38 @@ module Lucid
       end
 
       def empty?
-        to_h.empty?
+        @data.empty?
       end
 
       def schema
         self.class.schema
       end
 
-      def mutate (&block)
-        new_state = self.dup
-        block.call(new_state) if block_given?
-        new_state
+      #
+      # Merges the new data into the state, modifying this object.
+      #
+      def update (data)
+        @data = immutable(
+           validated(
+              @data.merge(data)
+           )
+        )
       end
 
-      def merge (other)
-        self.class.new(self.to_h.merge(other.to_h))
+      #
+      # Yields a copy of the state to the block along with any
+      # additional arguments. The block can modify the new state
+      # using the update method. Does not modify the original.
+      #
+      def transform (*args, &block)
+        dup.tap do |new_state|
+          block.call(new_state, *args)
+        end
       end
+
+      # def merge (other)
+      #   self.class.new(self.to_h.merge(other.to_h))
+      # end
 
       # ===================================================== #
       #    Class Methods

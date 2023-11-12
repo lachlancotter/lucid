@@ -10,8 +10,8 @@ module Lucid
     context "empty" do
       it "is empty" do
         component = Class.new(Component)
-        node      = State::Tree.new({}, component)
-        expect(node.state).to be_empty
+        tree      = State::Tree.new({}, component)
+        expect(tree.path.get).to be_empty
       end
     end
 
@@ -20,10 +20,16 @@ module Lucid
     # ===================================================== #
 
     context "root node" do
+      it "converts to a Hash" do
+        component = Class.new(Component)
+        tree      = State::Tree.new({ foo: "bar" }, component)
+        expect(tree.to_h).to eq({ foo: "bar" })
+      end
+
       it "applies data" do
         component = Class.new(Component)
-        node      = State::Tree.new({ foo: "bar" }, component)
-        expect(node.state).to eq({ foo: "bar" })
+        tree      = State::Tree.new({ foo: "bar" }, component)
+        expect(tree.path.get).to eq({ foo: "bar" })
       end
 
       it "applies defaults" do
@@ -32,8 +38,8 @@ module Lucid
             attribute :foo, default: "bar"
           end
         end
-        node      = State::Tree.new({}, component)
-        expect(node.state).to eq({ foo: "bar" })
+        tree      = State::Tree.new({}, component)
+        expect(tree.path.get).to eq({ foo: "bar" })
       end
 
       it "applies validation" do
@@ -44,8 +50,17 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        expect(node.state).not_to be_valid
+        tree      = State::Tree.new({}, component)
+        expect(tree.path.get).not_to be_valid
+      end
+
+      it "applies mutations" do
+        component = Class.new(Component)
+        tree      = State::Tree.new({ foo: "foo" }, component)
+        changed   = tree.root.transform("bar") do |state, value|
+          state.update(foo: value)
+        end
+        expect(changed.to_h).to eq({ foo: "bar" })
       end
     end
 
@@ -54,13 +69,21 @@ module Lucid
     # ===================================================== #
 
     context "nested node" do
+      it "converts to a Hash" do
+        component = Class.new(Component) do
+          nest :foo, Class.new(Component)
+        end
+        tree      = State::Tree.new({ foo: { bar: "baz" } }, component)
+        expect(tree.to_h).to eq({ foo: { bar: "baz" } })
+      end
+
       it "applies data" do
         component = Class.new(Component) do
           nest :foo, Class.new(Component)
         end
-        node      = State::Tree.new({ foo: { bar: "baz" } }, component)
-        nested    = node.nested(:foo)
-        expect(nested.state).to eq({ bar: "baz" })
+        tree      = State::Tree.new({ foo: { bar: "baz" } }, component)
+        nested    = tree.path(:foo).get
+        expect(nested).to eq({ bar: "baz" })
       end
 
       it "applies defaults" do
@@ -71,9 +94,9 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        nested    = node.nested(:foo)
-        expect(nested.state).to eq({ bar: "baz" })
+        tree      = State::Tree.new({}, component)
+        nested    = tree.path(:foo).get
+        expect(nested).to eq({ bar: "baz" })
       end
 
       it "applies validation" do
@@ -86,10 +109,25 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        nested    = node.nested(:foo)
-        expect(nested.state).not_to be_valid
+        tree      = State::Tree.new({}, component)
+        nested    = tree.path(:foo).get
+        expect(nested).not_to be_valid
       end
+
+      it "applies mutations" do
+        component = Class.new(Component) do
+          nest :foo, Class.new(Component)
+        end
+        root      = State::Tree.new({ foo: { bar: "bar" } }, component)
+        ap root
+        ap root.to_h
+        changed = root.path(:foo).transform("qux") do |state, value|
+          state.update(bar: value)
+        end
+        expect(changed).not_to eq(root)
+        expect(changed.to_h).to eq({ foo: { bar: "qux" } })
+      end
+
     end
 
     # ===================================================== #
@@ -103,9 +141,9 @@ module Lucid
             nest :bar, Class.new(Component)
           end
         end
-        node      = State::Tree.new({ foo: { bar: { baz: "qux" } } }, component)
-        nested    = node.nested(:foo, :bar)
-        expect(nested.state).to eq({ baz: "qux" })
+        tree      = State::Tree.new({ foo: { bar: { baz: "qux" } } }, component)
+        nested    = tree.path(:foo, :bar).get
+        expect(nested).to eq({ baz: "qux" })
       end
 
       it "applies defaults" do
@@ -118,9 +156,9 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        nested    = node.nested(:foo, :bar)
-        expect(nested.state).to eq({ baz: "qux" })
+        tree      = State::Tree.new({}, component)
+        nested    = tree.path(:foo, :bar).get
+        expect(nested).to eq({ baz: "qux" })
       end
 
       it "applies validation" do
@@ -135,9 +173,9 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        nested    = node.nested(:foo, :bar)
-        expect(nested.state).not_to be_valid
+        tree      = State::Tree.new({}, component)
+        nested    = tree.path(:foo, :bar).get
+        expect(nested).not_to be_valid
       end
     end
 
@@ -151,9 +189,9 @@ module Lucid
           nest :foo, Class.new(Component)
           nest :bar, Class.new(Component)
         end
-        node      = State::Tree.new({ foo: { baz: "qux" }, bar: { quux: "corge" } }, component)
-        expect(node.nested(:foo).state).to eq({ baz: "qux" })
-        expect(node.nested(:bar).state).to eq({ quux: "corge" })
+        tree      = State::Tree.new({ foo: { baz: "qux" }, bar: { quux: "corge" } }, component)
+        expect(tree.path(:foo).get).to eq({ baz: "qux" })
+        expect(tree.path(:bar).get).to eq({ quux: "corge" })
       end
 
       it "applies defaults" do
@@ -170,9 +208,9 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        expect(node.nested(:foo).state).to eq({ baz: "qux" })
-        expect(node.nested(:bar).state).to eq({ quux: "corge" })
+        tree      = State::Tree.new({}, component)
+        expect(tree.path(:foo).get).to eq({ baz: "qux" })
+        expect(tree.path(:bar).get).to eq({ quux: "corge" })
       end
 
       it "applies validation" do
@@ -192,9 +230,9 @@ module Lucid
             end
           end
         end
-        node      = State::Tree.new({}, component)
-        expect(node.nested(:foo).state).not_to be_valid
-        expect(node.nested(:bar).state).not_to be_valid
+        tree      = State::Tree.new({}, component)
+        expect(tree.path(:foo).get).not_to be_valid
+        expect(tree.path(:bar).get).not_to be_valid
       end
     end
   end
