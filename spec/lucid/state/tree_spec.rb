@@ -119,8 +119,6 @@ module Lucid
           nest :foo, Class.new(Component)
         end
         root      = State::Tree.new({ foo: { bar: "bar" } }, component)
-        ap root
-        ap root.to_h
         changed = root.path(:foo).transform("qux") do |state, value|
           state.update(bar: value)
         end

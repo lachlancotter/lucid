@@ -39,16 +39,21 @@ module Lucid
       #
       def to_h
         {}.tap do |result|
-          @data.keys.each do |path|
-            if path == "/"
-              result.merge!(@data.get(path).to_h)
+          paths.each do |path|
+            if path.root?
+              result.merge!(path.get.to_h)
             else
-              path_keys             = path.split(".").map(&:to_sym)
-              last_key              = path_keys.pop
-              nested_hash           = path_keys.inject(result) { |h, k| h[k] ||= {} }
-              nested_hash[last_key] = @data.get(path).to_h
+              nested_hash            =
+                 path.branch.inject(result) { |h, k| h[k] ||= {} }
+              nested_hash[path.leaf] = path.get.to_h
             end
           end
+        end
+      end
+
+      def paths
+        @data.keys.map do |path_string|
+          Path.new(self, path_string)
         end
       end
 
@@ -73,15 +78,31 @@ module Lucid
       class Path
         def initialize (tree, keys)
           @tree = tree
-          @keys = keys
+          @keys = keys.is_a?(String) ? parse(keys) : keys
         end
 
         def inspect
           "<#{self.class.name} #{to_key}>"
         end
 
+        def parse (key_string)
+          key_string == "/" ? [] : key_string.split(".").map(&:to_sym)
+        end
+
+        def leaf
+          @keys.last
+        end
+
+        def branch
+          @keys[0..-2]
+        end
+
+        def root?
+          @keys.empty?
+        end
+
         def to_key
-          @keys.any? ? @keys.join(".") : "/"
+          root? ? "/" : @keys.join(".")
         end
 
         def concat (key)
