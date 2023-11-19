@@ -2,9 +2,9 @@ require "sinatra/base"
 require "awesome_print"
 # require "sinatra/reloader"
 
-require "app/ui/link_counter"
-require "app/ui/action_counter"
-require "app/ui/multi_counter/view"
+# require "app/ui/link_counter"
+# require "app/ui/action_counter"
+# require "app/ui/multi_counter/view"
 require "lucid/controller"
 
 class DemoApp < Sinatra::Base
