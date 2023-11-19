@@ -19,6 +19,23 @@ module Lucid
     end
 
     #
+    # Create a new location by adding a message to the
+    # current state.
+    #
+    def + (message)
+      Location.new(
+         @state.merge(
+            :msg                 => message.message_name,
+            message.message_name => message.to_h
+         ),
+         @map.dup.tap do |map|
+           map.rules << Map::Param.new(:msg)
+           map.rules << Map::Param.new(message.message_name)
+         end
+      )
+    end
+
+    #
     # Encapsulates rules to map between view states and URLs.
     #
     class Map
@@ -29,7 +46,7 @@ module Lucid
 
       attr_reader :rules
 
-      def encode (state, buffer = StateBuffer.new)
+      def encode (state, buffer = QueryBuffer.new)
         @rules.each { |rule| rule.encode(state, buffer) }
         app_root + buffer.to_s
       end
@@ -43,8 +60,8 @@ module Lucid
       end
 
       def normalize (buffer_or_query)
-        buffer_or_query.is_a?(QueryBuffer) ?
-           buffer_or_query : QueryBuffer.new(buffer_or_query, app_root)
+        buffer_or_query.is_a?(StateBuffer) ?
+           buffer_or_query : StateBuffer.new(buffer_or_query, app_root)
       end
 
       def app_root
@@ -150,7 +167,7 @@ module Lucid
       # Extract components from a URL. Path components and query
       # params may be consumed from the buffer to build up a state.
       #
-      class QueryBuffer < ParamStack
+      class StateBuffer < ParamStack
         def initialize (query_string, app_root)
           query_string = query_string.sub(/^#{app_root}/, "")
           path, params = query_string.split("?")
@@ -192,7 +209,7 @@ module Lucid
       # Path components and query params may be added to
       # the buffer to build up a URL.
       #
-      class StateBuffer < ParamStack
+      class QueryBuffer < ParamStack
         def initialize
           @components = []
           @params     = {}

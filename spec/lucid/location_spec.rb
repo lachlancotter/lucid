@@ -1,8 +1,19 @@
 require "ostruct"
-require "lucid/route"
-require "lucid/component"
+require "lucid/location"
 
 module Lucid
+  describe Location do
+    describe "+" do
+      it "returns a href for the message" do
+        map     = Location::Map.build { param :foo }
+        state   = Location.new({ foo: "bar" }, map)
+        message = Link.new(baz: "qux")
+        href    = state + message
+        expect(href.to_s).to eq("/?foo=bar&msg=Lucid%3A%3ALink&Lucid%3A%3ALink[baz]=qux")
+      end
+    end
+  end
+
   describe Location::Map do
     describe "#encode" do
       context "no rules" do
