@@ -28,7 +28,7 @@ module Lucid
       def self.accumulate (data, context, path, pairs = [])
         pairs.tap do
           pairs.push([path.to_key, context.build_state(data)])
-          context.nested.each do |key, component|
+          context.nests.each do |key, component|
             Tree.accumulate(data[key] || {}, component, path.concat(key), pairs)
           end
         end

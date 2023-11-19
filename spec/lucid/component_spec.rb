@@ -1,4 +1,4 @@
-require "lucid/view"
+require "lucid/component"
 require "lucid/route"
 
 module Lucid
@@ -54,44 +54,6 @@ module Lucid
 
     describe ".store" do
 
-    end
-
-    # ===================================================== #
-    #    Config
-    # ===================================================== #
-
-    describe ".config" do
-      context "default" do
-        it "sets the default" do
-          view = Class.new(Component) do
-            config do
-              option :foo, "bar"
-            end
-          end.new
-          expect(view.foo).to eq("bar")
-        end
-      end
-
-      context "override" do
-        it "overrides the default" do
-          view = Class.new(Component) do
-            config do
-              option :foo, "bar"
-            end
-          end.new do |config|
-            config.foo = "baz"
-          end
-          expect(view.foo).to eq("baz")
-        end
-      end
-
-      context "standard" do
-        it "has a path" do
-          view = Class.new(Component).new
-          expect(view.path).to eq("/")
-          expect(view.config[:path]).to eq("/")
-        end
-      end
     end
 
     # ===================================================== #

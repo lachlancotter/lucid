@@ -9,7 +9,7 @@ module Lucid
     # routes class method to define a mapping.
     #
     def routes
-      Location::Map.new(routes_config)
+      self.class.routes(routes_config)
     end
 
     private
@@ -24,9 +24,13 @@ module Lucid
       # to project from the view state.
       #
       def route (&block)
-        define_method(:routes) do
-          @routes ||= Location::Map.build(routes_config, &block)
-        end
+        @route_block = block
+      end
+
+      def routes (config)
+        @route_block.nil? ?
+           Location::Map.new(config) :
+           Location::Map.build(config, &@route_block)
       end
     end
   end

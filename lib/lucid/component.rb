@@ -8,7 +8,6 @@ require "lucid/html/button"
 require "lucid/event_handler"
 require "lucid/template"
 
-
 require "lucid/stateful"
 require "lucid/configurable"
 require "lucid/linkable"
@@ -20,8 +19,7 @@ require "lucid/routable"
 
 module Lucid
   #
-  # Base class for Lucid views. Defines a DSL for constructing a
-  # view with links, actions, data sources and routes.
+  # Base class for Lucid components.
   #
   class Component
     include Stateful
@@ -33,13 +31,14 @@ module Lucid
     include Renderable
     include Routable
 
-    class << self
-      def store (name, store_class = nil, &block)
-        define_method(name) do
-          @stores       ||= {}
-          @stores[name] ||= store_class.new
-        end
-      end
+    def initialize (params = {}, &config)
+      @params = params
+      @state  = self.class.normalize_state(params)
+      configure(&config)
+    end
+
+    def state_for_nested (name)
+      @params[name] || {}
     end
 
     config do
@@ -53,30 +52,20 @@ module Lucid
       option :path, "/"
     end
 
-    def initialize (data = {}, &config_block)
-      @state  = build_state(data)
-      @config = Configurable::Store.for_host(self, &config_block)
-      @links  = SimpleDelegator.new(self)
+    def path
+      Path.new(@config[:path] || "/")
     end
+
+    # def full_path
+    #   Path.new(@config[:app_root]).concat(path).to_s
+    # end
 
     def inspect
       "<#{self.class.name} #{state.to_h}>"
     end
 
-    attr_reader :links
+    # attr_reader :links
     attr_reader :config
-
-    #
-    # The from the root view component to this component.
-    # Used to encoding routes to actions.
-    #
-    def path
-      Path.new(@config[:path] || "/")
-    end
-
-    def full_path
-      Path.new(@config[:app_root]).extend(path).to_s
-    end
 
   end
 end

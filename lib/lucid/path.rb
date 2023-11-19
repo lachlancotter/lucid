@@ -19,7 +19,7 @@ module Lucid
       to_s == other.to_s
     end
 
-    def extend (component)
+    def concat (component)
       Path.new(@components + [component])
     end
 

@@ -34,8 +34,19 @@ module Lucid
       #
       def build_state (data)
         # Exclude keys that belong to nested components.
-        state_class.new(data.reject { |k, v| nested.keys.include?(k) })
+        state_class.new(data.reject { |k, v| nests.keys.include?(k) })
       end
+
+      def normalize_state (state)
+        if state.is_a?(Hash)
+          build_state(state)
+        elsif state.is_a?(state_class)
+          state
+        else
+          raise ArgumentError, "Expected #{state_class}, got #{state.class}"
+        end
+      end
+
     end
   end
 end

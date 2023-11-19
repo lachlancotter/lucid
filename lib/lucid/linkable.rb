@@ -9,27 +9,13 @@ module Lucid
     end
 
     #
-    # Apply the block for the given link class to the current
-    # state, and return the mutated state. Used to resolve the
+    # Apply the block for the given link type to the current
+    # state, and return the transformed state. Used to resolve the
     # href for global links.
     #
     def visit (link)
-      ap nested
-      nested.inject(apply_link(link)) do |state, (key, value)|
-        puts "state: #{state}"
-        puts "key: #{key}, val: #{value}"
-        # We might need to prefix the key with the current path.
-        # And rather than using merge, we should use mutate.
-        state.merge(key => value.visit(link))
-      end
-    end
-
-    def apply_link (link)
-      state.dup.tap do |new_state|
-        # TODO Refactor by calling state.mutate and passing the block.
-        #   Mutate should take block arguments.
-        block = self.class.destination(link.key)
-        block.call(link, new_state)
+      state.transform(link) do |new_state, link|
+        self.class.destination(link.key).call(new_state, link)
       end
     end
 
