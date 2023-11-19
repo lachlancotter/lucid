@@ -1,10 +1,23 @@
 module Lucid
   #
-  #
+  # Configurable components can be configured with options
+  # and defaults. This module provides a DSL for defining
+  # configuration options and a store for the options.
   #
   module Configurable
     def self.included (base)
       base.extend(ClassMethods)
+    end
+
+    #
+    # Instantiates a configuration store with the default
+    # values for this component class, and configures the
+    # instance with the given block.
+    #
+    def configure (&block)
+      puts "Configure #{self.class}"
+      @config = Configurable::Store.for_host(self, &block)
+      puts @config
     end
 
     module ClassMethods
@@ -13,29 +26,34 @@ module Lucid
       # and defaults that are available to instances.
       #
       def config (&block)
-        DSL.new(self, &block).install
+        if respond_to?(:configuration)
+          configuration.install(&block)
+        else
+          configuration = Config.new(self)
+          configuration.install(&block)
+          define_singleton_method(:configuration) { configuration }
+        end
       end
     end
 
-    class DSL
+    class Config
       #
       # target_class - The class on which to define config options.
       # block        - A block defining the config options.
       #
-      # Config.new(target_class) do
+      # Config.new(target_class).install do
       #   option :foo, "bar"
       # end
       #
-      def initialize (target_class, &block)
+      def initialize (target_class)
         @target_class = target_class
-        @block        = block
         @defaults     = {}
       end
 
-      def install
-        defaults = @defaults
-        @target_class.define_singleton_method(:config_defaults) { defaults }
-        Docile.dsl_eval(self, &@block)
+      attr_reader :defaults
+
+      def install (&block)
+        Docile.dsl_eval(self, &block)
       end
 
       def option (name, default)
@@ -59,7 +77,7 @@ module Lucid
     #
     class Store < Hash
       def self.for_host (host, &block)
-        new(host.class.config_defaults, &block)
+        new(host.class.configuration.defaults, &block)
       end
 
       def initialize (defaults)
