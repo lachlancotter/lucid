@@ -70,7 +70,8 @@ module Lucid
           emit subview.render(*a, **b, &block)
         else
           view_name = name_or_instance
-          emit @view.send(view_name).render(*a, **b, &block)
+          subview = @view.nested(view_name)
+          emit subview.render(*a, **b, &block)
         end
       end
 
