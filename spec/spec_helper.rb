@@ -3,11 +3,11 @@ require "rack/test"
 require "capybara/rspec"
 require "capybara-screenshot/rspec"
 
-require "lucid/demo_app"
+require "app/shopping/boot"
 
 ENV["RACK_ENV"] = "test"
-DemoApp.environment = :test
-Capybara.app = DemoApp
+Shopping::App.environment = :test
+Capybara.app = Shopping::App
 Capybara.default_driver = :rack_test
 Capybara.save_path = "/tmp/capybara"
 Capybara.server_errors = [StandardError]
