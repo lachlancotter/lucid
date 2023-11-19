@@ -4,41 +4,73 @@ module Lucid
       base.extend(ClassMethods)
     end
 
-    def nested
-      self.class.nested
+    #
+    # Build the nested component.
+    #
+    def nested (name)
+      nest = self.class.nests[name]
+      if nest.nil?
+        raise ArgumentError,
+           "No nested component named #{name} at #{config.path}"
+      else
+        @nests            ||= {}
+        @nests[nest.name] ||= nest.build(
+           state_for_nested(nest.name), self
+        )
+      end
+    end
+
+    def nests # Array[Component]
+      self.class.nests.keys.map { |name| nested(name) }
+    end
+
+    #
+    # The state for this and all nested components.
+    #
+    def deep_state
+      nests.inject(state.to_h) do |state, nest|
+        state.merge(nest.deep_state)
+      end
     end
 
     module ClassMethods
-      def nest (*args, **options, &block)
-        Nest.new(self, *args, **options, &block).install
+      # DSL method to define a nested component.
+      def nest (name, *args, **options, &block)
+        Nest.new(self, name, *args, **options, &block).tap do |nest|
+          nests[name] = nest
+          nest.install
+        end
       end
 
-      def nested
-        @nested ||= {}
-      end
-
-      def set_nest (name, nested_class)
-        @nested       ||= {}
-        @nested[name] = nested_class
+      def nests # Array[Nest]
+        @nests ||= {}
       end
     end
 
+    #
+    # Build and configure a nested component.
+    #
     class Nest
       #
-      # target_class - The class that will contain the nested view.
-      # name         - The name of the nested view.
-      # nested_class - The class of the nested view (nil if defined inline).
-      # options[:in] - The collection to iterate over (nil if not iterating).
-      # options[:as] - The name of the config key to use for the collection item in the nested view.
-      # nested_class_def - Optional block to define the nested view inline.
+      # @parent_class - The class that will contain the nested view.
+      # name          - The name of the nested view in the parent.
+      # nested_class  - The class of the nested view (nil if defined inline).
+      # options[:in]  - The collection to iterate over (nil if not iterating).
+      # options[:as]  - The name of the config key to use for the collection item in the nested view.
+      # config_block  - If defining the class inline, the block provides a
+      #                 definition for the nested component class.
+      #                 If the class if provided in the nested_class argument,
+      #                 the block configures an instance of the nested class.
       #
-      def initialize (target_class, name, nested_class = nil, **options, &nested_class_def)
-        @target_class = target_class
+      def initialize (parent_class, name, nested_class = nil, **options, &config_block)
+        @parent_class = parent_class
         @name         = name
         @nested_class = nested_class
         @options      = options
-        @nested_class = Class.new(Component, &nested_class_def)
+        @config_block = config_block
       end
+
+      attr_reader :name, :config_block
 
       def install
         if collection.nil?
@@ -49,26 +81,30 @@ module Lucid
       end
 
       def install_single (nest)
-        @target_class.set_nest(@name, @nested_class)
-        @target_class.define_method(@name) do |key|
-          self.class.get_nest(key)
-          # TODO configure the view.
+        @parent_class.define_method(@name) do
+          nested(nest.name)
         end
       end
 
       def install_collection (nest)
-        @target_class.define_method(@name) do |collection_key|
-          @nest                            ||= {}
-          @nest[nest.name]                 ||= []
-          @nest[nest.name][collection_key] ||= nest.build do |config|
+        @parent_class.define_method(@name) do |collection_key|
+          nest                              = self.class.nests[nest.name]
+          @nests[nest.name]                 ||= []
+          @nests[nest.name][collection_key] ||= nest.build do |config|
             config[nest.config_key] = nest.value(self, collection_key)
             config.app_root         = app_root
-            config.path             = path.extend(nest.path_component(collection_key)).to_s
+            config.path             = path.concat(nest.path_component(collection_key)).to_s
           end
         end
       end
 
-      attr_reader :name
+      def build (nested_state, parent_component)
+        @nested_class.new(nested_state) do |config|
+          config.app_root = parent_component.app_root
+          config.path     = parent_component.path.concat(@name).to_s
+          yield config if block_given?
+        end
+      end
 
       def collection
         @options[:in]
@@ -87,12 +123,6 @@ module Lucid
           target.send(collection)[collection_key]
         else
           collection[collection_key]
-        end
-      end
-
-      def build
-        @nested_class.new do |config|
-          yield config if block_given?
         end
       end
     end
