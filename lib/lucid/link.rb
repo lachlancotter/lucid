@@ -18,7 +18,7 @@ module Lucid
 
       def with_context (app)
         old_context = @context
-      @context    = Context.new(app)
+        @context    = Context.new(app)
         yield
       ensure
         @context = old_context
@@ -42,6 +42,20 @@ module Lucid
       self.class
     end
 
+    def to_params
+      (Link.context ? Link.context.params : {}).
+         merge(message_name.to_sym => to_h).
+         merge(msg: message_name)
+    end
+
+    def to_query
+      "?" + Rack::Utils.build_query(to_params)
+    end
+
+    def message_name
+      self.class.name
+    end
+
     #
     # A link to a state of the current component.
     #
@@ -54,6 +68,17 @@ module Lucid
 
       def href
         Location.new(apply, @component.routes).to_s
+      end
+
+      def to_params
+        (Link.context ? Link.context.params : {}).
+           merge(message_name.to_sym => to_h).
+           merge(msg: message_name.to_s).
+           merge(path: @component.path.to_s)
+      end
+
+      def message_name
+        @name
       end
 
       def apply
@@ -74,13 +99,17 @@ module Lucid
         @app = app
       end
 
-      def href (link)
-        Location.new(apply(link), @app.routes).to_s
+      def params
+        @app.params
       end
 
-      def apply (link)
-        @app.visit(link)
+      def href (message)
+        Location.new(@app.state, @app.routes) + message
       end
+
+      # def apply (link)
+      #   @app.visit(link).to_h
+      # end
     end
 
   end
