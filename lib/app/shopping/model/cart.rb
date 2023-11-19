@@ -42,6 +42,10 @@ module Shopping
       item.nil? ? 0 : item.quantity
     end
 
+    def item_count
+      @items.reduce(0) { |sum, item| sum + item.quantity }
+    end
+
     def total
       @items.reduce(0) do |sum, item|
         sum + (item.quantity * Product.find(item.product_id).price)

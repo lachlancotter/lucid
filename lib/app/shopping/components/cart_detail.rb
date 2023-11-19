@@ -24,19 +24,37 @@ module Shopping
     end
 
     template do
-      h2 "Cart"
-      ul {
-        cart.items.each do |item|
-          li {
-            p { text item.product_name }
-            p { text item.quantity }
-            p { text item.total }
-            emit inc_button
-            emit dec_button
+      div(class: "cart") {
+        p Cart.current.item_count
+        h2 "Your Cart"
+        table {
+          tr {
+            th "Product"
+            th "Quantity"
+            th "Price"
+            th "Actions"
           }
-        end
+          Cart.current.items.each do |item|
+            tr {
+              td item.product_name
+              td item.quantity
+              td format_currency(item.price)
+              td {
+                emit inc_button(item)
+                emit dec_button(item)
+              }
+            }
+          end
+        }
+        text format_currency(Cart.current.total)
       }
-      p { text cart.total }
+    end
+
+    def format_currency(amount)
+      formatted_amount    = '%.2f' % amount.to_f
+      integer, decimal    = formatted_amount.split('.')
+      integer_with_commas = integer.chars.to_a.reverse.each_slice(3).map(&:join).join(',').reverse
+      "$#{integer_with_commas}.#{decimal}"
     end
 
   end
