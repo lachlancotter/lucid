@@ -1,7 +1,7 @@
 require "lucid/component"
 require "lucid/state"
 
-class Toggle < Lucid::Component
+class Toggle < Lucid::Component::Base
   class On < Lucid::State
     def self.render
       <<~HTML

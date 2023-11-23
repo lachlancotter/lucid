@@ -47,12 +47,13 @@ module Lucid
       attr_reader :rules
 
       def encode (state, buffer = QueryBuffer.new)
+        raise "State must be a hash (#{state})" unless state.is_a?(Hash)
         @rules.each { |rule| rule.encode(state, buffer) }
         app_root + buffer.to_s
       end
 
       def decode (buffer_or_query, state = {})
-        raise "state must be a hash" unless state.is_a?(Hash)
+        raise "State must be a hash (#{state})" unless state.is_a?(Hash)
         buffer = normalize(buffer_or_query)
         state.tap do
           @rules.each { |rule| rule.decode(buffer, state) }
@@ -116,28 +117,29 @@ module Lucid
       # Pass control to a nested map.
       #
       class Nest < Rule
-        def initialize (key, &block)
+        def initialize (key, nests)
+          raise "no nests provided" unless nests
           super(key)
-          @block = block
+          @nests = nests
         end
 
         def encode (state, buffer)
           buffer.push_scope(@key)
-          nested_map.encode(state[@key], buffer)
+          @nests[@key].encode(state[@key], buffer)
           buffer.pop_scope
         end
 
         def decode (buffer, state)
           buffer.push_scope(@key)
           state[@key] = {} unless state.key?(@key)
-          nested_map.decode(buffer, state[@key])
+          @nests[@key].decode(buffer, state[@key])
           buffer.pop_scope
         end
 
-        private
-
         def nested_map
-          @block.call
+          @nests[@key].tap do |map|
+            raise "no nested map for #{@key}" unless map
+          end
         end
       end
 
@@ -260,8 +262,8 @@ module Lucid
           end
         end
 
-        def nest (key, &block)
-          @rules << Nest.new(key, &block)
+        def nest (key)
+          @rules << Nest.new(key, @opts[:nests])
         end
 
         def build

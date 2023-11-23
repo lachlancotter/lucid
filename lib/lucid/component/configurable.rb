@@ -1,3 +1,5 @@
+require "docile"
+
 module Lucid
   #
   # Configurable components can be configured with options
@@ -15,9 +17,9 @@ module Lucid
     # instance with the given block.
     #
     def configure (&block)
-      puts "Configure #{self.class}"
+      # puts "Configure #{self.class}"
       @config = Configurable::Store.for_host(self, &block)
-      puts @config
+      # puts @config
     end
 
     module ClassMethods

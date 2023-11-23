@@ -1,5 +1,6 @@
 require "dry-schema"
 require "dry-struct"
+require "immutable/hash"
 
 module Lucid
   module State
@@ -10,6 +11,14 @@ module Lucid
 
       def initialize(data = {})
         @data = immutable(validated(data))
+      end
+
+      def [] (key)
+        @data[key]
+      end
+
+      def to_h
+        @data.to_h
       end
 
       def immutable (data)
@@ -26,10 +35,6 @@ module Lucid
 
       def defaults
         self.class.defaults || {}
-      end
-
-      def to_h
-        @data.to_h
       end
 
       def == (other)
@@ -72,11 +77,11 @@ module Lucid
       # additional arguments. The block can modify the new state
       # using the update method. Does not modify the original.
       #
-      def transform (*args, &block)
-        dup.tap do |new_state|
-          block.call(new_state, *args)
-        end
-      end
+      # def transform (*args, &block)
+      #   dup.tap do |new_state|
+      #     block.call(new_state, *args)
+      #   end
+      # end
 
       # def merge (other)
       #   self.class.new(self.to_h.merge(other.to_h))

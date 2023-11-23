@@ -1,8 +1,9 @@
-require "lucid/component"
+require "lucid/component/base"
 require "app/shopping/components/store_component"
 
 module Shopping
-  class Base < Lucid::Component
+  class Base < Lucid::Component::Base
+    href { nest :store }
 
     nest :store, StoreComponent
 

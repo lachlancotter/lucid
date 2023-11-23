@@ -6,10 +6,10 @@ module Lucid
     describe "+" do
       it "returns a href for the message" do
         map     = Location::Map.build { param :foo }
-        state   = Location.new({ foo: "bar" }, map)
+        current = Location.new({ foo: "bar" }, map)
         message = Link.new(baz: "qux")
-        href    = state + message
-        expect(href.to_s).to eq("/?foo=bar&msg=Lucid%3A%3ALink&Lucid%3A%3ALink[baz]=qux")
+        href    = current + message
+        expect(href.to_s).to eq("/?foo=bar&msg=Lucid-Link&Lucid-Link[baz]=qux")
       end
     end
   end
@@ -50,13 +50,10 @@ module Lucid
       context "nested path rules" do
         it "builds a path from the nested fields" do
           state = { foo: "foo", bar: { baz: "baz" } }
-          map   = Location::Map.build do
+          nests = { bar: Location::Map.build { path :baz } }
+          map   = Location::Map.build(nests: nests) do
             path :foo
-            nest :bar do
-              Location::Map.build do
-                path :baz
-              end
-            end
+            nest :bar
           end
           route = map.encode(state)
           expect(route.to_s).to eq("/foo/baz")
@@ -66,13 +63,10 @@ module Lucid
       context "nested param rules" do
         it "builds a path from the nested fields" do
           state = { foo: "foo", bar: { baz: "baz" } }
-          map   = Location::Map.build do
+          nests = { bar: Location::Map.build { param :baz } }
+          map   = Location::Map.build(nests: nests) do
             param :foo
-            nest :bar do
-              Location::Map.build do
-                param :baz
-              end
-            end
+            nest :bar
           end
           route = map.encode(state)
           expect(route.to_s).to eq("/?foo=foo&bar[baz]=baz")
@@ -170,13 +164,10 @@ module Lucid
       context "nested maps" do
         it "extracts state" do
           query = "/top-level/second-level"
-          map   = Location::Map.build do
+          nests = { bar: Location::Map.build { path :baz } }
+          map   = Location::Map.build(nests: nests) do
             path :foo
-            nest :bar do
-              Location::Map.build do
-                path :baz
-              end
-            end
+            nest :bar
           end
           state = map.decode(query)
           expect(state).to eq({ foo: "top-level", bar: { baz: "second-level" } })
@@ -215,12 +206,9 @@ module Lucid
       context "nested query params" do
         it "extracts state" do
           query = "/?foo[bar]=baz"
-          map   = Location::Map.build do
-            nest :foo do
-              Location::Map.build do
-                param :bar
-              end
-            end
+          nests = { foo: Location::Map.build { param :bar } }
+          map   = Location::Map.build(nests: nests) do
+            nest :foo
           end
           state = map.decode(query)
           expect(state).to eq({ foo: { bar: "baz" } })

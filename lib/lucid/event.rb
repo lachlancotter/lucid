@@ -12,11 +12,11 @@ module Lucid
       # Define the event data.
       #
       def params (&block)
-        @params_class = Class.new(State, &block)
+        @params_class = Class.new(State::Base, &block)
       end
 
       def params_class
-        @params_class ||= Class.new(State)
+        @params_class ||= Class.new(State::Base)
       end
 
       def validate (&block) end

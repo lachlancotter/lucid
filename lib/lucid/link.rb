@@ -1,3 +1,4 @@
+require "lucid/message"
 require "lucid/html/anchor"
 
 module Lucid
@@ -5,7 +6,7 @@ module Lucid
   # Represents a state in the information space that a user
   # can visit.
   #
-  class Link < OpenStruct
+  class Link < Message
 
     class << self
       def validate(&block)
@@ -42,39 +43,35 @@ module Lucid
       self.class
     end
 
-    def to_params
-      (Link.context ? Link.context.params : {}).
-         merge(message_name.to_sym => to_h).
-         merge(msg: message_name)
-    end
-
-    def to_query
-      "?" + Rack::Utils.build_query(to_params)
-    end
-
-    def message_name
-      self.class.name
-    end
+    # def to_params
+    #   (Link.context ? Link.context.params : {}).
+    #      merge(message_name.to_sym => to_h).
+    #      merge(msg: message_name)
+    # end
+    #
+    # def to_query
+    #   "?" + Rack::Utils.build_query(to_params)
+    # end
 
     #
     # A link to a state of the current component.
     #
     class Local < OpenStruct
-      def initialize (name, params, component)
+      def initialize (target, name, params)
         super(params)
         @name      = name
-        @component = component
+        @target = target
       end
 
       def href
-        Location.new(apply, @component.routes).to_s
+        Location.new(apply, @target.routes).to_s
       end
 
       def to_params
         (Link.context ? Link.context.params : {}).
            merge(message_name.to_sym => to_h).
            merge(msg: message_name.to_s).
-           merge(path: @component.path.to_s)
+           merge(path: @target.path.to_s)
       end
 
       def message_name
@@ -82,7 +79,7 @@ module Lucid
       end
 
       def apply
-        @component.visit(self)
+        @target.visit(self)
       end
 
       def key
@@ -104,12 +101,8 @@ module Lucid
       end
 
       def href (message)
-        Location.new(@app.state, @app.routes) + message
+        @app.href(message)
       end
-
-      # def apply (link)
-      #   @app.visit(link).to_h
-      # end
     end
 
   end

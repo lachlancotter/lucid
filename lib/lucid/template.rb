@@ -1,3 +1,5 @@
+require "papercraft"
+
 module Lucid
   #
   # Render PaperScript templates with a view context.

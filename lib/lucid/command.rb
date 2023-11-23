@@ -1,5 +1,8 @@
+require "lucid/message"
+require "lucid/html/button"
+
 module Lucid
-  class Command < OpenStruct
+  class Command < Message
     #
     #
     #
@@ -36,7 +39,7 @@ module Lucid
     end
 
     def button (label)
-      Button.new(self, label).to_s
+      HTML::Button.new(self, label).to_s
     end
 
     #
@@ -48,7 +51,8 @@ module Lucid
       end
 
       def href (command)
-        Location.new(@app.state, @app.routes).to_s
+        @app.href(command)
+        # Location.new(@app.state, @app.routes).to_s
       end
 
       def encode_state (command)

@@ -1,7 +1,7 @@
 require "app/shopping/model/category"
 
 module Shopping
-  class CategoryNav < Lucid::Component
+  class CategoryNav < Lucid::Component::Base
     # config do
     #   option :items, Category.all
     #   validate do

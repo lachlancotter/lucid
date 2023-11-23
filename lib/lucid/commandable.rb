@@ -4,34 +4,40 @@ module Lucid
       base.extend(ClassMethods)
     end
 
-    def dispatch_command (command)
-      # TODO extract to command bus.
+    def dispatch (command)
       if performs?(command)
         perform(command)
       else
-        raise "No handler for #{command.class}"
+        raise NoHandlerError.new(command)
       end
     end
 
     def perform (command)
-      # TODO add validation... maybe in the bus.
-      self.class.actions.fetch(command.class).call(command)
+      self.class.command_handlers.fetch(command.class).call(command)
     end
 
     def performs? (command)
-      self.class.actions.key?(command.class)
+      self.class.command_handlers.key?(command.class)
+    end
+
+    class NoHandlerError < StandardError
+      def initialize (command)
+        super("No handler for command #{command.class}")
+      end
     end
 
     module ClassMethods
       #
-      # Register an action for the given command class.
+      # Register a handler for the given command class.
       #
       def perform (command_class, &block)
-        @actions                ||= {}
-        @actions[command_class] = block
+        @command_handlers                ||= {}
+        @command_handlers[command_class] = block
       end
 
-      attr_reader :actions
+      def command_handlers
+        @command_handlers || {}
+      end
     end
   end
 end

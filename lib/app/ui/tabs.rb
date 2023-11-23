@@ -4,7 +4,7 @@ require "lucid/route"
 
 
 
-class TabNav < Lucid::Component
+class TabNav < Lucid::Component::Base
   def initialize(parent, panes)
     super(parent, { state: "Default" })
     @panes = panes
@@ -25,7 +25,7 @@ class TabNav < Lucid::Component
   end
 end
 
-class TabPanes < Lucid::Component
+class TabPanes < Lucid::Component::Base
   def states
     [
        Pane1.new(self),
@@ -59,7 +59,7 @@ class TabPanes < Lucid::Component
   end
 end
 
-class Tabs < Lucid::Component
+class Tabs < Lucid::Component::Base
   def initialize(parent, params)
     super(parent, { state: "Default" })
     @pane_state = current_state

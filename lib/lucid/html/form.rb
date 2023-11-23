@@ -12,7 +12,7 @@ module Lucid
       Papercraft.html do |command, data|
         form action: command.href, method: command.http_method do
           input type: :hidden, name: :state, value: command.encode_state
-          input type: :hidden, name: :command, value: command.class.name
+          input type: :hidden, name: :msg, value: command.message_name
           emit_yield Builder.new(data, self)
         end
       end.apply(@command, @data, &block)

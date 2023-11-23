@@ -1,5 +1,5 @@
 module Shopping
-  class ProductDetail < Lucid::Component
+  class ProductDetail < Lucid::Component::Base
     config do
       option :product, default: nil
     end

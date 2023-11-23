@@ -1,5 +1,5 @@
 require "awesome_print"
-require "lucid/component"
+require "lucid/component/base"
 require "app/shopping/model/product"
 require "app/shopping/links"
 require "app/shopping/commands"
@@ -8,9 +8,9 @@ require "app/shopping/components/product_detail"
 require "app/shopping/components/cart_detail"
 
 module Shopping
-  class StoreComponent < Lucid::Component
-    # /:category_slug/:product_id
-    route do
+  class StoreComponent < Lucid::Component::Base
+
+    href do
       path :category_slug
       param :product_id
     end
@@ -20,32 +20,12 @@ module Shopping
       attribute :product_id
     end
 
-    visit ProductList do |link, delta|
-      delta.category_slug = link.category_slug
+    visit ProductList do |link|
+      state.update(category_slug: link.category_slug)
     end
 
-    visit ProductDetails do |link, delta|
-      delta.product_id = link.product_id
-    end
-
-    perform AddProductToCart do |command|
-      product = Product.find(command.product_id)
-      Cart.current.add_product(product)
-      CartItemChanged.notify({
-         product_id: product.id,
-         cart_id:    Cart.current.id,
-         quantity:   Cart.current.quantity_of(product)
-      })
-    end
-
-    perform RemoveProductFromCart do |command|
-      product = Product.find(command.product_id)
-      Cart.current.remove_product(product)
-      CartItemChanged.notify({
-         product_id: product.id,
-         cart_id:    Cart.current.id,
-         quantity:   Cart.current.quantity_of(product)
-      })
+    visit ProductDetails do |link|
+      state.update(product_id: link.product_id)
     end
 
     # ===================================================== #
@@ -53,20 +33,23 @@ module Shopping
     # ===================================================== #
 
     nest :nav, CategoryNav
-    # nest(:cart, CartDetail) { |config| config.cart = Cart.current }
+
+    nest(:cart, CartDetail) do |config|
+      config.cart = Cart.current
+    end
 
     def products
-      if state.category_slug.nil?
+      if state[:category_slug].nil?
         []
       else
-        category = Category.find_by_slug(state.category_slug)
-        raise "Category not found: #{state.category_slug}" if category.nil?
+        category = Category.find_by_slug(state[:category_slug])
+        raise "Category not found: #{state[:category_slug]}" if category.nil?
         Product.in_category(category)
       end
     end
 
     def product
-      Product.find(state.product_id)
+      Product.find(state[:product_id])
     end
 
     template do
@@ -91,7 +74,7 @@ module Shopping
     template :product_details do
       div(class: "product-details") {
         if product.nil?
-          text "No product selected. #{state.product_id}"
+          text "No product selected. #{state[:product_id]}"
         else
           h3 product.name
           p product.description

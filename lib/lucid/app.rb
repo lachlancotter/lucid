@@ -1,62 +1,82 @@
 require "awesome_print"
-require "lucid/state/tree"
+# require "lucid/state/tree"
 require "lucid/event_bus"
 require "lucid/command"
 require "lucid/link"
+require "lucid/http/request_adaptor"
+require "lucid/http/response_adaptor"
 
 module Lucid
   #
   # Runs an event cycle for an application.
   #
   class App
-    def initialize (base_class, app_root)
-      @base_class = base_class
-      @app_root   = app_root
+    def initialize (config)
+      @config = config
     end
 
     #
     # Instantiates state for a request cycle.
     #
     class Cycle
-      def initialize (base_class, config, fullpath)
-        @base_class = base_class
-        @config     = config
-        @params     = decode_params(fullpath)
-        @base       = build_component(@params)
+      def initialize (request, response, config)
+        @request  = request
+        @response = response
+        @config   = config
       end
 
-      attr_reader :base
-
-      def decode_params (fullpath)
-        @base_class.routes(@config).decode(fullpath)
-        # State::Tree.new(raw_state, @base_class)
+      def base_view
+        @config[:base_view]
       end
 
-      def build_component (state)
-        @base_class.new(state) do |config|
+      def command_bus
+        @config[:command_bus]
+      end
+
+      def base
+        @base ||= build(@request.state(base_view, @config))
+      end
+
+      def build (state)
+        base_view.new(state) do |config|
           config.app_root = @config[:app_root]
         end
       end
 
+      def query
+        base.visit(@request.message) if @request.has_query?
+        @response.tap do
+          @response.location = base.href
+          @response.body     = base.render
+        end
+      end
+
+      def command
+        command_bus.dispatch(@request.message) if @request.has_command?
+        @response.tap do
+          @response.location = base.href
+          @response.body     = base.render
+        end
+      end
+
+      def href (message)
+        base.href(message)
+      end
+
+      def notify (event)
+        base.notify(event)
+      end
+
       def state
-        @base.deep_state
-      end
-
-      def routes
-        @base.routes
-      end
-
-      def visit (link)
-        @base.visit(link)
-        # For each path in the tree that matches the link,
-        # transform the state at that path using the link.
-        # Return the transformed state tree.
+        base.deep_state
       end
     end
 
-    def cycle (request)
+    def cycle (request, response)
       @cycle ||= Cycle.new(
-         @base_class, { app_root: @app_root }, request.fullpath
+         HTTP::RequestAdaptor.new(request),
+         HTTP::ResponseAdaptor.new(response),
+         @config
       )
     end
 
@@ -64,18 +84,17 @@ module Lucid
     #    Requests
     # ===================================================== #
 
-    def query (request)
+    def query (request, response)
       log(request, "Starting query") do
-        base = cycle(request).base
-        render(base)
+        cycle = cycle(request, response)
+        with_context { cycle.query }
       end
     end
 
-    def command (request)
+    def command (request, response)
       log(request, "Starting command") do
-        base = cycle(request).base
-        dispatch_command(request)
-        render(base)
+        cycle = cycle(request, response)
+        with_context { cycle.command }
       end
     end
 
@@ -92,35 +111,26 @@ module Lucid
       puts message
       puts "Fullpath: #{request.fullpath}"
       puts "Params: #{request.params.inspect}"
+      puts "------------------------------------------"
+      response = block.call
+      puts "------------------------------------------"
+      puts "Response: #{response.headers.inspect}"
       puts "=========================================="
-      block.call
-      puts "=========================================="
+      response
     end
 
-    def dispatch_command (params)
-      if params["command"]
-        Event.with_bus(event_bus) do
-          command_class = Object.const_get(params["command"])
-          command       = command_class.new(params)
-          @base.dispatch_command(command)
+    def with_context (&block)
+      Event.with_bus(event_bus) do
+        Command.with_context(@cycle) do
+          Link.with_context(@cycle) do
+            block.call
+          end
         end
       end
     end
-
-    def render (component)
-      Command.with_context(self) do
-        Link.with_context(@cycle) do
-          component.render
-        end
-      end
-    end
-
-    # def query_bus
-    #   QueryBus.new(@base)
-    # end
 
     def event_bus
-      EventBus.new(@base)
+      EventBus.new(@cycle)
     end
   end
 end

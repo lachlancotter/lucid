@@ -1,26 +1,35 @@
+require "lucid/commandable"
+
 module Shopping
   class Actions
-    include Handler
+    include Lucid::Commandable
 
-    perform AddProductToCart do |command|
-      cart    = Cart.current
-      product = Product.find(command.product_id)
-      item    = cart.add(product)
-      CartItemChanged.notify(cart_item: item)
+    perform AddProductToCart do |cmd|
+      product = Product.find(cmd.product_id)
+      Cart.current.add_product(product)
+      notify_item_changed(product)
     end
 
-    perform RemoveProductFromCart do |command|
-      cart = Cart.current
-      item = cart.remove(command.product_id)
-      CartItemChanged.notify(cart_item: item)
+    perform RemoveProductFromCart do |cmd|
+      product = Product.find(cmd.product_id)
+      Cart.current.remove_product(product)
+      notify_item_changed(product)
     end
 
-    perform EmptyCart do |command|
-      CartEmptied.notify(cart_id: command.cart_id)
+    perform EmptyCart do |cmd|
+      CartEmptied.notify(cart_id: cmd.cart_id)
     end
 
-    perform PlaceOrder do |command|
-      OrderPlaced.notify(cart_id: command.cart_id)
+    perform PlaceOrder do |cmd|
+      OrderPlaced.notify(cart_id: cmd.cart_id)
+    end
+
+    def self.notify_item_changed (product)
+      CartItemChanged.notify({
+         product_id: product.id,
+         cart_id:    Cart.current.id,
+         quantity:   Cart.current.quantity_of(product)
+      })
     end
   end
 end

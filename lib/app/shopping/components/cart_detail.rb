@@ -2,13 +2,13 @@ require "app/shopping/events"
 require "app/shopping/model/cart"
 
 module Shopping
-  class CartDetail < Lucid::Component
+  class CartDetail < Lucid::Component::Base
     config do
       option :cart, Cart.new
     end
 
     on CartItemChanged do |event|
-      render :replace
+      render
     end
 
     def inc_button (item)
