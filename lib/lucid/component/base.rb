@@ -1,9 +1,9 @@
+require "lucid/renderable"
 require "lucid/component/stateful"
 require "lucid/component/configurable"
 require "lucid/component/linkable"
 require "lucid/component/eventable"
 require "lucid/component/nestable"
-require "lucid/component/renderable"
 require "lucid/component/referable"
 
 module Lucid

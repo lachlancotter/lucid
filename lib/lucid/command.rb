@@ -1,5 +1,6 @@
 require "lucid/message"
 require "lucid/html/button"
+require "lucid/html/form"
 
 module Lucid
   class Command < Message
@@ -13,6 +14,11 @@ module Lucid
         new(params).button(label)
       end
 
+      def form (params = {}, &block)
+        raise "no block" unless block
+        new(params).form(&block)
+      end
+
       def with_context (app)
         old_context = @context
         @context    = Context.new(app)
@@ -23,8 +29,6 @@ module Lucid
 
       attr_reader :context
     end
-
-    attr_reader :params
 
     def href
       Command.context.href(self)
@@ -39,7 +43,11 @@ module Lucid
     end
 
     def button (label)
-      HTML::Button.new(self, label).to_s
+      HTML::Button.new(self, label).template
+    end
+
+    def form (&block)
+      HTML::Form.new(self, &block).template
     end
 
     #

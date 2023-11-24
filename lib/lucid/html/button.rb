@@ -9,10 +9,14 @@ module Lucid
       end
 
       def to_s
+        template.render
+      end
+
+      def template
         button_label = @label
-        Form.new(@command, @command.params).template do |f|
-          f.submit(button_label)
-        end.render
+        Form.new(@command) do |f|
+          emit f.submit(button_label)
+        end.template
       end
     end
   end

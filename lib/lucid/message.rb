@@ -5,5 +5,9 @@ module Lucid
     def message_name
       HTTP::MessageName.encode(self.class)
     end
+
+    def params
+      to_h
+    end
   end
 end
