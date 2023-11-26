@@ -100,12 +100,12 @@ module Lucid
         end
 
         def build (nested_state, parent_component)
-          puts "Building nested: #{nested_class}"
-          puts parent_component.path
+          # puts "Building nested: #{nested_class}"
+          # puts parent_component.path
           @nested_class.new(nested_state) do |config|
             config.app_root = parent_component.app_root
             config.path     = parent_component.path.concat(@name).to_s
-            yield config if block_given?
+            @config_block.call(config) if @config_block
           end
         end
 

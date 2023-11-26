@@ -20,7 +20,7 @@ module Lucid
           form action: command.href, method: command.http_method do
             input type: :hidden, name: :state, value: command.encode_state
             input type: :hidden, name: :msg, value: command.message_name
-            emit_yield Builder.new(command.params, self)
+            emit_yield Builder.new(command.params, self, Path.new(command.message_name))
           end
         end.apply(@command, &@block)
       end
@@ -28,16 +28,25 @@ module Lucid
       class Builder
         include Renderable
 
-        def initialize (data, renderer)
+        def initialize (data, renderer, path = Path.new)
           raise "no data" unless data
           @data     = data
           @renderer = renderer
+          @path     = path
         end
 
         attr_reader :data
 
         def emit (template)
           @renderer.emit(template)
+        end
+
+        def struct (name)
+          yield Builder.new(
+             @data.fetch(name, {}),
+             @renderer,
+             @path.concat(name)
+          )
         end
 
         class << self
@@ -52,35 +61,36 @@ module Lucid
           end
         end
 
-        # def label (field_name, text, options = {})
-        #   template(:label).render(field_name, text, options)
-        # end
-        #
-        # def text (field_name, options = {})
-        #   template(:text).render(field_name, options)
-        # end
-        #
-        # def submit (label)
-        #   template(:submit).render(label)
-        # end
+        def field_id (key)
+          raise "invalid key: #{key}" unless key.is_a?(String) || key.is_a?(Symbol)
+          @path.concat(key).join("_")
+        end
 
-        template :label do |field_name, text, options = {}|
-          label(field_name.capitalize, { for: field_name }.merge(options)) {
+        def field_name (key)
+          if @path.depth == 0
+            key.to_s
+          else
+            @path.head + "[#{ @path.tail.concat(key).components.join('][') }]"
+          end
+        end
+
+        template :label do |key, text, options = {}|
+          label(key, { for: field_id(key) }.merge(options)) {
             emit text
           }
         end
 
-        template :text do |field_name, options = {}|
+        template :text do |key, options = {}|
           input({
              type:  :text,
-             name:  field_name,
-             value: data.fetch(field_name, ""),
-             id:    field_name
+             name:  field_name(key),
+             value: data.fetch(key, ""),
+             id:    field_id(key)
           }.merge(options))
         end
 
         template :submit do |label|
-          input type: :submit, value: label
+          input(type: :submit, value: label)
         end
       end
     end

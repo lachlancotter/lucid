@@ -17,9 +17,7 @@ module Lucid
     # instance with the given block.
     #
     def configure (&block)
-      # puts "Configure #{self.class}"
-      @config = Configurable::Store.for_host(self, &block)
-      # puts @config
+      @config = Store.for_host(self, &block)
     end
 
     module ClassMethods
@@ -83,13 +81,14 @@ module Lucid
       end
 
       def initialize (defaults)
-        @defaults = defaults
+        super()
+        defaults.each { |key, value| self[key] = value }
         yield self if block_given?
       end
 
-      def [] (key)
-        fetch(key) { @defaults[key] }
-      end
+      # def [] (key)
+      #   fetch(key) { @defaults[key] }
+      # end
 
       private
 

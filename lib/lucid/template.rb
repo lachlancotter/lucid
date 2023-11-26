@@ -35,7 +35,7 @@ module Lucid
         # Papercraft uses method_missing to define element methods on the fly.
         # Since we're using method_missing to delegate to the view, we need
         # to define all the HTML elements as methods on the renderer.
-        define_tag_method("label")
+        define_tag_method("label") unless respond_to?(:label)
       end
 
       def state
@@ -51,7 +51,7 @@ module Lucid
       end
 
       def emit_view (name_or_instance, *a, **b, &block)
-        puts "emit_view: #{name_or_instance.inspect}"
+        # puts "emit_view: #{name_or_instance.inspect}"
         if name_or_instance.is_a?(Component)
           subview = name_or_instance
           emit subview.render(*a, **b, &block)
@@ -65,7 +65,7 @@ module Lucid
       # TODO maybe we should explicitly expose methods to the template
       #   instead of using method_missing?
       def method_missing(sym, *args, **opts, &block)
-        puts "method_missing: #{sym}"
+        # puts "method_missing: #{sym}"
         if @renderable.respond_to?(sym)
           @renderable.send(sym, *args, **opts, &block)
         else
