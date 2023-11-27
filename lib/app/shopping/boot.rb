@@ -30,11 +30,12 @@ module Shopping
       Lucid::App.new(app_config).command(request, response)
     end
 
+    # TODO make app Configurable
     def app_config
       {
-         base_view:   Shopping::Base,
-         command_bus: Shopping::Actions.new,
-         app_root:    "/"
+         base_view_class: Shopping::Base,
+         command_bus:     Shopping::Actions.new,
+         app_root:        "/"
       }
     end
   end

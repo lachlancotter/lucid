@@ -8,93 +8,22 @@ require "lucid/http/response_adaptor"
 
 module Lucid
   #
-  # Runs an event cycle for an application.
+  # Top-level interface for dispatching HTTP requests.
   #
   class App
     def initialize (config)
       @config = config
     end
 
-    #
-    # Instantiates state for a request cycle.
-    #
-    class Cycle
-      def initialize (request, response, config)
-        @request  = request
-        @response = response
-        @config   = config
-      end
-
-      def base_view
-        @config[:base_view]
-      end
-
-      def command_bus
-        @config[:command_bus]
-      end
-
-      def base
-        @base ||= build(@request.state(base_view, @config))
-      end
-
-      def build (state)
-        base_view.new(state) do |config|
-          config.app_root = @config[:app_root]
-        end
-      end
-
-      def query
-        base.visit(@request.message) if @request.has_query?
-        @response.tap do
-          @response.location = base.href
-          @response.body     = base.render
-        end
-      end
-
-      def command
-        command_bus.dispatch(@request.message) if @request.has_command?
-        @response.tap do
-          @response.location = base.href
-          @response.body     = base.render
-        end
-      end
-
-      def href (message)
-        base.href(message)
-      end
-
-      def notify (event)
-        base.notify(event)
-      end
-
-      def state
-        base.deep_state
-      end
-    end
-
-    def cycle (request, response)
-      @cycle ||= Cycle.new(
-         HTTP::RequestAdaptor.new(request),
-         HTTP::ResponseAdaptor.new(response),
-         @config
-      )
-    end
-
-    # ===================================================== #
-    #    Requests
-    # ===================================================== #
-
     def query (request, response)
       log(request, "Starting query") do
-        cycle = cycle(request, response)
-        with_context { cycle.query }
+        cycle(request, response).query
       end
     end
 
     def command (request, response)
       log(request, "Starting command") do
-        cycle = cycle(request, response)
-        with_context { cycle.command }
+        cycle(request, response).command
       end
     end
 
@@ -105,6 +34,14 @@ module Lucid
     end
 
     private
+
+    def cycle (request, response)
+      @cycle ||= Cycle.new(
+         HTTP::RequestAdaptor.new(request),
+         HTTP::ResponseAdaptor.new(response),
+         @config
+      )
+    end
 
     def log (request, message, &block)
       puts "=========================================="
@@ -119,18 +56,97 @@ module Lucid
       response
     end
 
-    def with_context (&block)
-      Event.with_bus(event_bus) do
-        Command.with_context(@cycle) do
-          Link.with_context(@cycle) do
+    #
+    # Manages a request-response cycle.
+    #
+    class Cycle
+      def initialize (request, response, config)
+        @request  = request
+        @response = response
+        @config   = config
+      end
+
+      def query
+        with_context do
+          if @request.has_query?
+            validated!(@request.message) do |query|
+              base_view.visit(query)
+            end
+          end
+          write_response
+        end
+      end
+
+      def command
+        with_context do
+          if @request.has_command?
+            validated!(@request.message) do |command|
+              command_bus.dispatch(command)
+            end
+          end
+          write_response
+        end
+      end
+
+      def validated! (message)
+        if message.valid?
+          yield message
+        else
+          ValidationFailed.notify(message: message)
+        end
+      end
+
+      def write_response
+        @response.tap do
+          @response.location = base_view.href
+          @response.body     = base_view.render
+        end
+      end
+
+      def base_view
+        @base_view ||= build(@request.state(base_view_class, @config))
+      end
+
+      def build (state)
+        base_view_class.new(state) do |config|
+          config.app_root = @config[:app_root]
+        end
+      end
+
+      def base_view_class
+        @config[:base_view_class]
+      end
+
+      def command_bus
+        @config[:command_bus]
+      end
+
+      def href (message)
+        base_view.href(message)
+      end
+
+      def notify (event)
+        base_view.notify(event)
+      end
+
+      def state
+        base_view.deep_state
+      end
+
+      private
+
+      def with_context (&block)
+        Event.with_bus(event_bus) do
+          Message.with_context(self) do
             block.call
           end
         end
       end
+
+      def event_bus
+        EventBus.new(self)
+      end
     end
 
-    def event_bus
-      EventBus.new(@cycle)
-    end
   end
 end

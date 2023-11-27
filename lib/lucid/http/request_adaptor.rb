@@ -38,7 +38,7 @@ module Lucid
       end
 
       def message_name
-        @request.params["msg"]
+        @request.params["msg"]["name"]
       end
 
       def message_class
@@ -46,7 +46,9 @@ module Lucid
       end
 
       def message_params
-        @request.params[message_name]
+        get_params = @request.GET.dig("msg", "args") || {}
+        post_params = @request.POST.dig("msg", "args") || {}
+        get_params.merge(post_params)
       end
     end
   end

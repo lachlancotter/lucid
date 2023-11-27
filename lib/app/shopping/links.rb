@@ -6,12 +6,14 @@ module Shopping
   end
 
   class ProductList < Lucid::Link
+    attribute :category_slug
     validate do
       required(:category_slug)
     end
   end
 
   class ProductDetails < Lucid::Link
+    attribute :product_id
     validate do
       required(:product_id)
     end

@@ -3,8 +3,8 @@ require "app/shopping/model/cart"
 describe "Shopping", type: :feature do
 
   before do
-    visit "/"
     Shopping::Cart.current.empty
+    visit "/"
   end
 
   scenario "browse guitars" do

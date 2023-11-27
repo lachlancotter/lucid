@@ -1,5 +1,4 @@
 require "lucid/message"
-require "lucid/html/anchor"
 
 module Lucid
   #
@@ -8,35 +7,8 @@ module Lucid
   #
   class Link < Message
 
-    class << self
-      def validate(&block)
-        # Define schema.
-      end
-
-      def link (text, params = {})
-        new(params).link(text)
-      end
-
-      def with_context (app)
-        old_context = @context
-        @context    = Context.new(app)
-        yield
-      ensure
-        @context = old_context
-      end
-
-      attr_reader :context
-    end
-
-    #
-    # Build a Link to the view state that answers this query.
-    #
-    def link (text)
-      Anchor.new(href, text: text)
-    end
-
-    def href
-      Link.context.href(self)
+    def http_method
+      Message::GET
     end
 
     def key
@@ -84,24 +56,6 @@ module Lucid
 
       def key
         @name
-      end
-    end
-
-    #
-    # Evaluates a Link in the context of the current application
-    # state and URL mapping rules.
-    #
-    class Context
-      def initialize (app)
-        @app = app
-      end
-
-      def params
-        @app.params
-      end
-
-      def href (message)
-        @app.href(message)
       end
     end
 

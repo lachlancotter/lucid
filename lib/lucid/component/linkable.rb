@@ -15,14 +15,12 @@ module Lucid
       # href for global links.
       #
       def visit (link)
-        instance_exec(
-           link, &self.class.destination(link.key)
-        ) if visits?(link)
+        instance_exec(link, &self.class.link(link.key)) if visits?(link)
         nests.each { |nest| nest.visit(link) }
       end
 
       def visits? (link)
-        self.class.destination(link.key) ? true : false
+        self.class.link(link.key) ? true : false
       end
 
       def self.included (base)
@@ -41,12 +39,12 @@ module Lucid
         # link_key may be a Symbol or a Link subclass.
         #
         def visit (link_key, &block)
-          @destinations           ||= {}
-          @destinations[link_key] = block
+          @links           ||= {}
+          @links[link_key] = block
         end
 
-        def destination (link_key)
-          (@destinations || {})[link_key]
+        def link (link_key)
+          (@links || {})[link_key]
         end
       end
     end

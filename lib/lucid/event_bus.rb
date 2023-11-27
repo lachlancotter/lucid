@@ -8,13 +8,9 @@ module Lucid
     end
 
     def notify (event)
-      puts "EventBus#notify: #{event.data.to_h}"
+      puts "EventBus#notify: #{event.class.name}"
+      ap event.to_h
       @app.notify(event)
-      # @app.event_handlers.each do |handler|
-      #   if handler.handles?(event)
-      #     handler.call(event, @app)
-      #   end
-      # end
     end
   end
 end
