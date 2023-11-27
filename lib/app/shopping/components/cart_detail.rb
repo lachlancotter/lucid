@@ -46,7 +46,8 @@ module Shopping
             }
           end
         }
-        text format_currency(Cart.current.total)
+        p { format_currency(Cart.current.total) }
+        p { emit Checkout.link("Checkout") }
       }
     end
 

@@ -20,6 +20,11 @@ module Shopping
       CartEmptied.notify(cart_id: cmd.cart_id)
     end
 
+    perform SetShippingAddress do |cmd|
+      Cart.current.shipping_address = cmd.address
+      Cart.current.save
+    end
+
     perform PlaceOrder do |cmd|
       OrderPlaced.notify(cart_id: cmd.cart_id)
     end

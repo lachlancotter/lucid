@@ -23,6 +23,20 @@ module Shopping
     end
   end
 
+  class SetShippingAddress < Lucid::Command
+    attribute :address
+    validate do
+      # required(:cart_id)
+      required(:address).hash do
+        required(:name).filled
+        required(:street).filled
+        required(:city).filled
+        required(:state).filled
+        required(:zip).filled
+      end
+    end
+  end
+
   class PlaceOrder < Lucid::Command
     validate do
       # required(:cart_id)

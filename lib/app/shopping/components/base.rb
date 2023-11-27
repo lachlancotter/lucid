@@ -1,11 +1,21 @@
 require "lucid/component/base"
 require "app/shopping/components/store_component"
+require "app/shopping/components/checkout_component"
 
 module Shopping
   class Base < Lucid::Component::Base
-    href { nest :store }
+    href { path :step; nest :store }
+
+    state do
+      attribute :step, default: "store"
+    end
 
     nest :store, StoreComponent
+    nest :checkout, CheckoutComponent
+
+    visit Checkout do |link|
+      state.update(step: "checkout")
+    end
 
     template do
       head {
@@ -13,7 +23,11 @@ module Shopping
       }
       body {
         emit_template :branding
-        emit_view :store
+        if state[:step] == "store"
+          emit_view :store
+        else
+          emit_view :checkout
+        end
       }
     end
 

@@ -12,7 +12,7 @@ module Shopping
 
     href do
       path :category_slug
-      param :product_id
+      path :product_id
     end
 
     state do

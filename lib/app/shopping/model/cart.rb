@@ -9,9 +9,15 @@ module Shopping
     def initialize
       @items = []
       @id = 1
+      @shipping_address = nil
     end
 
     attr_reader :items, :id
+    attr_accessor :shipping_address
+
+    def save
+      # do nothing
+    end
 
     def add_product (product)
       item = @items.find { |item| item.product_id == product.id }

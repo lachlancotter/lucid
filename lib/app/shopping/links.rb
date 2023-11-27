@@ -18,4 +18,8 @@ module Shopping
       required(:product_id)
     end
   end
+
+  class Checkout < Lucid::Link
+
+  end
 end
