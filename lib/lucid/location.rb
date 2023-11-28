@@ -24,12 +24,13 @@ module Lucid
     #
     def + (message)
       Location.new(
-         @state.merge(msg: {
-            name: message.message_name,
-            args: message.params.to_h
-         }),
+         @state.merge(
+            msgn: message.message_name,
+            msga: message.params.to_h
+         ),
          @map.dup.tap do |map|
-           map.rules << Map::Param.new(:msg)
+           map.rules << Map::Param.new(:msgn)
+           map.rules << Map::Param.new(:msga)
          end
       )
     end

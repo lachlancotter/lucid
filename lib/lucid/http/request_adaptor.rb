@@ -17,8 +17,7 @@ module Lucid
       end
 
       def has_message?
-        @request.params["msg"] != nil &&
-           @request.params["msg"] != ""
+        @request.params["msgn"] != nil
       end
 
       def has_query?
@@ -38,7 +37,7 @@ module Lucid
       end
 
       def message_name
-        @request.params["msg"]["name"]
+        @request.params["msgn"]
       end
 
       def message_class
@@ -46,8 +45,8 @@ module Lucid
       end
 
       def message_params
-        get_params = @request.GET.dig("msg", "args") || {}
-        post_params = @request.POST.dig("msg", "args") || {}
+        get_params = @request.GET.dig("msga") || {}
+        post_params = @request.POST.dig("msga") || {}
         get_params.merge(post_params)
       end
     end

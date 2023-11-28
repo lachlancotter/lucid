@@ -19,9 +19,9 @@ module Lucid
         Papercraft.html do |message|
           form action: message.href, method: message.http_method do
             # input type: :hidden, name: :state, value: message.encode_state
-            input type: :hidden, name: "msg[name]", value: message.message_name
+            input type: :hidden, name: "msgn", value: message.message_name
             emit_yield Builder.new(
-               self, message.params, message.errors, Path.new("msg/args")
+               self, message.params, message.errors, Path.new("msga")
             )
           end
         end.apply(@message, &@block)
