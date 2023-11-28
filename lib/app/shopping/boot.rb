@@ -18,16 +18,21 @@ module Shopping
       set :raise_errors, true
       set :show_exceptions, false
       set :public_folder, File.dirname(__FILE__) + "/public"
+      set :static, true
     end
 
     get "/?*" do
       # LOADER.reload
-      Lucid::App.new(app_config).query(request, response)
+      app.query(request, response)
     end
 
     post "/?*" do
       # LOADER.reload
-      Lucid::App.new(app_config).command(request, response)
+      app.command(request, response)
+    end
+
+    def app
+      Lucid::App.new(app_config)
     end
 
     # TODO make app Configurable
