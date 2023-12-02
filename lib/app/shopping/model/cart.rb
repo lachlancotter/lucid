@@ -2,13 +2,14 @@ require "app/shopping/model/cart_item"
 
 module Shopping
   class Cart
-    def self.current
-      @cart ||= Cart.new
+    def self.get (id)
+      @carts     ||= {}
+      @carts[id] ||= Cart.new(id)
     end
 
-    def initialize
-      @items = []
-      @id = 1
+    def initialize (id)
+      @items            = []
+      @id               = id
       @shipping_address = nil
     end
 

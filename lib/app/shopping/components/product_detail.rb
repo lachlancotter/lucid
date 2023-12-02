@@ -1,8 +1,6 @@
 module Shopping
   class ProductDetail < Lucid::Component::Base
-    config do
-      option :product, default: nil
-    end
+    setting :product, default: nil
 
     template do
       h2 { text product[:name] }

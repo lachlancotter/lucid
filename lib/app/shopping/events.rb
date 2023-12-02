@@ -8,7 +8,7 @@ module Shopping
   class CartItemChanged < Lucid::Event
     validate do
       required(:product_id)
-      required(:cart_id)
+      required(:cart_id).filled
       required(:quantity)
     end
   end

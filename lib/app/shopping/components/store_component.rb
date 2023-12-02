@@ -6,6 +6,7 @@ require "app/shopping/commands"
 require "app/shopping/components/category_nav"
 require "app/shopping/components/product_detail"
 require "app/shopping/components/cart_detail"
+require "app/shopping/session"
 
 module Shopping
   class StoreComponent < Lucid::Component::Base
@@ -18,6 +19,10 @@ module Shopping
     state do
       attribute :category_slug
       attribute :product_id
+    end
+
+    def cart
+      Session.current.cart
     end
 
     visit ProductList do |link|
@@ -33,10 +38,7 @@ module Shopping
     # ===================================================== #
 
     nest :nav, CategoryNav
-
-    nest(:cart, CartDetail) do |config|
-      config.cart = Cart.current
-    end
+    nest :cart_view, CartDetail
 
     def products
       if state[:category_slug].nil?
@@ -57,7 +59,7 @@ module Shopping
         emit_view :nav
         emit_template :product_list
         emit_template :product_details
-        emit_view :cart
+        emit_view :cart_view
       }
     end
 
@@ -79,7 +81,9 @@ module Shopping
           h3 product.name
           p product.description
           p product.price
-          emit AddProductToCart.button("Add to Cart", product_id: product.id)
+          emit AddProductToCart.button(
+             "Add to Cart", product_id: product.id, cart_id: cart.id
+          )
         end
       }
     end

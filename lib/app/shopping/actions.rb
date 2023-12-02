@@ -5,15 +5,18 @@ module Shopping
     include Lucid::Commandable
 
     perform AddProductToCart do |cmd|
+      ap cmd
       product = Product.find(cmd.product_id)
-      Cart.current.add_product(product)
-      notify_item_changed(product)
+      cart    = Cart.get(cmd.cart_id)
+      cart.add_product(product)
+      notify_item_changed(cart, product)
     end
 
     perform RemoveProductFromCart do |cmd|
       product = Product.find(cmd.product_id)
-      Cart.current.remove_product(product)
-      notify_item_changed(product)
+      cart    = Cart.get(cmd.cart_id)
+      cart.remove_product(product)
+      notify_item_changed(cart, product)
     end
 
     perform EmptyCart do |cmd|
@@ -21,19 +24,20 @@ module Shopping
     end
 
     perform SetShippingAddress do |cmd|
-      Cart.current.shipping_address = cmd.address
-      Cart.current.save
+      cart                  = Cart.get(cmd.cart_id)
+      cart.shipping_address = cmd.address
+      cart.save
     end
 
     perform PlaceOrder do |cmd|
       OrderPlaced.notify(cart_id: cmd.cart_id)
     end
 
-    def self.notify_item_changed (product)
+    def self.notify_item_changed (cart, product)
       CartItemChanged.notify({
          product_id: product.id,
-         cart_id:    Cart.current.id,
-         quantity:   Cart.current.quantity_of(product)
+         cart_id:    cart.id,
+         quantity:   cart.quantity_of(product)
       })
     end
   end

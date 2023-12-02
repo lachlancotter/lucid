@@ -44,4 +44,7 @@ module Shopping
       }
     end
   end
+  Shopping::Session.current = Shopping::Session.new(
+     cart_id: rand(50000)
+  )
 end

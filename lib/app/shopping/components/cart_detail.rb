@@ -3,8 +3,9 @@ require "app/shopping/model/cart"
 
 module Shopping
   class CartDetail < Lucid::Component::Base
-    config do
-      option :cart, Cart.new
+
+    def cart
+      Session.current.cart
     end
 
     on CartItemChanged do |event|
@@ -25,7 +26,7 @@ module Shopping
 
     template do
       div(class: "cart") {
-        p Cart.current.item_count
+        p cart.item_count
         h2 "Your Cart"
         table {
           tr {
@@ -34,20 +35,24 @@ module Shopping
             th "Price"
             th "Actions"
           }
-          Cart.current.items.each do |item|
-            tr {
-              td item.product_name
-              td item.quantity
-              td format_currency(item.price)
-              td {
-                emit inc_button(item)
-                emit dec_button(item)
-              }
-            }
+          cart.items.each do |item|
+            emit_template :item, item
           end
         }
-        p { format_currency(Cart.current.total) }
+        p { format_currency(cart.total) }
         p { emit Checkout.link("Checkout") }
+      }
+    end
+
+    template :item do |item|
+      tr {
+        td item.product_name
+        td item.quantity
+        td format_currency(item.price)
+        td {
+          emit inc_button(item)
+          emit dec_button(item)
+        }
       }
     end
 
