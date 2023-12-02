@@ -4,7 +4,7 @@ gem "rack"
 gem "zeitwerk"
 gem "sinatra"
 gem "docile" # Build DSLs.
-gem "dry-struct" # Build state.
+gem "dry-configurable" # Configurable objects.
 gem "dry-schema" # Validate state.
 gem "immutable-ruby" # Immutable state.
 gem "papercraft" # Generate HTML from Ruby.

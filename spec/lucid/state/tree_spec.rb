@@ -9,7 +9,7 @@ module Lucid
 
     context "empty" do
       it "is empty" do
-        component = Class.new(Component)
+        component = Class.new(Component::Base)
         tree      = State::Tree.new({}, component)
         expect(tree.path.get).to be_empty
       end
@@ -21,19 +21,19 @@ module Lucid
 
     context "root node" do
       it "converts to a Hash" do
-        component = Class.new(Component)
+        component = Class.new(Component::Base)
         tree      = State::Tree.new({ foo: "bar" }, component)
         expect(tree.to_h).to eq({ foo: "bar" })
       end
 
       it "applies data" do
-        component = Class.new(Component)
+        component = Class.new(Component::Base)
         tree      = State::Tree.new({ foo: "bar" }, component)
         expect(tree.path.get).to eq({ foo: "bar" })
       end
 
       it "applies defaults" do
-        component = Class.new(Component) do
+        component = Class.new(Component::Base) do
           state do
             attribute :foo, default: "bar"
           end
@@ -43,7 +43,7 @@ module Lucid
       end
 
       it "applies validation" do
-        component = Class.new(Component) do
+        component = Class.new(Component::Base) do
           state do
             validate do
               required(:foo).filled(:string)
@@ -55,7 +55,7 @@ module Lucid
       end
 
       it "applies mutations" do
-        component = Class.new(Component)
+        component = Class.new(Component::Base)
         tree      = State::Tree.new({ foo: "foo" }, component)
         changed   = tree.root.transform("bar") do |state, value|
           state.update(foo: value)
@@ -70,16 +70,16 @@ module Lucid
 
     context "nested node" do
       it "converts to a Hash" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component)
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base)
         end
         tree      = State::Tree.new({ foo: { bar: "baz" } }, component)
         expect(tree.to_h).to eq({ foo: { bar: "baz" } })
       end
 
       it "applies data" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component)
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base)
         end
         tree      = State::Tree.new({ foo: { bar: "baz" } }, component)
         nested    = tree.path(:foo).get
@@ -87,8 +87,8 @@ module Lucid
       end
 
       it "applies defaults" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
             state do
               attribute :bar, default: "baz"
             end
@@ -100,8 +100,8 @@ module Lucid
       end
 
       it "applies validation" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
             state do
               validate do
                 required(:bar).filled(:string)
@@ -115,8 +115,8 @@ module Lucid
       end
 
       it "applies mutations" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component)
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base)
         end
         root      = State::Tree.new({ foo: { bar: "bar" } }, component)
         changed = root.path(:foo).transform("qux") do |state, value|
@@ -134,9 +134,9 @@ module Lucid
 
     context "deeply nested node" do
       it "applies data" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
-            nest :bar, Class.new(Component)
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
+            nest :bar, Class.new(Component::Base)
           end
         end
         tree      = State::Tree.new({ foo: { bar: { baz: "qux" } } }, component)
@@ -145,9 +145,9 @@ module Lucid
       end
 
       it "applies defaults" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
-            nest :bar, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
+            nest :bar, Class.new(Component::Base) do
               state do
                 attribute :baz, default: "qux"
               end
@@ -160,9 +160,9 @@ module Lucid
       end
 
       it "applies validation" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
-            nest :bar, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
+            nest :bar, Class.new(Component::Base) do
               state do
                 validate do
                   required(:baz).filled(:string)
@@ -183,9 +183,9 @@ module Lucid
 
     context "sibling nodes" do
       it "applies data" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component)
-          nest :bar, Class.new(Component)
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base)
+          nest :bar, Class.new(Component::Base)
         end
         tree      = State::Tree.new({ foo: { baz: "qux" }, bar: { quux: "corge" } }, component)
         expect(tree.path(:foo).get).to eq({ baz: "qux" })
@@ -193,14 +193,14 @@ module Lucid
       end
 
       it "applies defaults" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
             state do
               attribute :baz, default: "qux"
             end
           end
 
-          nest :bar, Class.new(Component) do
+          nest :bar, Class.new(Component::Base) do
             state do
               attribute :quux, default: "corge"
             end
@@ -212,15 +212,15 @@ module Lucid
       end
 
       it "applies validation" do
-        component = Class.new(Component) do
-          nest :foo, Class.new(Component) do
+        component = Class.new(Component::Base) do
+          nest :foo, Class.new(Component::Base) do
             state do
               validate do
                 required(:baz).filled(:string)
               end
             end
           end
-          nest :bar, Class.new(Component) do
+          nest :bar, Class.new(Component::Base) do
             state do
               validate do
                 required(:quux).filled(:string)

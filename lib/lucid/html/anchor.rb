@@ -1,10 +1,10 @@
 module Lucid
   module HTML
     class Anchor
-      def initialize (route, options = {}, &block)
-        @route   = route
-        @options = options
-        @block   = block
+      def initialize (location, options = {}, &block)
+        @location = location
+        @options  = options
+        @block    = block
       end
 
       def to_s
@@ -12,7 +12,7 @@ module Lucid
       end
 
       def href
-        @route.to_s
+        @location.to_s
       end
 
       def attrs
@@ -20,7 +20,7 @@ module Lucid
            href: href,
            data: {
               lucid: {
-                 state: JSON.encode(@route.state.to_h)
+                 state: JSON.encode(@location.state.to_h)
               }
            }
         }

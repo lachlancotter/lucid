@@ -1,5 +1,4 @@
 require "dry-schema"
-require "dry-struct"
 require "immutable/hash"
 
 module Lucid
@@ -98,6 +97,7 @@ module Lucid
         def attribute (name, options = {})
           @defaults       ||= {}
           @defaults[name] = options[:default]
+          define_method(name) { self[name] }
         end
 
         #

@@ -23,14 +23,13 @@ module Lucid
     # current state.
     #
     def + (message)
+      message_params = message.query_params
       Location.new(
-         @state.merge(
-            msgn: message.message_name,
-            msga: message.params.to_h
-         ),
+         @state.merge(message_params),
          @map.dup.tap do |map|
-           map.rules << Map::Param.new(:msgn)
-           map.rules << Map::Param.new(:msga)
+           message_params.keys.each do |key|
+             map.rules << Map::Param.new(key)
+           end
          end
       )
     end

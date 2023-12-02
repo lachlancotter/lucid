@@ -1,6 +1,6 @@
 require "lucid/renderable"
+require "lucid/configurable"
 require "lucid/component/stateful"
-require "lucid/component/configurable"
 require "lucid/component/linkable"
 require "lucid/component/eventable"
 require "lucid/component/nestable"
@@ -20,6 +20,17 @@ module Lucid
       include Renderable
       include Referable
 
+      # The path from the web root to the application root.
+      # Used to encode URLs for the webserver. Useful
+      # if you want to nest your application under a subdirectory.
+      setting :app_root, default: "/"
+
+      # The path from the root view component to this component.
+      # Used to identify components and actions.
+      setting :path, default: "/", constructor: -> (path) do
+        path.is_a?(Path) ? path : Path.new(path)
+      end
+
       def initialize (params = {}, &config)
         @params = params
         @state  = self.class.normalize_state(params)
@@ -30,31 +41,17 @@ module Lucid
         @params[name] || {}
       end
 
-      config do
-        # The path from the web root to the application root.
-        # Used to encode URLs for the webserver. Useful
-        # if you want to nest your application under a subdirectory.
-        option :app_root, "/"
-
-        # The path from the root view component to this component.
-        # Used to identify components and actions.
-        option :path, "/"
-      end
-
-      def path
-        Path.new(@config[:path] || "/")
-      end
-
-      # def full_path
-      #   Path.new(@config[:app_root]).concat(path).to_s
+      # def path
+      #   if config[:path].is_a?(Path)
+      #     config[:path]
+      #   else
+      #     Path.new(config[:path])
+      #   end
       # end
 
       def inspect
-        "<#{self.class.name} #{state.to_h}>"
+        "<#{self.class.name || "Component"}(#{path}) #{state.to_h}>"
       end
-
-      # attr_reader :links
-      attr_reader :config
 
     end
   end

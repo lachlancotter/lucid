@@ -9,7 +9,7 @@ module Lucid
         current = Location.new({ foo: "bar" }, map)
         message = Link.new(baz: "qux")
         href    = current + message
-        expect(href.to_s).to eq("/?foo=bar&msg=Lucid-Link&Lucid-Link[baz]=qux")
+        expect(href.to_s).to eq("/?foo=bar&msgn=Lucid-Link&msga[baz]=qux")
       end
     end
   end

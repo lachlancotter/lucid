@@ -9,8 +9,17 @@ module Lucid
   # requests and decoded from HTTP responses.
   #
   class Message < Struct
-    POST = "POST".freeze
-    GET  = "GET".freeze
+    POST       = "POST".freeze
+    GET        = "GET".freeze
+    NAME_PARAM = "msgn".freeze
+    ARGS_PARAM = "msga".freeze
+
+    def query_params
+      {
+         NAME_PARAM => message_name,
+         ARGS_PARAM => params.to_h
+      }
+    end
 
     #
     # Messages types have a name that is used to identify them in

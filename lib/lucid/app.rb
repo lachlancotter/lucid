@@ -69,8 +69,8 @@ module Lucid
       def query
         with_context do
           if @request.has_query?
-            validated!(@request.message) do |query|
-              base_view.visit(query)
+            validated!(@request.message) do |page|
+              base_view.visit(page)
             end
           end
           write_response
@@ -110,6 +110,7 @@ module Lucid
       def build (state)
         base_view_class.new(state) do |config|
           config.app_root = @config[:app_root]
+          config.path     = Path.new
         end
       end
 

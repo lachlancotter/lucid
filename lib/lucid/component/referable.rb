@@ -14,6 +14,7 @@ module Lucid
       # Encodes an href from the receiver and the given message.
       #
       def href (message = nil)
+        ap deep_state
         location = Location.new(deep_state, href_map)
         message ? location + message : location
       end

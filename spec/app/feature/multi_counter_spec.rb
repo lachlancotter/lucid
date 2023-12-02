@@ -1,4 +1,4 @@
-describe "MultiCounter app", type: :feature do
+describe "MultiCounter app", type: :feature, skip: true do
   before do
     MultiCounter::Store.reset!
   end

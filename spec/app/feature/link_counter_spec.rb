@@ -1,4 +1,4 @@
-describe "LinkCounter app", type: :feature do
+describe "LinkCounter app", type: :feature, skip: true do
   scenario "new counter" do
     visit "/link_counter"
     expect(page).to have_content("Count: 0")

@@ -1,5 +1,9 @@
 module Lucid
   module Component
+    #
+    # Nestable components can contain other components, defined with
+    # the `nest` DSL method.
+    #
     module Nestable
       def self.included (base)
         base.extend(ClassMethods)
@@ -8,21 +12,23 @@ module Lucid
       #
       # Build the nested component.
       #
-      def nested (name)
-        nest = self.class.nests[name]
-        if nest.nil?
+      def nested (name, collection_key = nil)
+        nest_def = self.class.nests[name]
+        if nest_def.nil?
           raise ArgumentError,
              "No nested component named #{name} at #{config.path}"
         else
-          @nests            ||= {}
-          @nests[nest.name] ||= nest.build(
-             state_for_nested(nest.name), self
+          @nests                                    ||= {}
+          @nests[nest_def.nest_key(collection_key)] ||= nest_def.build(
+             state_for_nested(nest_def.name), self, collection_key
           )
         end
       end
 
-      def nests # Array[Component]
-        self.class.nests.keys.map { |name| nested(name) }
+      def nests # Hash[Symbol => Component]
+        self.class.nests.keys.map do |name|
+          [name, nested(name)]
+        end.to_h
       end
 
       #
@@ -63,50 +69,68 @@ module Lucid
         #                 If the class if provided in the nested_class argument,
         #                 the block configures an instance of the nested class.
         #
-        def initialize (parent_class, name, nested_class = nil, **options, &config_block)
-          @parent_class = parent_class
-          @name         = name
-          @nested_class = nested_class
-          @options      = options
-          @config_block = config_block
+        def initialize (parent_class, name, nested_class = nil, **options, &block)
+          @parent_class     = parent_class
+          @name             = name
+          @nested_class     = nested_class
+          @options          = options
+          @config_block     = block if nested_class
+          @inline_class_def = block unless nested_class
         end
 
-        attr_reader :name, :config_block, :nested_class
+        attr_reader :name, :config_block
 
+        #
+        # Install the accessor method in the parent class.
+        #
         def install
+          nest = self
           if collection.nil?
-            install_single self
+            @parent_class.define_method(@name) do
+              nested(nest.name)
+            end
           else
-            install_collection self
-          end
-        end
-
-        def install_single (nest)
-          @parent_class.define_method(@name) do
-            nested(nest.name)
-          end
-        end
-
-        def install_collection (nest)
-          @parent_class.define_method(@name) do |collection_key|
-            nest                              = self.class.nests[nest.name]
-            @nests[nest.name]                 ||= []
-            @nests[nest.name][collection_key] ||= nest.build do |config|
-              config[nest.config_key] = nest.value(self, collection_key)
-              config.app_root         = app_root
-              config.path             = path.concat(nest.path_component(collection_key)).to_s
+            @parent_class.define_method(@name) do |collection_key|
+              nested(nest.name, collection_key)
             end
           end
         end
 
-        def build (nested_state, parent_component)
-          # puts "Building nested: #{nested_class}"
-          # puts parent_component.path
-          @nested_class.new(nested_state) do |config|
-            config.app_root = parent_component.app_root
-            config.path     = parent_component.path.concat(@name).to_s
+        #
+        # Build an instance of the nested component. Parent component
+        # is required to configure the nested component path.
+        # Collection key is required if mapping over a collection.
+        #
+        def build (nested_state, parent_component, collection_key = nil)
+          nested_class.new(nested_state) do |config|
+            config.app_root    = parent_component.app_root
+            config.path        = nested_path(parent_component, collection_key)
+            config[config_key] = value(parent_component, collection_key) if collection_key
             @config_block.call(config) if @config_block
           end
+        end
+
+        #
+        # The key used to store the nested component in the parent instance.
+        #
+        def nest_key (collection_key = nil)
+          collection_key ? "#{@name}[#{collection_key}]" : @name
+        end
+
+        #
+        # The path to the nested component instance.
+        #
+        def nested_path (parent_component, collection_key = nil)
+          raise "not a path #{parent_component.path}" unless parent_component.path.is_a?(Path)
+          path_component = collection_key ? "#{@name}[#{collection_key}]" : @name
+          parent_component.path.concat(path_component)
+        end
+
+        #
+        # Defines the nested component class if not named in the constructor.
+        #
+        def nested_class
+          @nested_class ||= Class.new(Component::Base, &@inline_class_def)
         end
 
         def collection
@@ -117,13 +141,12 @@ module Lucid
           @options[:as] || :model
         end
 
-        def path_component (collection_key)
-          "#{@name}[#{collection_key}]"
-        end
-
-        def value (target, collection_key)
+        #
+        # Looks up the value for the given collection key in the parent.
+        #
+        def value (parent_component, collection_key)
           if collection.is_a?(Symbol)
-            target.send(collection)[collection_key]
+            parent_component.send(collection)[collection_key]
           else
             collection[collection_key]
           end

@@ -6,7 +6,7 @@ module Lucid
       # links are applied only to the current Linkable instance.
       #
       def link (name = nil, params = {})
-        Link::Local.new(self, name, params)
+        Link::Scoped.new(self, name, params)
       end
 
       #
@@ -16,7 +16,7 @@ module Lucid
       #
       def visit (link)
         instance_exec(link, &self.class.link(link.key)) if visits?(link)
-        nests.each { |nest| nest.visit(link) }
+        nests.values.each { |nest| nest.visit(link) }
       end
 
       def visits? (link)

@@ -80,7 +80,13 @@ module Lucid
       end
 
       def schema
-        @schema || Dry::Schema.Params {}
+        @schema || NilSchema.new
+      end
+    end
+
+    class NilSchema
+      def call (params)
+        params
       end
     end
 
