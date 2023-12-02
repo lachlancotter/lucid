@@ -3,6 +3,12 @@ require "immutable/hash"
 
 module Lucid
   module State
+    class Invalid < StandardError
+      def initialize(state)
+        super("Invalid state: #{state.inspect}")
+      end
+    end
+
     #
     # Encapsulates the application state.
     #
@@ -10,6 +16,7 @@ module Lucid
 
       def initialize(data = {})
         @data = immutable(validated(data))
+        raise Invalid, self unless valid?
       end
 
       def [] (key)

@@ -86,7 +86,16 @@ module Lucid
 
     class NilSchema
       def call (params)
-        params
+        @params = params
+        self
+      end
+
+      def to_h
+        {}
+      end
+
+      def errors
+        []
       end
     end
 

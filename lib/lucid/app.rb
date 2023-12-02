@@ -75,6 +75,8 @@ module Lucid
           end
           write_response
         end
+      rescue State::Invalid => e
+        write_error_response(e)
       end
 
       def command
@@ -86,6 +88,8 @@ module Lucid
           end
           write_response
         end
+      rescue State::Invalid => e
+        write_error_response(e)
       end
 
       def validated! (message)
@@ -100,6 +104,13 @@ module Lucid
         @response.tap do
           @response.location = base_view.href
           @response.body     = base_view.render
+        end
+      end
+
+      def write_error_response (error)
+        @response.tap do
+          @response.status = 422
+          @response.body   = "Invalid state"
         end
       end
 

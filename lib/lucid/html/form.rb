@@ -77,6 +77,15 @@ module Lucid
           end
         end
 
+        template :hidden do |key, options = {}|
+          input({
+             type:  :hidden,
+             name:  field_name(key),
+             value: data.fetch(key, ""),
+             id:    field_id(key)
+          }.merge(options))
+        end
+
         template :label do |key, text, options = {}|
           label(key, { for: field_id(key) }.merge(options)) {
             emit text

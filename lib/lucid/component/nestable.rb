@@ -106,7 +106,7 @@ module Lucid
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config[config_key] = value(parent_component, collection_key) if collection_key
-            @config_block.call(config) if @config_block
+            parent_component.instance_exec(config, &@config_block) if @config_block
           end
         end
 

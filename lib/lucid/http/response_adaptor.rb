@@ -13,6 +13,10 @@ module Lucid
         @response.headers
       end
 
+      def status= (status)
+        @response.status = status
+      end
+
       def location= (location)
         @response.headers["Location"] = location.to_s
       end

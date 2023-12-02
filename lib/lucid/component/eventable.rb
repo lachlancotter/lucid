@@ -9,7 +9,7 @@ module Lucid
     def notify (event)
       handler = self.class.event_handler(event.class)
       instance_exec(event, &handler) if handler.is_a?(Proc)
-      nests.each { |nest| nest.notify(event) }
+      nests.values.each { |nest| nest.notify(event) }
     end
 
     private
