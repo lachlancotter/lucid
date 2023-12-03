@@ -8,8 +8,7 @@ module Lucid
     end
 
     def notify (event)
-      puts "EventBus#notify: #{event.class.name}"
-      ap event.to_h
+      Logger.event(event)
       @app.notify(event)
     end
   end

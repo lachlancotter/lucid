@@ -1,4 +1,5 @@
 require "awesome_print"
+require "lucid/logger"
 # require "lucid/state/tree"
 require "lucid/event_bus"
 require "lucid/command"
@@ -16,15 +17,19 @@ module Lucid
     end
 
     def query (request, response)
-      log(request, "Starting query") do
+      Logger.cycle(request, response) do
         cycle(request, response).query
       end
+    # rescue => e
+    #   Console.logger.error(self, e)
     end
 
     def command (request, response)
-      log(request, "Starting command") do
+      Logger.cycle(request, response) do
         cycle(request, response).command
       end
+    # rescue => e
+    #   Console.logger.error(self, e)
     end
 
     def validate (request)
@@ -41,19 +46,6 @@ module Lucid
          HTTP::ResponseAdaptor.new(response),
          @config
       )
-    end
-
-    def log (request, message, &block)
-      puts "=========================================="
-      puts message
-      puts "Fullpath: #{request.fullpath}"
-      puts "Params: #{request.params.inspect}"
-      puts "------------------------------------------"
-      response = block.call
-      puts "------------------------------------------"
-      puts "Response: #{response.headers.inspect}"
-      puts "=========================================="
-      response
     end
 
     #

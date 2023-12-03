@@ -5,7 +5,6 @@ module Shopping
     include Lucid::Commandable
 
     perform AddProductToCart do |cmd|
-      ap cmd
       product = Product.find(cmd.product_id)
       cart    = Cart.get(cmd.cart_id)
       cart.add_product(product)
