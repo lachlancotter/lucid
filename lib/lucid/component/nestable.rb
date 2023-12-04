@@ -59,26 +59,24 @@ module Lucid
       #
       class Nest
         #
-        # @parent_class - The class that will contain the nested view.
+        # parent_class  - The class that will contain the nested view.
         # name          - The name of the nested view in the parent.
-        # nested_class  - The class of the nested view (nil if defined inline).
+        # nested_class  - Class of the nested view.
         # options[:in]  - The collection to iterate over (nil if not iterating).
         # options[:as]  - The name of the config key to use for the collection item in the nested view.
-        # config_block  - If defining the class inline, the block provides a
-        #                 definition for the nested component class.
-        #                 If the class if provided in the nested_class argument,
-        #                 the block configures an instance of the nested class.
+        # block         - If a nested class is given, this block is yielded the configuration
+        #                 object for the new instance. If no nested class is given, this block
+        #                 is yielded the nested state and should instantiate the nested component.
         #
         def initialize (parent_class, name, nested_class = nil, **options, &block)
-          @parent_class     = parent_class
-          @name             = name
-          @nested_class     = nested_class
-          @options          = options
-          @config_block     = block if nested_class
-          @inline_class_def = block unless nested_class
+          @parent_class = parent_class
+          @name         = name
+          @nested_class = nested_class
+          @options      = options
+          @block        = block
         end
 
-        attr_reader :name, :config_block
+        attr_reader :name
 
         #
         # Install the accessor method in the parent class.
@@ -96,17 +94,32 @@ module Lucid
           end
         end
 
-        #
-        # Build an instance of the nested component. Parent component
-        # is required to configure the nested component path.
-        # Collection key is required if mapping over a collection.
-        #
         def build (nested_state, parent_component, collection_key = nil)
-          nested_class.new(nested_state) do |config|
+          @nested_class ?
+            construct_from_class(nested_state, parent_component, collection_key) :
+            construct_from_block(nested_state, parent_component, collection_key)
+        end
+
+        def construct_from_class (nested_state, parent_component, collection_key = nil)
+          @nested_class.new(nested_state).tap do |component|
+            configure(component, parent_component, collection_key) do |config|
+              parent_component.instance_exec(config, &@block) if @block
+            end
+          end
+        end
+
+        def construct_from_block (nested_state, parent_component, collection_key = nil)
+          @block.call(nested_state).tap do |component|
+            configure(component, parent_component, collection_key)
+          end
+        end
+
+        def configure (component, parent_component, collection_key = nil, &block)
+          component.configure do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config[config_key] = value(parent_component, collection_key) if collection_key
-            parent_component.instance_exec(config, &@config_block) if @config_block
+            block.call(config) if block
           end
         end
 
@@ -124,13 +137,6 @@ module Lucid
           raise "not a path #{parent_component.path}" unless parent_component.path.is_a?(Path)
           path_component = collection_key ? "#{@name}[#{collection_key}]" : @name
           parent_component.path.concat(path_component)
-        end
-
-        #
-        # Defines the nested component class if not named in the constructor.
-        #
-        def nested_class
-          @nested_class ||= Class.new(Component::Base, &@inline_class_def)
         end
 
         def collection
