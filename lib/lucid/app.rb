@@ -88,7 +88,7 @@ module Lucid
         if message.valid?
           yield message
         else
-          ValidationFailed.notify(message: message)
+          Validation::Failed.notify(message: message)
         end
       end
 

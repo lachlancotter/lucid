@@ -90,6 +90,10 @@ module Lucid
         self
       end
 
+      def [] (key)
+        @params[key]
+      end
+
       def to_h
         {}
       end

@@ -61,22 +61,25 @@ module Lucid
         #
         # parent_class  - The class that will contain the nested view.
         # name          - The name of the nested view in the parent.
-        # nested_class  - Class of the nested view.
+        # constructor   - Class or block that returns a class to instantiate.
         # options[:in]  - The collection to iterate over (nil if not iterating).
         # options[:as]  - The name of the config key to use for the collection item in the nested view.
-        # block         - If a nested class is given, this block is yielded the configuration
-        #                 object for the new instance. If no nested class is given, this block
-        #                 is yielded the nested state and should instantiate the nested component.
+        # block         - Yielded a configuration object for the instantiated view.
         #
-        def initialize (parent_class, name, nested_class = nil, **options, &block)
+        def initialize (parent_class, name, constructor, **options, &block)
           @parent_class = parent_class
           @name         = name
-          @nested_class = nested_class
+          @constructor  = constructor
           @options      = options
           @block        = block
         end
 
         attr_reader :name
+
+        def nested_class
+          @nested_class ||= @constructor.is_a?(Class) ?
+             @constructor : @constructor.call
+        end
 
         #
         # Install the accessor method in the parent class.
@@ -95,31 +98,11 @@ module Lucid
         end
 
         def build (nested_state, parent_component, collection_key = nil)
-          @nested_class ?
-            construct_from_class(nested_state, parent_component, collection_key) :
-            construct_from_block(nested_state, parent_component, collection_key)
-        end
-
-        def construct_from_class (nested_state, parent_component, collection_key = nil)
-          @nested_class.new(nested_state).tap do |component|
-            configure(component, parent_component, collection_key) do |config|
-              parent_component.instance_exec(config, &@block) if @block
-            end
-          end
-        end
-
-        def construct_from_block (nested_state, parent_component, collection_key = nil)
-          @block.call(nested_state).tap do |component|
-            configure(component, parent_component, collection_key)
-          end
-        end
-
-        def configure (component, parent_component, collection_key = nil, &block)
-          component.configure do |config|
+          nested_class.new(nested_state) do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config[config_key] = value(parent_component, collection_key) if collection_key
-            block.call(config) if block
+            parent_component.instance_exec(config, &@block) if @block
           end
         end
 
