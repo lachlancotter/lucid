@@ -45,6 +45,10 @@ module Lucid
       @components.join(separator)
     end
 
+    def inject (data, &block)
+      @components.inject(data, &block)
+    end
+
     def to_s
       "/" + join("/")
     end
