@@ -1,11 +1,12 @@
 require "lucid/location"
+require "lucid/state/map"
 
 module Lucid
   module Component
     #
     # A component that can be referenced by a URL.
     #
-    module Referable
+    module Mappable
       def self.included (base)
         base.extend(ClassMethods)
       end
@@ -14,16 +15,16 @@ module Lucid
       # Encodes an href from the receiver and the given message.
       #
       def href (message = nil)
-        location = Location.new(deep_state, href_map)
+        location = Location.new(deep_state, state_map)
         message ? location + message : location
       end
 
-      private def href_map
-        self.class.href_map(href_config)
-      end
+      # def app_root
+      #   @opts.fetch(:app_root, "").sub(/^\/$/, "")
+      # end
 
-      private def href_config
-        { app_root: app_root }
+      private def state_map
+        self.class.state_map
       end
 
       module ClassMethods
@@ -31,31 +32,31 @@ module Lucid
         # DSL method for defining the href by projecting path components
         # and params from the component state.
         #
-        def href (&block)
-          @href_def = block
+        def map (&block)
+          @state_map = block
         end
 
         #
         # Extract state data from the given href.
         #
-        def decode_href (href, config)
-          href_map(config).decode(href)
+        def decode_state (href)
+          state_map.decode(href)
         end
 
-        def href_map (config)
-          if @href_def.nil?
-            Location::Map.new(config)
+        def state_map
+          if @state_map.nil?
+            State::Map.new
           else
-            Location::Map.build(
-               config.merge(nests: nested_href_maps(config)),
-               &@href_def
+            State::Map.build(
+               { nests: nested_state_maps },
+               &@state_map
             )
           end
         end
 
-        private def nested_href_maps (config)
+        private def nested_state_maps
           nests.inject({}) do |hrefs, (name, nest)|
-            hrefs.merge(name => nest.nested_class.href_map(config))
+            hrefs.merge(name => nest.nested_class.state_map)
           end
         end
       end

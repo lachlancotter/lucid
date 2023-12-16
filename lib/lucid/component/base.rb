@@ -1,10 +1,12 @@
 require "lucid/renderable"
 require "lucid/configurable"
+require "lucid/state/reader"
+require "lucid/component/paramable"
 require "lucid/component/stateful"
+require "lucid/component/mappable"
 require "lucid/component/linkable"
 require "lucid/component/eventable"
 require "lucid/component/nestable"
-require "lucid/component/referable"
 
 module Lucid
   module Component
@@ -12,13 +14,14 @@ module Lucid
     # Base class for Lucid components.
     #
     class Base
+      include Parameters
       include Stateful
+      include Mappable
       include Configurable
       include Linkable
       include Eventable
       include Nestable
       include Renderable
-      include Referable
 
       # The path from the web root to the application root.
       # Used to encode URLs for the webserver. Useful
