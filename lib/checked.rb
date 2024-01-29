@@ -1,0 +1,165 @@
+require "binding_of_caller"
+
+#
+# Enables concise checking of values for type and other properties.
+#
+# Example:
+#   check(value).symbol
+#   check(value).string.not_empty
+#
+module Checked
+
+  def check (value)
+    Check.new(value)
+  end
+
+  #
+  # A context for making assertions about a value.
+  #
+  class Check
+    STACK_DEPTH = 2
+
+    def initialize (value)
+      @value   = value
+      @context = binding.of_caller(STACK_DEPTH)
+    end
+
+    attr_reader :value, :context
+
+    def has_type (*types)
+      unless types.concat([RSpec::Mocks::Double]).any? { |type| @value.is_a?(type) }
+        raise Failure.new(self, "should have type #{types.join(' or ')}")
+      end; self
+    end
+
+    alias type has_type
+
+    def responds_to (*methods)
+      methods.each do |method|
+        unless @value.respond_to?(method)
+          raise Failure.new(self, "should respond to #{method}")
+        end
+      end; self
+    end
+
+    def not_nil
+      if @value.nil?
+        raise Failure.new(self, "should not be nil")
+      end; self
+    end
+
+    def has_key (key)
+      unless @value.key?(key)
+        raise Failure.new(self, "should have key #{key}")
+      end; self
+    end
+
+    def every_value (&block)
+      @value.values.each do |value|
+        yield Check.new(value)
+      end; self
+    end
+
+    def gt (other, message = "should be greater than #{other}")
+      raise Failure.new(self, message) unless @value > other ; self
+    end
+
+    def symbol
+      has_type(Symbol); self
+    end
+
+    def hash
+      has_type(Hash); self
+    end
+
+  end
+
+  #
+  # Raised on error conditions.
+  #
+  class Failure < StandardError
+    def initialize (check, message)
+      @check   = check
+      @message = message
+    end
+
+    def message
+      <<~MESSAGE
+         Check failed in ##{listing.method_name}: 
+          value: #{@check.value}
+          class: #{@check.value.class}
+          message: #{@message}
+          at: #{listing.filename}:#{listing.line_number}
+        ----------------------------------------
+        #{listing.snippet}
+        ----------------------------------------
+        #{backtrace.join("\n")}
+      MESSAGE
+    end
+
+    private
+
+    def listing
+      Listing.new(*@check.context.source_location)
+    end
+  end
+
+  #
+  # Include source listing in error message.
+  #
+  class Listing
+    def initialize (file, line)
+      @file = file
+      @line = line
+    end
+
+    def filename
+      @file
+    end
+
+    def line_number
+      @line
+    end
+
+    def snippet (context = 3)
+      return '' unless File.exist?(@file)
+      lines = File.readlines(@file)
+
+      start_line = [@line - context - 1, 0].max
+      end_line   = [@line + context - 1, lines.size - 1].min
+
+      source_code = ''
+      (start_line..end_line).each do |i|
+        # source_code += "#{i + 1}: #{lines[i]}"
+        source_code += lines[i]
+      end
+
+      source_code
+    end
+
+    def method_name
+      return nil unless File.exist?(@file)
+      lines = File.readlines(@file)
+
+      method_name           = nil
+      class_or_module_stack = []
+
+      lines.each_with_index do |line, index|
+        break if index >= @line
+
+        case line.strip
+        when /^class\s+([^\s;]+)/, /^module\s+([^\s;]+)/
+          class_or_module_stack.push($1)
+        when /^end$/
+          class_or_module_stack.pop
+        when /^def\s+([^\s;]+)/
+          method_name = class_or_module_stack.empty? ? $1 : "#{class_or_module_stack.join('::')}::#{$1}"
+        end
+      end
+
+      method_name
+    end
+
+  end
+
+end

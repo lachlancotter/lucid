@@ -10,6 +10,7 @@ gem "immutable-ruby" # Immutable state.
 gem "papercraft" # Generate HTML from Ruby.
 gem "nokogiri" # Pretty-print HTML.
 gem "console" # Pretty console logging.
+gem "binding_of_caller" # For assertions.
 
 group :test do
   gem "rspec"
