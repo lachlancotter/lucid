@@ -17,11 +17,11 @@ module Lucid
           called = false
           bus = Class.new do
             include Commandable
-            perform Object do |command|
+            perform Command do |command|
               called = true
             end
           end.new
-          bus.dispatch(Object.new)
+          bus.dispatch(Command.new)
           expect(called).to be(true)
         end
       end
@@ -31,14 +31,14 @@ module Lucid
           call_count = 0
           bus = Class.new do
             include Commandable
-            perform Object do |command|
+            perform Command do |command|
               call_count += 1
             end
-            perform Object do |command|
+            perform Command do |command|
               call_count += 1
             end
           end.new
-          bus.dispatch(Object.new)
+          bus.dispatch(Command.new)
           expect(call_count).to eq(1)
         end
       end

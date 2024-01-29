@@ -13,7 +13,9 @@ module Lucid
       end
 
       def state (base_class, config)
-        base_class.decode_href(@request.fullpath, config)
+        base_class.decode_state(
+           @request.fullpath.sub(/^#{config[:app_root]}/, "")
+        )
       end
 
       def has_message?
@@ -45,7 +47,7 @@ module Lucid
       end
 
       def message_params
-        get_params = @request.GET.dig(Message::ARGS_PARAM) || {}
+        get_params  = @request.GET.dig(Message::ARGS_PARAM) || {}
         post_params = @request.POST.dig(Message::ARGS_PARAM) || {}
         get_params.merge(post_params)
       end

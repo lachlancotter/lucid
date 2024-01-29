@@ -19,21 +19,18 @@ module Lucid
     # A link scoped to a specific component path.
     #
     class Scoped < Link
-      SCOPE_PARAM = "_scope".freeze
+      SCOPE_PARAM = "scope".freeze
 
       def initialize (target, name, params)
+        @target = check(target).type(Component::Base).value
+        @name   = check(name).symbol.value
         super(params)
-        @name   = name
-        @target = target
       end
 
       def query_params
-        {
-            NAME_PARAM => message_name,
-            ARGS_PARAM => params.merge({
-               SCOPE_PARAM => @target.path.to_s
-            })
-        }
+        super.tap do |params|
+          params[MESSAGE_PARAM][SCOPE_PARAM] = @target.path.to_s
+        end
       end
 
       def message_name

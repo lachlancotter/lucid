@@ -17,6 +17,10 @@ module Lucid
 
       attr_reader :state
 
+      def valid?
+        state.valid?
+      end
+
       module ClassMethods
         #
         # Defines the state attributes and validation rules

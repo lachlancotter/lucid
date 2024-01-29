@@ -6,17 +6,16 @@ module Lucid
       it "it passes an event to the bus" do
         app         = double("app")
         bus         = EventBus.new(app)
-        Event.bus   = bus
         event_class = Class.new(Event) do
-          params do
-            attribute :foo
-          end
+          attribute :foo
         end
         expect(bus).to receive(:notify) do |event|
           expect(event).to be_a(event_class)
-          expect(event.data.foo).to eq("bar")
+          expect(event.foo).to eq("bar")
         end
-        event_class.notify(foo: "bar")
+        Event.with_bus(bus) do
+          event_class.notify(foo: "bar")
+        end
       end
     end
   end

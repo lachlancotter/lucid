@@ -57,7 +57,7 @@ module Lucid
           renderable = Class.new do
             include Renderable
             template do
-              h1 { text "Hello, #{label}" }
+              h1 { text "Hello, #{context.label}" }
             end
             def label
               "World"

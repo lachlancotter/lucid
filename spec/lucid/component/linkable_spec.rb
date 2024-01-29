@@ -24,11 +24,11 @@ module Lucid
               visit Link do |link|
                 state.update(foo: link[:foo])
               end
-              nest :bar do
+              nest :bar, Class.new(Component::Base) {
                 visit Link do |link|
                   state.update(baz: link[:baz])
                 end
-              end
+              }
             end
             app       = app_class.new
             app.visit(Link.new(foo: "bar", baz: "qux"))
@@ -54,11 +54,11 @@ module Lucid
         context "nested component" do
           it "applies the nested state" do
             app_class = Class.new(Component::Base) do
-              nest :foo do
+              nest :foo, Class.new(Component::Base) {
                 visit :set_count do |link|
                   state.update(count: link[:count])
                 end
-              end
+              }
             end
             app       = app_class.new
             link      = app.nested(:foo).link(:set_count, count: 2)
@@ -74,7 +74,7 @@ module Lucid
     describe "#href" do
       it "encodes params" do
         app_class = Class.new(Component::Base) do
-          href { path :id }
+          path :id
           visit Link do |link|
             state.update(id: link[:id])
           end
@@ -82,14 +82,13 @@ module Lucid
         app       = app_class.new(id: 1)
         link      = Link.new(id: 2)
         Message.with_context(app) do
-          expect(Message.context).not_to be_nil
-          expect(link.href.to_s).to eq("/1?msgn=Lucid-Link&msga[id]=2")
+          expect(link.href.to_s).to eq("/1?msg[name]=Lucid-Link&msg[args][id]=2")
         end
       end
 
       it "encodes state" do
         app_class = Class.new(Component::Base) do
-          href { path :page, :id }
+          path :page, :id
           visit Link do |link|
             state.update(id: link[:id])
           end
@@ -97,7 +96,7 @@ module Lucid
         app       = app_class.new(page: "foo")
         link      = Link.new(id: 1)
         Message.with_context(app) do
-          expect(link.href.to_s).to eq("/foo/?msgn=Lucid-Link&msga[id]=1")
+          expect(link.href.to_s).to eq("/foo/?msg[name]=Lucid-Link&msg[args][id]=1")
         end
       end
     end

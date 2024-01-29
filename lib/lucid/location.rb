@@ -15,7 +15,9 @@ module Lucid
     attr_reader :state
 
     def to_s
-      @map.encode(@state)
+      writer = State::Writer.new(state)
+      writer.write(@map)
+      writer.to_s
     end
 
     #

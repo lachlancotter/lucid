@@ -1,3 +1,6 @@
+require "lucid/state/writer"
+require "lucid/state/reader"
+
 module Lucid
   module State
     #
@@ -9,6 +12,14 @@ module Lucid
       end
 
       attr_reader :rules
+
+      def path (key, index)
+        rules << Path.new(key, index)
+      end
+
+      def param (key)
+        rules << Param.new(key)
+      end
 
       def path_count
         @rules.count { |rule| rule.is_a?(Path) }
@@ -29,27 +40,31 @@ module Lucid
         end
       end
 
-      def encode (state, buffer = Writer.new)
-        raise "State must be a hash (#{state})" unless state.is_a?(Hash)
-        @rules.each { |rule| rule.encode(state, buffer) }
-        buffer.to_s
-      end
+      # def build_tree (component)
+      #   component.nests.inject(state_map) do |map, (name, sub)|
+      #     map.nest(name, sub.state_map)
+      #   end
+      # end
 
-      def decode (buffer_or_query, state = {})
-        raise "State must be a hash (#{state})" unless state.is_a?(Hash)
-        buffer = normalize(buffer_or_query)
-        state.tap do
-          @rules.each { |rule| rule.decode(buffer, state) }
-        end
-      end
+      # def encode (state, buffer = Writer.new(state))
+      #   raise "State must be a hash (#{state})" unless state.is_a?(Hash)
+      #   buffer.write(self)
+      #   buffer.to_s
+      # end
+      #
+      # def decode (buffer_or_query, state = {})
+      #   raise "State must be a hash (#{state})" unless state.is_a?(Hash)
+      #   buffer = normalize(buffer_or_query)
+      #   buffer.read(self)
+      # end
 
-      def normalize (buffer_or_query)
-        if buffer_or_query.is_a?(Reader)
-          buffer_or_query
-        else
-          Reader.new(buffer_or_query)
-        end
-      end
+      # def normalize (buffer_or_string)
+      #   if buffer_or_string.is_a?(Reader)
+      #     buffer_or_string
+      #   else
+      #     Reader.new(buffer_or_string)
+      #   end
+      # end
 
       #
       # Base class for rules.
@@ -60,6 +75,10 @@ module Lucid
         end
 
         attr_reader :key
+
+        def inspect
+          "<#{self.class.name.split('::').last} #{key}>"
+        end
       end
 
       #

@@ -22,19 +22,29 @@ module Lucid
       end
 
       def request (request)
-        @buffer.puts("#{request.request_method}: #{request.fullpath}")
+        puts("#{request.request_method}: #{request.fullpath}")
       end
 
       def response (response)
-        @buffer.puts("  Response(#{response.headers.inspect})")
+        puts("  Response(#{response.headers.inspect})")
       end
 
       def command (command)
-        @buffer.puts("  #{command.class.name}(#{command.params.inspect})")
+        puts("  #{command.class.name}(#{command.params.inspect})")
       end
 
       def event (event)
-        @buffer.puts("  #{event.class.name}(#{event.params.inspect})")
+        puts("  #{event.class.name}(#{event.params.inspect})")
+      end
+
+      private
+
+      def puts(*args)
+        if @buffer
+          @buffer.puts(*args)
+        else
+          super
+        end
       end
 
     end

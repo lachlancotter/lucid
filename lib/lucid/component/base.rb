@@ -1,7 +1,8 @@
 require "lucid/renderable"
 require "lucid/configurable"
 require "lucid/state/reader"
-require "lucid/component/paramable"
+require "lucid/component/state_param"
+require "lucid/component/parameters"
 require "lucid/component/stateful"
 require "lucid/component/mappable"
 require "lucid/component/linkable"
@@ -14,6 +15,7 @@ module Lucid
     # Base class for Lucid components.
     #
     class Base
+      include Checked
       include Parameters
       include Stateful
       include Mappable
@@ -34,15 +36,35 @@ module Lucid
         path.is_a?(Path) ? path : Path.new(path)
       end
 
+      def self.build (buffer, &config)
+        new(buffer, &config)
+      end
+
       def initialize (params = {}, &config)
-        @params = params
-        @state  = self.class.normalize_state(params)
+        @params = StateParam.from(params)
+        @state = self.class.build_state(@params.read(state_map))
+        # nests.each do |name, nest|
+        #   nest.build(self, @params.seek(state_map.path_count, name))
+        # end
+        # @buffer = buffer_or_params if buffer_or_params.is_a?(ReadBuffer)
+        # @params = buffer_or_params if buffer_or_params.is_a?(Hash)
+        # @state = self.class.normalize_state(params)
         configure(&config)
       end
 
-      def state_for_nested (name)
-        @params[name] || {}
+      def nested_state (key)
+        @params.seek(state_map.path_count, key).tap do |result|
+          check(result).type(StateParam::FromHash, State::Reader)
+        end
       end
+
+      # def params
+      #   @params ||= @buffer.read(href_map)
+      # end
+      #
+      # def state_for_nested (name)
+      #   @params[name] || {}
+      # end
 
       # def path
       #   if config[:path].is_a?(Path)

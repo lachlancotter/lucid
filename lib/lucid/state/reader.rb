@@ -1,9 +1,13 @@
+require "lucid/state/cursor"
+
 module Lucid
   module State
     #
     # Read state from the URL string.
     #
     class Reader
+      include Checked
+
       def initialize (fullpath, cursor = Cursor.new)
         @fullpath = fullpath
         @cursor   = cursor
@@ -13,6 +17,7 @@ module Lucid
       # Read a hash of values from the URL based on the mapping rules.
       #
       def read (map)
+        check(map).type(State::Map)
         {}.tap do |state|
           map.rules.each do |rule|
             rule.decode(self, state)

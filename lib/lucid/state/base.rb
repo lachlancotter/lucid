@@ -5,7 +5,14 @@ module Lucid
   module State
     class Invalid < StandardError
       def initialize(state)
-        super("Invalid state: #{state.inspect}")
+        super(
+           <<~MSG
+           Invalid state: 
+            #{state.errors.to_h}
+            ---
+            #{state.to_h}
+           MSG
+        )
       end
     end
 
@@ -59,6 +66,10 @@ module Lucid
         schema ? schema.call(to_h).success? : true
       end
 
+      def errors
+        schema.call(to_h).errors
+      end
+
       def empty?
         @data.empty?
       end
@@ -101,7 +112,7 @@ module Lucid
         #
         # Define an attribute.
         #
-        def attribute (name, options = {})
+        def attribute (name, **options)
           @defaults       ||= {}
           @defaults[name] = options[:default]
           define_method(name) { self[name] }

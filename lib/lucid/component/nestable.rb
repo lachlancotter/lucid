@@ -1,3 +1,6 @@
+require "checked"
+require "lucid/component/switch"
+
 module Lucid
   module Component
     #
@@ -20,7 +23,7 @@ module Lucid
         else
           @nests                                    ||= {}
           @nests[nest_def.nest_key(collection_key)] ||= nest_def.build(
-             state_for_nested(nest_def.name), self, collection_key
+             nested_state(nest_def.name), self, collection_key
           )
         end
       end
@@ -35,8 +38,8 @@ module Lucid
       # The state for this and all nested components.
       #
       def deep_state
-        self.class.nests.keys.inject(state.to_h) do |h, name|
-          h.merge(name => nested(name).deep_state)
+        nests.inject(state.to_h) do |hash, (name, sub)|
+          hash.merge(name => sub.deep_state)
         end
       end
 
@@ -49,6 +52,10 @@ module Lucid
           end
         end
 
+        def switch (key, map)
+          Switch.new(key, map)
+        end
+
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
         end
@@ -58,6 +65,8 @@ module Lucid
       # Build and configure a nested component.
       #
       class Nest
+        include Checked
+
         #
         # parent_class  - The class that will contain the nested view.
         # name          - The name of the nested view in the parent.
@@ -69,17 +78,17 @@ module Lucid
         def initialize (parent_class, name, constructor, **options, &block)
           @parent_class = parent_class
           @name         = name
-          @constructor  = constructor
+          @constructor  = check(constructor).has_type(Class, Switch).value
           @options      = options
           @block        = block
         end
 
         attr_reader :name
 
-        def nested_class
-          @nested_class ||= @constructor.is_a?(Class) ?
-             @constructor : @constructor.call
-        end
+        # def nested_class
+        #   @nested_class ||= @constructor.is_a?(Class) ?
+        #      @constructor : @constructor.call
+        # end
 
         #
         # Install the accessor method in the parent class.
@@ -97,13 +106,20 @@ module Lucid
           end
         end
 
-        def build (nested_state, parent_component, collection_key = nil)
-          nested_class.new(nested_state) do |config|
+        def build (nested_state_reader, parent_component, collection_key = nil)
+          check(nested_state_reader).responds_to(:read)
+          nested_state = nested_state_reader.read(constructor(parent_component).state_map)
+          constructor(parent_component).new(nested_state) do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config[config_key] = value(parent_component, collection_key) if collection_key
             parent_component.instance_exec(config, &@block) if @block
           end
+        end
+
+        def constructor (parent_component)
+          check(parent_component).has_type(Component::Base)
+          @constructor.is_a?(Switch) ? @constructor.component_class(parent_component) : @constructor
         end
 
         #

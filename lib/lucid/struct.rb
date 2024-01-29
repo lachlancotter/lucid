@@ -11,10 +11,10 @@ module Lucid
   # can return a hash of validation errors.
   #
   class Struct
+    include Checked
 
     def initialize (params = {})
-      raise "params must be a hash" unless params.is_a?(Hash)
-      @params = params
+      @params = check(params).hash.value
     end
 
     attr_reader :params
@@ -95,7 +95,7 @@ module Lucid
       end
 
       def to_h
-        {}
+        @params
       end
 
       def errors

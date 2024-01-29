@@ -3,21 +3,22 @@ module Lucid
     describe ".nest" do
       context "dynamic constructor" do
         it "constructs with the given block" do
-          foo_class = Class.new(Component::Base)
+          class_a = Class.new(Component::Base)
+          class_b = Class.new(Component::Base)
 
           view = Class.new(Component::Base) do
-            nest :foo, proc { foo_class }
-          end.new(foo: { bar: "baz" })
+            nest :foo, switch(:val, a: class_a, b: class_b)
+          end.new(foo: { bar: "baz" }, val: "a")
 
-          expect(view.foo).to be_a(foo_class)
+          expect(view.foo).to be_a(class_a)
           expect(view.foo.state).to eq(bar: "baz")
         end
 
         it "configures the nested instance" do
           foo_class = Class.new(Component::Base)
           view = Class.new(Component::Base) do
-            nest :foo, proc { foo_class }
-          end.new(foo: { bar: "baz" })
+            nest :foo, switch(:val, a: foo_class)
+          end.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo.path).to eq("/foo")
           expect(view.foo.app_root).to eq("/")
@@ -28,8 +29,8 @@ module Lucid
             setting :bar
           end
           view = Class.new(Component::Base) do
-            nest :foo, proc { foo_class }, in: %w[english spanish], as: :bar
-          end.new
+            nest :foo, switch(:val, a: foo_class), in: %w[english spanish], as: :bar
+          end.new(val: "a")
 
           expect(view.foo(0)).to be_a(foo_class)
           expect(view.foo(0).bar).to eq("english")
@@ -38,10 +39,10 @@ module Lucid
         it "exposes the nested class" do
           foo_class = Class.new(Component::Base)
           view_class = Class.new(Component::Base) do
-            nest :foo, proc { foo_class }
+            nest :foo, switch(:val, a: foo_class)
           end
           nest = view_class.nests[:foo]
-          expect(nest.nested_class).to eq(foo_class)
+          expect(nest.constructor(view_class.new(val: "a"))).to eq(foo_class)
         end
       end
 

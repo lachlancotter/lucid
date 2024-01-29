@@ -1,3 +1,4 @@
+require "checked"
 require "lucid/struct"
 require "lucid/http/message_name"
 require "lucid/html/anchor"
@@ -9,19 +10,22 @@ module Lucid
   # requests and decoded from HTTP responses.
   #
   class Message < Struct
-    POST         = "POST".freeze
-    GET          = "GET".freeze
-    NAME_PARAM   = "msgn".freeze
-    ARGS_PARAM   = "msga".freeze
-    MODE_PARAM   = "msgm".freeze
-    TARGET_PARAM = "msgt".freeze
-    EXECUTE      = "execute".freeze
-    VALIDATE     = "validate".freeze
+    POST          = "POST".freeze
+    GET           = "GET".freeze
+    MESSAGE_PARAM = "msg".freeze
+    NAME_PARAM    = "name".freeze
+    ARGS_PARAM    = "args".freeze
+    # TARGET_PARAM  = "target".freeze
+    MODE_PARAM    = "mode".freeze
+    EXECUTE       = "execute".freeze
+    VALIDATE      = "validate".freeze
 
     def query_params
       {
-         NAME_PARAM => message_name,
-         ARGS_PARAM => params.to_h
+         MESSAGE_PARAM => {
+            NAME_PARAM => message_name.to_s,
+            ARGS_PARAM => params.map { |k, v| [k.to_s, v] }.to_h
+         }
       }
     end
 
@@ -110,8 +114,10 @@ module Lucid
     # API for message evaluation context.
     #
     class Context
+      include Checked
+
       def initialize (app)
-        @app = app
+        @app = check(app).has_type(Component::Base).value
       end
 
       def href (message)

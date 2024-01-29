@@ -1,16 +1,15 @@
+require "lucid/state/reader"
+
 module Lucid
   describe State::Base do
 
     describe ".build" do
       context "root component" do
         it "parses the URL" do
-          buffer = Location::ReadBuffer.new("/foo/bar?baz=qux")
+          buffer = State::Reader.new("/foo/bar?baz=qux")
           component_class = Class.new(Component::Base) do
-            href do
-              path :foo
-              path :bar
-              param :baz
-            end
+            path :foo, :bar
+            param :baz
           end
           component = component_class.build(buffer)
           expect(component.state.to_h).to eq(foo: "foo", bar: "bar", baz: "qux")
@@ -19,20 +18,15 @@ module Lucid
 
       context "nested component" do
         it "parses the URL" do
-          buffer = Location::ReadBuffer.new("/foo/bar")
+          buffer = State::Reader.new("/foo/bar")
           component_class = Class.new(Component::Base) do
-            href do
-              path :foo
-              nest :sub
-            end
+            path :foo
             nest :sub, Class.new(Component::Base) {
-              href do
-                path :bar
-              end
+              path :bar
             }
           end
           component = component_class.build(buffer)
-          expect(component.state.to_h).to eq(foo: "foo", sub: { bar: "bar" })
+          expect(component.deep_state).to eq(foo: "foo", sub: { bar: "bar" })
         end
       end
     end

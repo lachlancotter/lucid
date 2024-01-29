@@ -42,9 +42,13 @@ module Lucid
         @renderable.state
       end
 
-      def action (name)
-        @renderable.send(name)
+      def context
+        @renderable
       end
+
+      # def action (name)
+      #   @renderable.send(name)
+      # end
 
       def emit_template (name, *a, **b, &block)
         emit @renderable.template(name).render(*a, **b, &block)

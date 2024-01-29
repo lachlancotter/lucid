@@ -1,0 +1,36 @@
+require "checked"
+
+module Lucid
+  module Component
+    #
+    # Provides a standard interface for reading state from
+    # a Reader or Hash.
+    #
+    class StateParam
+      extend Checked
+
+      def self.from (data)
+        check(data).has_type(Hash, FromHash, State::Reader)
+        data.is_a?(Hash) ? FromHash.new(data) : data
+      end
+
+      class FromHash
+        def initialize (hash)
+          @hash = hash
+        end
+
+        # def [] (key)
+        #   @hash[key]
+        # end
+
+        def read (map)
+          @hash || {}
+        end
+
+        def seek (index, key)
+          FromHash.new(@hash[key])
+        end
+      end
+    end
+  end
+end

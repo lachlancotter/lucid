@@ -5,24 +5,35 @@ module Lucid
     # parameter scopes.
     #
     class Stack
+      include Checked
+
       def initialize (top = {})
-        @scope = [top]
+        @scope = [check(top).hash.value]
       end
 
       def top
         @scope.last
       end
 
+      def base
+        @scope.first
+      end
+
       def push_scope (key)
+        check(key).symbol.value
         @scope.last[key] = {} unless @scope.last.key?(key)
-        @scope << @scope.last[key]
+        (@scope.push @scope.last[key]).tap do
+          check(@scope.last).hash
+        end
       end
 
       def pop_scope
-        raise "scope underflow" if @scope.length == 1
+        check(@scope.length).gt(1, "underflow")
         @scope.pop
         # If no params were added to the scope, remove it.
-        @scope.last.delete_if { |k, v| v.empty? }
+        @scope.last.delete_if do |k, v|
+          v.is_a?(Hash) && v.empty?
+        end
       end
 
       def with_scope (key, &block)

@@ -9,7 +9,7 @@ module Lucid
           data   = {}
           map    = Map.build {}
           writer = Writer.new(data)
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/")
         end
       end
@@ -19,7 +19,7 @@ module Lucid
           data   = { foo: "foo" }
           map    = Map.build { path :foo }
           writer = Writer.new(data)
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/foo")
         end
       end
@@ -29,7 +29,7 @@ module Lucid
           data   = { foo: "foo", bar: "bar" }
           writer = Writer.new(data)
           map    = Map.build { path :foo, :bar }
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/foo/bar")
         end
       end
@@ -39,7 +39,7 @@ module Lucid
           data   = { foo: "foo" }
           writer = Writer.new(data)
           map    = Map.build { path "lit", :foo }
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/lit/foo")
         end
       end
@@ -49,7 +49,7 @@ module Lucid
           data   = { foo: "bar" }
           writer = Writer.new(data)
           map    = Map.build { query :foo }
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/?foo=bar")
         end
       end
@@ -59,7 +59,7 @@ module Lucid
           data   = { foo: "bar", baz: "qux" }
           writer = Writer.new(data)
           map    = Map.build { query :foo, :baz }
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/?foo=bar&baz=qux")
         end
       end
@@ -69,7 +69,7 @@ module Lucid
           data   = { foo: "foo", bar: "baz" }
           writer = Writer.new(data)
           map    = Map.build { path :foo; query :bar }
-          writer.write(map)
+          writer.write_state(map)
           expect(writer.to_s).to eq("/foo?bar=baz")
         end
       end
@@ -79,7 +79,9 @@ module Lucid
           data   = { foo: { bar: "baz" } }
           nested = Map.build { query :bar }
           writer = Writer.new(data)
-          writer.write_scoped(:foo, nested)
+          writer.with_scope(:foo) do
+            writer.write_state(nested)
+          end
           expect(writer.to_s).to eq("/?foo[bar]=baz")
         end
       end
@@ -91,21 +93,21 @@ module Lucid
           foo_map = Map.build { query :bar }
           qux_map = Map.build { query :duck }
           top_map = Map.build { query :foo }
-          writer.write(top_map)
-          writer.write_scoped(:foo, foo_map)
-          writer.write_scoped(:qux, qux_map)
+          writer.write_state(top_map)
+          writer.with_scope(:foo) { writer.write_state(foo_map) }
+          writer.with_scope(:qux) { writer.write_state(qux_map) }
           expect(writer.to_s).to eq("/?foo[bar]=baz&qux[duck]=corge")
         end
       end
 
       context "multiple nested path maps" do
         it "maps segments from the first nest" do
-          data     = { foo: { bar: "baz" }, qux: { kiln: "corge" } }
-          writer   = Writer.new(data)
-          foo_map  = Map.build { path :bar }
-          qux_map  = Map.build { path :kiln }
-          writer.write_scoped(:foo, foo_map)
-          writer.write_scoped(:qux, qux_map.default)
+          data    = { foo: { bar: "baz" }, qux: { kiln: "corge" } }
+          writer  = Writer.new(data)
+          foo_map = Map.build { path :bar }
+          qux_map = Map.build { path :kiln }
+          writer.with_scope(:foo) { writer.write_state foo_map }
+          writer.with_scope(:qux) { writer.write_state qux_map.default }
           expect(writer.to_s).to eq("/baz?qux[kiln]=corge")
         end
       end
