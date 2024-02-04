@@ -75,7 +75,7 @@ module Lucid
         # Extract state data from the given href.
         #
         def decode_state (href)
-          state_map.decode(href)
+          State::Reader.new(href).read(self.state_map)
         end
 
         def state_map

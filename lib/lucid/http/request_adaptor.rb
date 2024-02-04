@@ -8,18 +8,28 @@ module Lucid
     # and messages.
     #
     class RequestAdaptor
+      include Checked
+
       def initialize (request)
         @request = request
       end
 
       def state (base_class, config)
-        base_class.decode_state(
-           @request.fullpath.sub(/^#{config[:app_root]}/, "")
-        )
+        base_class.decode_state(href(config[:app_root]))
+      end
+
+      def href (app_root)
+        if @request.fullpath == app_root && app_root == "/"
+          "/"
+        else
+          @request.fullpath.sub(/^#{app_root}/, "")
+        end.tap do |result|
+          check(result).string.not_blank
+        end
       end
 
       def has_message?
-        @request.params[Message::NAME_PARAM] != nil
+        Message.present?(@request)
       end
 
       def has_query?
@@ -39,7 +49,7 @@ module Lucid
       end
 
       def message_name
-        @request.params[Message::NAME_PARAM]
+        Message.decode_name(@request)
       end
 
       def message_class
@@ -47,9 +57,7 @@ module Lucid
       end
 
       def message_params
-        get_params  = @request.GET.dig(Message::ARGS_PARAM) || {}
-        post_params = @request.POST.dig(Message::ARGS_PARAM) || {}
-        get_params.merge(post_params)
+        Message.decode_params(@request)
       end
     end
   end

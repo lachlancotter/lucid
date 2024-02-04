@@ -62,6 +62,7 @@ module Lucid
         with_context do
           if @request.has_query?
             validated!(@request.message) do |page|
+              Logger.link(@request.message)
               base_view.visit(page)
             end
           end
@@ -89,6 +90,7 @@ module Lucid
           yield message
         else
           Validation::Failed.notify(message: message)
+          Logger.error(message, message.errors)
         end
       end
 

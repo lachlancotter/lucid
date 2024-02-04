@@ -1,4 +1,4 @@
-require "lucid/validation_failed"
+require "lucid/validation"
 
 module Shopping
   class CheckoutComponent < Lucid::Component::Base
@@ -8,7 +8,7 @@ module Shopping
       Session.current.cart
     end
 
-    on Lucid::ValidationFailed do |event|
+    on Lucid::Validation::Failed do |event|
       if event.message.is_a? SetShippingAddress
         # ap event.message.errors
         @invalid_set_shipping_address = event.message
@@ -19,9 +19,7 @@ module Shopping
       if @invalid_set_shipping_address
         @invalid_set_shipping_address.params
       else
-        {
-           cart_id: cart.id,
-        }
+        SetShippingAddress.new(cart_id: cart.id).params
       end
     end
 
@@ -43,8 +41,8 @@ module Shopping
         emit_view :cart_view
         emit SetShippingAddress.form(form_params) { |f|
           f.hidden(:cart_id)
+          emit_template :form_field, f, :name
           f.struct(:address) { |a|
-            emit_template :form_field, a, :name
             emit_template :form_field, a, :street
             emit_template :form_field, a, :city
             emit_template :form_field, a, :state

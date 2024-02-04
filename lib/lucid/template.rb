@@ -46,6 +46,10 @@ module Lucid
         @renderable
       end
 
+      def link (name)
+        @renderable.link(name)
+      end
+
       # def action (name)
       #   @renderable.send(name)
       # end

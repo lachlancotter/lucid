@@ -28,15 +28,16 @@ module Shopping
 
   class SetShippingAddress < Lucid::Command
     attribute :cart_id
-    attribute :address
+    attribute :name
+    attribute :address, default: {}
     validate do
       required(:cart_id).filled(:integer)
+      required(:name).filled(:string)
       required(:address).hash do
-        required(:name).filled
-        required(:street).filled
-        required(:city).filled
-        required(:state).filled
-        required(:zip).filled
+        required(:street).filled(:string)
+        required(:city).filled(:string)
+        required(:state).filled(:string)
+        required(:zip).filled(:string)
       end
     end
   end
@@ -44,7 +45,7 @@ module Shopping
   class PlaceOrder < Lucid::Command
     attribute :cart_id
     validate do
-      required(:cart_id)
+      required(:cart_id).filled(:integer)
     end
   end
 end

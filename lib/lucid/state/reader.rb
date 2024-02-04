@@ -9,6 +9,7 @@ module Lucid
       include Checked
 
       def initialize (fullpath, cursor = Cursor.new)
+        check(fullpath).string.not_blank
         @fullpath = fullpath
         @cursor   = cursor
       end
@@ -55,7 +56,9 @@ module Lucid
       end
 
       def path
-        @fullpath.split("?").first
+        @fullpath.split("?").first.tap do |result|
+          check(result).string
+        end
       end
 
       def query_string
@@ -65,6 +68,7 @@ module Lucid
       private
 
       def parse_path (path)
+        check(path).string
         path.sub(/^\//, "").split("/")
       end
 

@@ -19,20 +19,20 @@ module Lucid
         Papercraft.html do |message|
           form action: message.href, method: message.http_method do
             # input type: :hidden, name: :state, value: message.encode_state
-            input type: :hidden, name: Message::NAME_PARAM, value: message.message_name
-            emit_yield Builder.new(self, message.params, message.errors, Path.new(Message::ARGS_PARAM))
+            input type: :hidden, name: message.name_param, value: message.message_name
+            emit_yield Builder.new(self, message.params, message.errors, message.form_field_path)
           end
         end.apply(@message, &@block)
       end
 
       class Builder
+        include Checked
         include Renderable
 
         def initialize (renderer, data, errors, path = Path.new)
-          raise "no data" unless data
           @renderer = renderer
-          @data     = data
-          @errors   = errors
+          @data     = check(data).hash.value
+          @errors   = check(errors).hash.value
           @path     = path
         end
 
@@ -45,24 +45,41 @@ module Lucid
         def struct (name)
           yield Builder.new(
              @renderer,
-             @data.fetch(name, {}),
-             @errors.fetch(name, {}),
+             nested_data(name),
+             nested_errors(name),
              @path.concat(name)
           )
         end
 
+        def nested_data (key)
+          @data.fetch(key, {}).tap do |data|
+            check(data).hash
+          end
+        end
+
+        def nested_errors (key)
+          @errors.fetch(key, {}).tap do |errors|
+            check(errors).hash
+          end
+        end
+
         def field_id (key)
-          raise "invalid key: #{key}" unless
-             key.is_a?(String) || key.is_a?(Symbol)
+          check(key).type(String, Symbol)
           @path.concat(key).join("_")
         end
 
         def field_name (key)
+          check(key).type(String, Symbol)
           if @path.depth == 0
             key.to_s
           else
             @path.head + "[#{ @path.tail.concat(key).components.join('][') }]"
           end
+        end
+
+        def field_value (key)
+          check(key).type(String, Symbol)
+          @data.fetch(key.to_s, "")
         end
 
         class << self
@@ -81,7 +98,7 @@ module Lucid
           input({
              type:  :hidden,
              name:  field_name(key),
-             value: data.fetch(key, ""),
+             value: field_value(key),
              id:    field_id(key)
           }.merge(options))
         end
@@ -96,7 +113,7 @@ module Lucid
           input({
              type:  :text,
              name:  field_name(key),
-             value: data.fetch(key, ""),
+             value: field_value(key),
              id:    field_id(key)
           }.merge(options))
         end

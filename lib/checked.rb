@@ -22,12 +22,21 @@ module Checked
     def initialize (value)
       @value   = value
       @context = binding.of_caller(STACK_DEPTH)
+      @caller  = binding.of_caller(STACK_DEPTH + 1)
     end
 
-    attr_reader :value, :context
+    attr_reader :value, :context, :caller
+
+    def location
+      @context.source_location.join(':')
+    end
+
+    def caller_location
+      @caller.source_location.join(':')
+    end
 
     def has_type (*types)
-      unless types.concat([RSpec::Mocks::Double]).any? { |type| @value.is_a?(type) }
+      unless @value.is_a?(RSpec::Mocks::Double) || types.any? { |type| @value.is_a?(type) }
         raise Failure.new(self, "should have type #{types.join(' or ')}")
       end; self
     end
@@ -48,6 +57,12 @@ module Checked
       end; self
     end
 
+    def not_blank
+      if @value.nil? || @value.empty?
+        raise Failure.new(self, "should not be blank")
+      end; self
+    end
+
     def has_key (key)
       unless @value.key?(key)
         raise Failure.new(self, "should have key #{key}")
@@ -61,15 +76,19 @@ module Checked
     end
 
     def gt (other, message = "should be greater than #{other}")
-      raise Failure.new(self, message) unless @value > other ; self
+      raise Failure.new(self, message) unless @value > other; self
+    end
+
+    def string
+      type(String); self
     end
 
     def symbol
-      has_type(Symbol); self
+      type(Symbol); self
     end
 
     def hash
-      has_type(Hash); self
+      type(Hash); self
     end
 
   end
@@ -89,7 +108,8 @@ module Checked
           value: #{@check.value}
           class: #{@check.value.class}
           message: #{@message}
-          at: #{listing.filename}:#{listing.line_number}
+          at: #{@check.location}
+          caller: #{@check.caller_location}
         ----------------------------------------
         #{listing.snippet}
         ----------------------------------------
@@ -119,6 +139,10 @@ module Checked
 
     def line_number
       @line
+    end
+
+    def location
+      "#{@file}:#{@line}"
     end
 
     def snippet (context = 3)

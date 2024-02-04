@@ -26,6 +26,7 @@ module Shopping
       cart                  = Cart.get(cmd.cart_id)
       cart.shipping_address = cmd.address
       cart.save
+      ShippingAddressUpdated.notify(cmd.params)
     end
 
     perform PlaceOrder do |cmd|

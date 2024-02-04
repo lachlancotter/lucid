@@ -112,7 +112,8 @@ module Shopping
         click_link "Checkout"
       end
       within ".checkout" do
-        fill_in "Name", with: ""
+        fill_in "Name", with: "Invalid Test"
+        fill_in "Street", with: ""
         click_button "Continue"
         expect(page).to have_content("must be filled")
       end

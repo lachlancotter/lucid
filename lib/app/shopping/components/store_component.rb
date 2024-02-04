@@ -11,9 +11,8 @@ require "app/shopping/session"
 module Shopping
   class StoreComponent < Lucid::Component::Base
 
-    href do
-      path :category_slug
-      path :product_id
+    map do
+      path :category_slug, :product_id
     end
 
     state do

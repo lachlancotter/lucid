@@ -6,6 +6,7 @@ module Lucid
       # links are applied only to the current Linkable instance.
       #
       def link (name = nil, params = {})
+        check(name).symbol
         Link::Scoped.new(self, name, params)
       end
 

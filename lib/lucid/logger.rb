@@ -26,15 +26,38 @@ module Lucid
       end
 
       def response (response)
-        puts("  Response(#{response.headers.inspect})")
+        puts("  📤 Response:")
+        response.headers.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
+      end
+
+      def link (link)
+        puts("  🔗 #{link.class.name}:")
+        link.params.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
       end
 
       def command (command)
-        puts("  #{command.class.name}(#{command.params.inspect})")
+        puts("  🛠️ #{command.class.name}:")
+        command.params.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
       end
 
       def event (event)
-        puts("  #{event.class.name}(#{event.params.inspect})")
+        puts("  🔔 #{event.class.name}:")
+        event.params.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
+      end
+
+      def error (error, data = {})
+        puts("  ❌ #{error}")
+        data.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
       end
 
       private

@@ -20,6 +20,23 @@ module Lucid
     EXECUTE       = "execute".freeze
     VALIDATE      = "validate".freeze
 
+    class << self
+      def present? (request)
+        request.params[MESSAGE_PARAM] != nil &&
+           request.params[MESSAGE_PARAM][NAME_PARAM] != nil
+      end
+
+      def decode_name (request)
+        request.params[MESSAGE_PARAM][NAME_PARAM]
+      end
+
+      def decode_params (request)
+        get_params  = request.GET.dig(MESSAGE_PARAM, ARGS_PARAM) || {}
+        post_params = request.POST.dig(MESSAGE_PARAM, ARGS_PARAM) || {}
+        get_params.merge(post_params)
+      end
+    end
+
     def query_params
       {
          MESSAGE_PARAM => {
@@ -27,6 +44,14 @@ module Lucid
             ARGS_PARAM => params.map { |k, v| [k.to_s, v] }.to_h
          }
       }
+    end
+
+    def name_param
+      "msg[name]"
+    end
+
+    def form_field_path
+      Path.new([MESSAGE_PARAM, ARGS_PARAM])
     end
 
     #
@@ -117,7 +142,7 @@ module Lucid
       include Checked
 
       def initialize (app)
-        @app = check(app).has_type(Component::Base).value
+        @app = check(app).type(Component::Base, App::Cycle).value
       end
 
       def href (message)
