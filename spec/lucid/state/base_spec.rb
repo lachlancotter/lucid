@@ -26,7 +26,9 @@ module Lucid
             }
           end
           component = component_class.build(buffer)
+          expect(component.state.to_h).to eq(foo: "foo")
           expect(component.deep_state).to eq(foo: "foo", sub: { bar: "bar" })
+          expect(component.sub.state.to_h).to eq(bar: "bar")
         end
       end
     end

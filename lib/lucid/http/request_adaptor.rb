@@ -14,8 +14,12 @@ module Lucid
         @request = request
       end
 
-      def state (base_class, config)
-        base_class.decode_state(href(config[:app_root]))
+      # def state (base_class, config)
+      #   base_class.decode_state(href(config[:app_root]))
+      # end
+
+      def state_reader (config)
+        State::Reader.new(href(config[:app_root]))
       end
 
       def href (app_root)

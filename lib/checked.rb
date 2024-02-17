@@ -36,7 +36,9 @@ module Checked
     end
 
     def has_type (*types)
-      unless @value.is_a?(RSpec::Mocks::Double) || types.any? { |type| @value.is_a?(type) }
+      unless (defined?(RSpec::Mocks::Double) &&
+         @value.is_a?(RSpec::Mocks::Double)) ||
+         types.any? { |type| @value.is_a?(type) }
         raise Failure.new(self, "should have type #{types.join(' or ')}")
       end; self
     end
@@ -79,8 +81,20 @@ module Checked
       raise Failure.new(self, message) unless @value > other; self
     end
 
+    def includes (hash)
+      hash.each do |key, value|
+        unless @value.key?(key) && @value[key] == value
+          raise Failure.new(self, "should include #{key} => #{value}")
+        end
+      end
+    end
+
     def string
       type(String); self
+    end
+
+    def integer
+      type(Integer); self
     end
 
     def symbol

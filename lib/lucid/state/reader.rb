@@ -8,10 +8,13 @@ module Lucid
     class Reader
       include Checked
 
-      def initialize (fullpath, cursor = Cursor.new)
-        check(fullpath).string.not_blank
-        @fullpath = fullpath
-        @cursor   = cursor
+      #
+      # URL param includes a path and query string.
+      #
+      def initialize (url, cursor = Cursor.new)
+        check(url).string.not_blank
+        @url    = url
+        @cursor = cursor
       end
 
       #
@@ -30,7 +33,7 @@ module Lucid
       # Returns a reader for the nested scope.
       #
       def seek (path_index, scope_key)
-        Reader.new(@fullpath, @cursor.advance(path_index).scope(scope_key))
+        Reader.new(@url, @cursor.advance(path_index).scope(scope_key))
       end
 
       def read_path_segment (index)
@@ -43,7 +46,7 @@ module Lucid
 
       def with_scope (key)
         yield(
-           Reader.new(@fullpath, @cursor.scope(key))
+           Reader.new(@url, @cursor.scope(key))
         )
       end
 
@@ -56,13 +59,13 @@ module Lucid
       end
 
       def path
-        @fullpath.split("?").first.tap do |result|
+        @url.split("?").first.tap do |result|
           check(result).string
         end
       end
 
       def query_string
-        @fullpath.split("?").last
+        @url.split("?").last
       end
 
       private

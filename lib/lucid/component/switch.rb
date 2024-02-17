@@ -11,7 +11,7 @@ module Lucid
 
       def initialize (key, map)
         @key = check(key).symbol.value
-        @map = check(map).hash.every_value { |v| v.has_type(Class) }.value
+        @map = check(map).hash.every_value { |v| v.type(Class) }.value
       end
 
       attr_reader :key

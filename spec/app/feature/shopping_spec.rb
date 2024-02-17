@@ -41,6 +41,9 @@ module Shopping
         expect(page).to have_content("1")
         expect(page).to have_content("$2,499")
       end
+      within ".product-details" do
+        expect(page).to have_content("Gibson Les Paul")
+      end
     end
 
     scenario "increment product quantity" do

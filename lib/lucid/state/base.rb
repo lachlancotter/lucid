@@ -20,9 +20,10 @@ module Lucid
     # Encapsulates the application state.
     #
     class Base
+      include Checked
 
       def initialize(data = {})
-        @data = immutable(validated(data))
+        @data = defaults.merge(data)
         raise Invalid, self unless valid?
       end
 
@@ -34,17 +35,19 @@ module Lucid
         @data.to_h
       end
 
-      def immutable (data)
-        Immutable::Hash[data.map { |k, v| [k, v] }]
-      end
+      # def immutable (data)
+      #   Immutable::Hash[data.map { |k, v| [k, v] }]
+      # end
 
-      def validated (data)
-        if schema
-          schema.call(defaults.merge(data)).to_h
-        else
-          defaults.merge(data)
-        end
-      end
+      # def validated (data)
+      #   if schema
+      #     schema.call(data).to_h
+      #   else
+      #     data
+      #   end.tap do |result|
+      #     check(result).hash.includes(data)
+      #   end
+      # end
 
       def defaults
         self.class.defaults || {}
@@ -82,11 +85,7 @@ module Lucid
       # Merges the new data into the state, modifying this object.
       #
       def update (data)
-        @data = immutable(
-           validated(
-              @data.merge(data)
-           )
-        )
+        @data = @data.merge(data)
       end
 
       #

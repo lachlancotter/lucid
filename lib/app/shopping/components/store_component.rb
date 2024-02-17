@@ -10,34 +10,23 @@ require "app/shopping/session"
 
 module Shopping
   class StoreComponent < Lucid::Component::Base
+    path :category_slug, :product_id
 
-    map do
-      path :category_slug, :product_id
+    visit(ProductList) { |link| state.update(category_slug: link.category_slug) }
+    visit(ProductDetails) do |link|
+      state.update(product_id: link.product_id)
     end
 
-    state do
-      attribute :category_slug
-      attribute :product_id
-    end
+    nest :nav, CategoryNav
+    nest :cart_view, CartDetail
+
+    # ===================================================== #
+    #    Data
+    # ===================================================== #
 
     def cart
       Session.current.cart
     end
-
-    visit ProductList do |link|
-      state.update(category_slug: link.category_slug)
-    end
-
-    visit ProductDetails do |link|
-      state.update(product_id: link.product_id)
-    end
-
-    # ===================================================== #
-    #    Nested
-    # ===================================================== #
-
-    nest :nav, CategoryNav
-    nest :cart_view, CartDetail
 
     def products
       if state[:category_slug].nil?
@@ -50,8 +39,13 @@ module Shopping
     end
 
     def product
-      Product.find(state[:product_id])
+      Product.find(state[:product_id].to_i)
     end
+
+    # ===================================================== #
+    #    View
+    # ===================================================== #
+
 
     template do
       div(style: "display: flex; flex-direction: row; gap: 1em;") {

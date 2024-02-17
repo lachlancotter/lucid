@@ -41,6 +41,7 @@ module Lucid
       end
 
       def initialize (params = {}, &config)
+        check(params).type(State::Reader)
         @params = StateParam.from(params)
         @state = self.class.build_state(@params.read(state_map))
         # nests.each do |name, nest|

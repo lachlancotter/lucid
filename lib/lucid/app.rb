@@ -69,6 +69,7 @@ module Lucid
           write_response
         end
       rescue State::Invalid => e
+        Logger.error(e.message)
         write_error_response(e)
       end
 
@@ -82,6 +83,7 @@ module Lucid
           write_response
         end
       rescue State::Invalid => e
+        Logger.error(e.message)
         write_error_response(e)
       end
 
@@ -109,7 +111,7 @@ module Lucid
       end
 
       def base_view
-        @base_view ||= build(@request.state(base_view_class, @config))
+        @base_view ||= build(@request.state_reader(@config))
       end
 
       def build (state)

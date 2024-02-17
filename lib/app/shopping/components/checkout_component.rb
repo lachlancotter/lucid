@@ -41,8 +41,8 @@ module Shopping
         emit_view :cart_view
         emit SetShippingAddress.form(form_params) { |f|
           f.hidden(:cart_id)
-          emit_template :form_field, f, :name
           f.struct(:address) { |a|
+            emit_template :form_field, a, :name
             emit_template :form_field, a, :street
             emit_template :form_field, a, :city
             emit_template :form_field, a, :state

@@ -6,12 +6,20 @@ module Shopping
   class Base < Lucid::Component::Base
     path :step, default: "store"
 
+    validate do
+      required(:step).
+         filled(:string).
+         value(included_in?: %w[store checkout])
+    end
+
     nest :current_step, switch(:step,
        store:    StoreComponent,
        checkout: CheckoutComponent
     )
 
-    visit(Checkout) { state.update(step: "checkout") }
+    visit Checkout do
+      state.update(step: "checkout")
+    end
 
     template do
       head {

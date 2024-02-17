@@ -1,5 +1,7 @@
 module Shopping
   class Product < OpenStruct
+    extend Checked
+
     def self.all
       data_file = File.dirname(__FILE__).concat("/../data/products.yml")
       YAML.load(File.read(data_file)).map do |data|
@@ -12,6 +14,7 @@ module Shopping
     end
 
     def self.find (id)
+      check(id).integer
       all.find { |p| p.id == id.to_i }
     end
   end

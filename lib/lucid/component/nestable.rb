@@ -107,9 +107,7 @@ module Lucid
         end
 
         def build (nested_state_reader, parent_component, collection_key = nil)
-          check(nested_state_reader).responds_to(:read)
-          nested_state = nested_state_reader.read(constructor(parent_component).state_map)
-          constructor(parent_component).new(nested_state) do |config|
+          constructor(parent_component).new(nested_state_reader) do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config[config_key] = value(parent_component, collection_key) if collection_key
