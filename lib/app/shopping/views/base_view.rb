@@ -6,7 +6,7 @@ module Shopping
     # ===================================================== #
 
     path :step, default: "store"
-    visit Store::Link, step: "store"
+    visit Product::Link, step: "store"
     visit Checkout::Link, step: "checkout"
 
     # ===================================================== #

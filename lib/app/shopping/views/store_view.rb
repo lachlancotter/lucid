@@ -1,8 +1,8 @@
 module Shopping
   class StoreView < Lucid::Component::Base
     path :category_slug, :product_id
-    visit Store::ListProducts, :category_slug
-    visit Store::ShowProduct, :product_id
+    visit Product::List, :category_slug
+    visit Product::Show, :product_id
 
     nest :nav, CategoryNavView
     nest :cart_view, CartView
@@ -46,7 +46,7 @@ module Shopping
       div(class: "product-list") {
         products.each do |product|
           div {
-            emit Store::ShowProduct.link(product.name, product_id: product.id)
+            emit Product::Show.link(product.name, product_id: product.id)
           }
         end
       }

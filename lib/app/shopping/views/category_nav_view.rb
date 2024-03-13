@@ -8,7 +8,7 @@ module Shopping
     # end
 
     def category_link (cat)
-      Store::ListProducts.link(cat.name, category_slug: cat.slug)
+      Product::List.link(cat.name, category_slug: cat.slug)
     end
 
     template do
