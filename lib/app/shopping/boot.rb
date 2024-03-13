@@ -1,50 +1,48 @@
 require "zeitwerk"
+require "./lib/checked"
 
-# unless defined?(LOADER)
-#   LOADER = Zeitwerk::Loader.new
-#   LOADER.push_dir("./lib/app")
-#   LOADER.enable_reloading
-#   LOADER.setup
-# end
+module Lucid
 
-require "lucid/app"
-require "app/shopping/components/base"
-require "app/shopping/actions"
+end
 
 module Shopping
-  class App < Sinatra::Base
-    configure do
-      set :environment, :development
-      set :raise_errors, true
-      set :show_exceptions, false
-      set :public_folder, File.dirname(__FILE__) + "/public"
-      set :static, true
-    end
 
-    get "/?*" do
-      # LOADER.reload
-      app.query(request, response)
-    end
-
-    post "/?*" do
-      # LOADER.reload
-      app.command(request, response)
-    end
-
-    def app
-      Lucid::App.new(app_config)
-    end
-
-    # TODO make app Configurable
-    def app_config
-      {
-         base_view_class: Shopping::Base,
-         command_bus:     Shopping::Actions.new,
-         app_root:        "/"
-      }
-    end
-  end
-  Shopping::Session.current = Shopping::Session.new(
-     cart_id: rand(50000)
-  )
 end
+
+unless defined?(LOADER)
+  LOADER = Zeitwerk::Loader.new
+  LOADER.push_dir("./lib/lucid", namespace: Lucid)
+  LOADER.push_dir("./lib/app/shopping/models", namespace: Shopping)
+  LOADER.push_dir("./lib/app/shopping/events", namespace: Shopping)
+  LOADER.push_dir("./lib/app/shopping/commands", namespace: Shopping)
+  LOADER.push_dir("./lib/app/shopping/links", namespace: Shopping)
+  LOADER.push_dir("./lib/app/shopping/views", namespace: Shopping)
+  LOADER.push_dir("./lib/app/shopping/actions", namespace: Shopping)
+  LOADER.enable_reloading
+  LOADER.setup
+end
+
+%w[models events commands links views].each do |dir|
+  path = "./lib/app/shopping/#{dir}"
+  Dir["#{path}/*.rb"].each do |f|
+    puts f
+    require f
+  end
+end
+
+
+
+
+Shopping::Session.init
+
+require "app/shopping/app"
+# Shopping::App
+
+# %w[models commands events links views].each do |dir|
+#   Dir["./lib/app/shopping/#{dir}/*.rb"].each do |f|
+#     puts f
+#     require f
+#   end
+# end
+#
+# require "app/shopping/app"

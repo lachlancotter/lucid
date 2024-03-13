@@ -1,6 +1,3 @@
-require "app/shopping/model/cart"
-require "app/shopping/session"
-
 module Shopping
 
   describe "Shopping", type: :feature do

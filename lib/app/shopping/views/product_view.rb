@@ -1,5 +1,5 @@
 module Shopping
-  class ProductDetail < Lucid::Component::Base
+  class ProductView < Lucid::Component::Base
     setting :product, default: nil
 
     template do

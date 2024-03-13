@@ -8,6 +8,7 @@ require "lucid/component/mappable"
 require "lucid/component/linkable"
 require "lucid/component/eventable"
 require "lucid/component/nestable"
+require "lucid/component/echoable"
 
 module Lucid
   module Component
@@ -24,6 +25,7 @@ module Lucid
       include Eventable
       include Nestable
       include Renderable
+      include Echoable
 
       # The path from the web root to the application root.
       # Used to encode URLs for the webserver. Useful
@@ -41,7 +43,7 @@ module Lucid
       end
 
       def initialize (params = {}, &config)
-        check(params).type(State::Reader)
+        check(params).type(Hash, StateParam::FromHash, State::Reader)
         @params = StateParam.from(params)
         @state = self.class.build_state(@params.read(state_map))
         # nests.each do |name, nest|

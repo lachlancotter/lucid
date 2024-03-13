@@ -6,7 +6,7 @@ module Lucid
     # A Switch is a factory for components of dynamic class.
     # It takes a key and a map of values to component classes.
     #
-    class Switch
+    class Match
       include Checked
 
       def initialize (key, map)

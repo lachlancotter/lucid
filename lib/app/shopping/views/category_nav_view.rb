@@ -1,7 +1,5 @@
-require "app/shopping/model/category"
-
 module Shopping
-  class CategoryNav < Lucid::Component::Base
+  class CategoryNavView < Lucid::Component::Base
     # config do
     #   option :items, Category.all
     #   validate do
@@ -10,7 +8,7 @@ module Shopping
     # end
 
     def category_link (cat)
-      ProductList.link(cat.name, category_slug: cat.slug)
+      Store::ListProducts.link(cat.name, category_slug: cat.slug)
     end
 
     template do

@@ -1,5 +1,3 @@
-require "app/shopping/model/cart_item"
-
 module Shopping
   class Cart
     def self.get (id)

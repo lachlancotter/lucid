@@ -10,14 +10,18 @@ require "binding_of_caller"
 module Checked
 
   def check (value)
-    Check.new(value)
+    Check[value]
   end
 
   #
   # A context for making assertions about a value.
   #
   class Check
-    STACK_DEPTH = 2
+    STACK_DEPTH = 3
+
+    def self.[] (value)
+      new(value)
+    end
 
     def initialize (value)
       @value   = value

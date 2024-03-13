@@ -1,5 +1,5 @@
 require "checked"
-require "lucid/component/switch"
+require "lucid/component/match"
 
 module Lucid
   module Component
@@ -52,8 +52,8 @@ module Lucid
           end
         end
 
-        def switch (key, map)
-          Switch.new(key, map)
+        def match (key, map)
+          Match.new(key, map)
         end
 
         def nests # Hash[Symbol => Nest]
@@ -78,7 +78,7 @@ module Lucid
         def initialize (parent_class, name, constructor, **options, &block)
           @parent_class = parent_class
           @name         = name
-          @constructor  = check(constructor).has_type(Class, Switch).value
+          @constructor  = check(constructor).has_type(Class, Match).value
           @options      = options
           @block        = block
         end
@@ -117,7 +117,7 @@ module Lucid
 
         def constructor (parent_component)
           check(parent_component).has_type(Component::Base)
-          @constructor.is_a?(Switch) ? @constructor.component_class(parent_component) : @constructor
+          @constructor.is_a?(Match) ? @constructor.component_class(parent_component) : @constructor
         end
 
         #

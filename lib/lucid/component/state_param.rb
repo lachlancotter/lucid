@@ -31,8 +31,11 @@ module Lucid
         end
 
         def seek (index, key)
-          check(@hash).has_key(key)
-          FromHash.new(@hash[key])
+          if @hash.key?(key)
+            FromHash.new(@hash[key])
+          else
+            FromHash.new({})
+          end
         end
       end
     end

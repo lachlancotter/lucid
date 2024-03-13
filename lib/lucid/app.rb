@@ -4,6 +4,8 @@ require "lucid/logger"
 require "lucid/event_bus"
 require "lucid/command"
 require "lucid/link"
+require "lucid/event"
+require "lucid/component/base"
 require "lucid/http/request_adaptor"
 require "lucid/http/response_adaptor"
 

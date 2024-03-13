@@ -1,24 +1,11 @@
-require "awesome_print"
-require "lucid/component/base"
-require "app/shopping/model/product"
-require "app/shopping/links"
-require "app/shopping/commands"
-require "app/shopping/components/category_nav"
-require "app/shopping/components/product_detail"
-require "app/shopping/components/cart_detail"
-require "app/shopping/session"
-
 module Shopping
-  class StoreComponent < Lucid::Component::Base
+  class StoreView < Lucid::Component::Base
     path :category_slug, :product_id
+    visit Store::ListProducts, :category_slug
+    visit Store::ShowProduct, :product_id
 
-    visit(ProductList) { |link| state.update(category_slug: link.category_slug) }
-    visit(ProductDetails) do |link|
-      state.update(product_id: link.product_id)
-    end
-
-    nest :nav, CategoryNav
-    nest :cart_view, CartDetail
+    nest :nav, CategoryNavView
+    nest :cart_view, CartView
 
     # ===================================================== #
     #    Data
@@ -46,7 +33,6 @@ module Shopping
     #    View
     # ===================================================== #
 
-
     template do
       div(style: "display: flex; flex-direction: row; gap: 1em;") {
         emit_view :nav
@@ -60,7 +46,7 @@ module Shopping
       div(class: "product-list") {
         products.each do |product|
           div {
-            emit ProductDetails.link(product.name, product_id: product.id)
+            emit Store::ShowProduct.link(product.name, product_id: product.id)
           }
         end
       }
@@ -74,7 +60,7 @@ module Shopping
           h3 product.name
           p product.description
           p product.price
-          emit AddProductToCart.button(
+          emit Cart::AddProduct.button(
              "Add to Cart", product_id: product.id, cart_id: cart.id
           )
         end

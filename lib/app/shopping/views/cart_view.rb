@@ -1,28 +1,33 @@
-require "app/shopping/events"
-require "app/shopping/model/cart"
-
 module Shopping
-  class CartDetail < Lucid::Component::Base
+  class CartView < Lucid::Component::Base
 
     def cart
       Session.current.cart
     end
 
-    on CartItemChanged do |event|
+    on Cart::ItemChanged do |event|
       render
     end
 
+    # ===================================================== #
+    #    Actions
+    # ===================================================== #
+
     def inc_button (item)
-      AddProductToCart.button("+",
+      Cart::AddProduct.button("+",
          product_id: item.product_id, cart_id: cart.id
       )
     end
 
     def dec_button (item)
-      RemoveProductFromCart.button("-",
+      Cart::RemoveProduct.button("-",
          product_id: item.product_id, cart_id: cart.id
       )
     end
+
+    # ===================================================== #
+    #    Template
+    # ===================================================== #
 
     template do
       div(class: "cart") {
@@ -40,7 +45,7 @@ module Shopping
           end
         }
         p { format_currency(cart.total) }
-        p { emit Checkout.link("Checkout") }
+        p { emit Checkout::Link.link("Checkout") }
       }
     end
 

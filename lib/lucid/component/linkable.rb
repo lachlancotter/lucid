@@ -16,12 +16,17 @@ module Lucid
       # href for global links.
       #
       def visit (link)
-        instance_exec(link, &self.class.link(link.key)) if visits?(link)
+        check(link).type(Link)
+        visits?(link) do |application|
+          application.call(self, link)
+        end
         nests.values.each { |nest| nest.visit(link) }
       end
 
       def visits? (link)
-        self.class.link(link.key) ? true : false
+        check(link).type(Link)
+        link_application = self.class.link(link.key)
+        yield link_application if link_application
       end
 
       def self.included (base)
@@ -39,13 +44,35 @@ module Lucid
         #
         # link_key may be a Symbol or a Link subclass.
         #
-        def visit (link_key, &block)
+        def visit (link_key, *attrs, **map, &block)
           @links           ||= {}
-          @links[link_key] = block
+          @links[link_key] = LinkApplication.new(*attrs, **map, &block)
         end
 
         def link (link_key)
           (@links || {})[link_key]
+        end
+      end
+
+      #
+      # Applies a link to a component using a list of attribute symbols,
+      # a Hash of symbols or a block.
+      #
+      class LinkApplication
+        def initialize (*attrs, **map, &block)
+          @attrs = attrs
+          @map   = map
+          @block = block
+        end
+
+        def call (component, link)
+          if @attrs.any?
+            component.state.update(
+               link.to_h.select { |k, _| @attrs.include?(k) }
+            )
+          end
+          component.state.update(@map) if @map.any?
+          component.instance_exec(link, &@block) if @block
         end
       end
     end

@@ -44,7 +44,7 @@ module Lucid
           # @state_map = block
         end
 
-        def path (*args, default: nil, defaults: [], nest: nil)
+        def path (*args, default: nil, defaults: [], in: nil, nest: nil)
           map_attrs(*args, default: default, defaults: defaults) do |map, name, index|
             map.path(name, index)
           end

@@ -6,7 +6,7 @@ module Lucid
 
       context "global link" do
         context "root component" do
-          it "applies the destination state" do
+          it "applies the destination state with a block" do
             app_class = Class.new(Component::Base) do
               visit Link do |link|
                 state.update(foo: link[:foo])
@@ -14,6 +14,24 @@ module Lucid
             end
             app       = app_class.new
             app.visit(Link.new(foo: "bar")).to_h
+            expect(app.deep_state).to eq({ foo: "bar" })
+          end
+
+          it "applies the destination state with a symbol" do
+            app_class = Class.new(Component::Base) do
+              visit Link, :foo
+            end
+            app       = app_class.new
+            app.visit(Link.new(foo: "bar")).to_h
+            expect(app.deep_state).to eq({ foo: "bar" })
+          end
+
+          it "applies the destination state with a Hash" do
+            app_class = Class.new(Component::Base) do
+              visit Link, foo: "bar"
+            end
+            app       = app_class.new
+            app.visit(Link.new)
             expect(app.deep_state).to eq({ foo: "bar" })
           end
         end
