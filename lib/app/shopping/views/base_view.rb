@@ -13,15 +13,15 @@ module Shopping
     #    Nests
     # ===================================================== #
 
-    nest :current_step, match(:step,
+    nest :content, match(:step,
        store:    StoreView,
        checkout: CheckoutView
     )
 
-    # nest :current_step do
-    #   state.match do
-    #     step("store") { StoreView }
-    #     step("checkout") { CheckoutView }
+    # nest :content do |step|
+    #   match(step) do
+    #     is("store") { StoreView }
+    #     is("checkout") { CheckoutView }
     #   end
     # end
 

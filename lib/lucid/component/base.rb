@@ -9,6 +9,7 @@ require "lucid/component/linkable"
 require "lucid/component/eventable"
 require "lucid/component/nestable"
 require "lucid/component/echoable"
+require "lucid/component/dataflow"
 
 module Lucid
   module Component
@@ -26,6 +27,7 @@ module Lucid
       include Nestable
       include Renderable
       include Echoable
+      include Dataflow
 
       # The path from the web root to the application root.
       # Used to encode URLs for the webserver. Useful

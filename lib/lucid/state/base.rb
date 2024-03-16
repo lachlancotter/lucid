@@ -21,6 +21,7 @@ module Lucid
     #
     class Base
       include Checked
+      include Observable::Subject
 
       def initialize(data = {})
         @data = defaults.merge(data)
@@ -86,6 +87,7 @@ module Lucid
       #
       def update (data)
         @data = @data.merge(data)
+        notify(data)
       end
 
       #

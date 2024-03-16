@@ -1,4 +1,5 @@
 require "zeitwerk"
+require "awesome_print"
 require "./lib/checked"
 
 module Lucid
@@ -29,9 +30,6 @@ end
     require f
   end
 end
-
-
-
 
 Shopping::Session.init
 
