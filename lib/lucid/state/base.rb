@@ -7,10 +7,10 @@ module Lucid
       def initialize(state)
         super(
            <<~MSG
-           Invalid state: 
-            #{state.errors.to_h}
-            ---
-            #{state.to_h}
+             Invalid state: 
+              #{state.errors.to_h}
+              ---
+              #{state.to_h}
            MSG
         )
       end
@@ -21,7 +21,6 @@ module Lucid
     #
     class Base
       include Checked
-      include Observable::Subject
 
       def initialize(data = {})
         @data = defaults.merge(data)
@@ -30,6 +29,10 @@ module Lucid
 
       def [] (key)
         @data[key]
+      end
+
+      def key? (key)
+        @data.key?(key)
       end
 
       def to_h
@@ -87,7 +90,6 @@ module Lucid
       #
       def update (data)
         @data = @data.merge(data)
-        notify(data)
       end
 
       #
@@ -114,9 +116,15 @@ module Lucid
         # Define an attribute.
         #
         def attribute (name, **options)
+          @attributes ||= []
+          @attributes << name
           @defaults       ||= {}
           @defaults[name] = options[:default]
           define_method(name) { self[name] }
+        end
+
+        def attributes
+          @attributes || []
         end
 
         #

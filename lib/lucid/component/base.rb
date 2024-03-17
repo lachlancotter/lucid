@@ -40,6 +40,8 @@ module Lucid
         path.is_a?(Path) ? path : Path.new(path)
       end
 
+      setting :parent, default: nil
+
       def self.build (buffer, &config)
         new(buffer, &config)
       end

@@ -110,6 +110,7 @@ module Lucid
           constructor(parent_component).new(nested_state_reader) do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
+            config.parent      = parent_component
             config[config_key] = value(parent_component, collection_key) if collection_key
             parent_component.instance_exec(config, &@block) if @block
           end

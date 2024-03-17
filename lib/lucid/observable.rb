@@ -1,36 +1,21 @@
 module Lucid
+  #
+  # An object that can notify observers when state changes.
+  #
   module Observable
-
-    #
-    # An object that can notify observers when state changes.
-    #
-    module Subject
-      def attach (observer, *keys)
-        @observers ||= {}
-        @observers[observer] = keys
-      end
-
-      def detach (observer)
-        @observers.delete(observer)
-      end
-
-      def notify (data)
-        @observers.each do |observer, keys|
-          data.each do |key, value|
-            observer.update(self, key, value) if keys.include?(key)
-          end
-        end
-      end
+    def attach (observer, &block)
+      @observers ||= {}
+      @observers[observer] = block
     end
 
-    #
-    # An object that can observe a Subject.
-    #
-    module Observer
-      def update (subject, key, value)
-        raise NotImplementedError
-      end
+    def detach (observer)
+      @observers.delete(observer)
     end
 
+    def notify
+      (@observers || {}).each do |observer, block|
+        block.call(self)
+      end
+    end
   end
 end
