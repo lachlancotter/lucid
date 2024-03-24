@@ -6,7 +6,7 @@ module Lucid
       # links are applied only to the current Linkable instance.
       #
       def link (name = nil, params = {})
-        check(name).symbol
+        Check[name].symbol
         Link::Scoped.new(self, name, params)
       end
 
@@ -16,7 +16,7 @@ module Lucid
       # href for global links.
       #
       def visit (link)
-        check(link).type(Link)
+        Check[link].type(Link)
         visits?(link) do |application|
           application.call(self, link)
         end
@@ -24,7 +24,7 @@ module Lucid
       end
 
       def visits? (link)
-        check(link).type(Link)
+        Check[link].type(Link)
         link_application = self.class.link(link.key)
         yield link_application if link_application
       end

@@ -6,13 +6,13 @@ module Lucid
     # Read state from the URL string.
     #
     class Reader
-      include Checked
+
 
       #
       # URL param includes a path and query string.
       #
       def initialize (url, cursor = Cursor.new)
-        check(url).string.not_blank
+        Check[url].string.not_blank
         @url    = url
         @cursor = cursor
       end
@@ -21,7 +21,7 @@ module Lucid
       # Read a hash of values from the URL based on the mapping rules.
       #
       def read (map)
-        check(map).type(State::Map)
+        Check[map].type(State::Map)
         {}.tap do |state|
           map.rules.each do |rule|
             rule.decode(self, state)
@@ -60,7 +60,7 @@ module Lucid
 
       def path
         @url.split("?").first.tap do |result|
-          check(result).string
+          Check[result].string
         end
       end
 
@@ -71,7 +71,7 @@ module Lucid
       private
 
       def parse_path (path)
-        check(path).string
+        Check[path].string
         path.sub(/^\//, "").split("/")
       end
 

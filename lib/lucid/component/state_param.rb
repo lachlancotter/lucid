@@ -7,18 +7,14 @@ module Lucid
     # a Reader or Hash.
     #
     class StateParam
-      extend Checked
-
       def self.from (data)
-        check(data).type(Hash, FromHash, State::Reader)
+        Check[data].type(Hash, FromHash, State::Reader)
         data.is_a?(Hash) ? FromHash.new(data) : data
       end
 
       class FromHash
-        include Checked
-
         def initialize (hash)
-          check(hash).hash
+          Check[hash].hash
           @hash = hash
         end
 

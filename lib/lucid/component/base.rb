@@ -17,7 +17,7 @@ module Lucid
     # Base class for Lucid components.
     #
     class Base
-      include Checked
+
       include Callbacks
       include Parameters
       include Stateful
@@ -48,7 +48,7 @@ module Lucid
       end
 
       def initialize (params = {}, &config)
-        check(params).type(Hash, StateParam::FromHash, State::Reader)
+        Check[params].type(Hash, StateParam::FromHash, State::Reader)
         @params = StateParam.from(params)
         @state  = self.class.build_state(@params.read(state_map))
         # nests.each do |name, nest|
@@ -63,7 +63,7 @@ module Lucid
 
       def nested_state (key)
         @params.seek(state_map.path_count, key).tap do |result|
-          check(result).type(StateParam::FromHash, State::Reader)
+          Check[result].type(StateParam::FromHash, State::Reader)
         end
       end
 

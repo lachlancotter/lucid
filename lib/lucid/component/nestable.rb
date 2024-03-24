@@ -65,7 +65,7 @@ module Lucid
       # Build and configure a nested component.
       #
       class Nest
-        include Checked
+
 
         #
         # parent_class  - The class that will contain the nested view.
@@ -78,7 +78,7 @@ module Lucid
         def initialize (parent_class, name, constructor, **options, &block)
           @parent_class = parent_class
           @name         = name
-          @constructor  = check(constructor).has_type(Class, Match).value
+          @constructor  = Check[constructor].has_type(Class, Match).value
           @options      = options
           @block        = block
         end
@@ -117,7 +117,7 @@ module Lucid
         end
 
         def constructor (parent_component)
-          check(parent_component).has_type(Component::Base)
+          Check[parent_component].has_type(Component::Base)
           @constructor.is_a?(Match) ? @constructor.component_class(parent_component) : @constructor
         end
 

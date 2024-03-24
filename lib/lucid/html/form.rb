@@ -26,13 +26,13 @@ module Lucid
       end
 
       class Builder
-        include Checked
+
         include Renderable
 
         def initialize (renderer, data, errors, path = Path.new)
           @renderer = renderer
-          @data     = check(data).hash.value
-          @errors   = check(errors).hash.value
+          @data     = Check[data].hash.value
+          @errors   = Check[errors].hash.value
           @path     = path
         end
 
@@ -53,23 +53,23 @@ module Lucid
 
         def nested_data (key)
           @data.fetch(key, {}).tap do |data|
-            check(data).hash
+            Check[data].hash
           end
         end
 
         def nested_errors (key)
           @errors.fetch(key, {}).tap do |errors|
-            check(errors).hash
+            Check[errors].hash
           end
         end
 
         def field_id (key)
-          check(key).type(String, Symbol)
+          Check[key].type(String, Symbol)
           @path.concat(key).join("_")
         end
 
         def field_name (key)
-          check(key).type(String, Symbol)
+          Check[key].type(String, Symbol)
           if @path.depth == 0
             key.to_s
           else
@@ -78,7 +78,7 @@ module Lucid
         end
 
         def field_value (key)
-          check(key).type(String, Symbol)
+          Check[key].type(String, Symbol)
           @data.fetch(key.to_s, "")
         end
 

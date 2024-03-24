@@ -139,10 +139,10 @@ module Lucid
     # API for message evaluation context.
     #
     class Context
-      include Checked
+
 
       def initialize (app)
-        @app = check(app).type(Component::Base, App::Cycle).value
+        @app = Check[app].type(Component::Base, App::Cycle).value
       end
 
       def href (message)

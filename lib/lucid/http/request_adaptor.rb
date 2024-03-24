@@ -8,7 +8,7 @@ module Lucid
     # and messages.
     #
     class RequestAdaptor
-      include Checked
+
 
       def initialize (request)
         @request = request
@@ -28,7 +28,7 @@ module Lucid
         else
           @request.fullpath.sub(/^#{app_root}/, "")
         end.tap do |result|
-          check(result).string.not_blank
+          Check[result].string.not_blank
         end
       end
 

@@ -8,7 +8,7 @@ module Lucid
     # the buffer to build up a URL.
     #
     class Writer
-      include Checked
+
 
       def initialize (state = {})
         @state    = Stack.new(state)
@@ -54,7 +54,7 @@ module Lucid
       end
 
       def write_message (message)
-        check(message).type(Message)
+        Check[message].type(Message)
         @params.base.merge!(message.query_params)
       end
 

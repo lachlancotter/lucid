@@ -20,7 +20,7 @@ module Lucid
     # Encapsulates the application state.
     #
     class Base
-      include Checked
+
 
       def initialize(data = {})
         @data = validated(defaults.merge(data))

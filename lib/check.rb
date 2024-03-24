@@ -4,111 +4,100 @@ require "binding_of_caller"
 # Enables concise checking of values for type and other properties.
 #
 # Example:
-#   check(value).symbol
-#   check(value).string.not_empty
+#   Check[value].symbol
+#   Check[value].string.not_empty
 #
-module Checked
+class Check
+  STACK_DEPTH = 3
 
-  def check (value)
-    Check[value]
+  def self.[] (value)
+    new(value)
   end
 
-  #
-  # A context for making assertions about a value.
-  #
-  class Check
-    STACK_DEPTH = 3
+  def initialize (value)
+    @value   = value
+    @context = binding.of_caller(STACK_DEPTH)
+    @caller  = binding.of_caller(STACK_DEPTH + 1)
+  end
 
-    def self.[] (value)
-      new(value)
-    end
+  attr_reader :value, :context, :caller
 
-    def initialize (value)
-      @value   = value
-      @context = binding.of_caller(STACK_DEPTH)
-      @caller  = binding.of_caller(STACK_DEPTH + 1)
-    end
+  def location
+    @context.source_location.join(':')
+  end
 
-    attr_reader :value, :context, :caller
+  def caller_location
+    @caller.source_location.join(':')
+  end
 
-    def location
-      @context.source_location.join(':')
-    end
+  def has_type (*types)
+    unless (defined?(RSpec::Mocks::Double) &&
+       @value.is_a?(RSpec::Mocks::Double)) ||
+       types.any? { |type| @value.is_a?(type) }
+      raise Failure.new(self, "should have type #{types.join(' or ')}")
+    end; self
+  end
 
-    def caller_location
-      @caller.source_location.join(':')
-    end
+  alias type has_type
 
-    def has_type (*types)
-      unless (defined?(RSpec::Mocks::Double) &&
-         @value.is_a?(RSpec::Mocks::Double)) ||
-         types.any? { |type| @value.is_a?(type) }
-        raise Failure.new(self, "should have type #{types.join(' or ')}")
-      end; self
-    end
+  def responds_to (*methods)
+    methods.each do |method|
+      unless @value.respond_to?(method)
+        raise Failure.new(self, "should respond to #{method}")
+      end
+    end; self
+  end
 
-    alias type has_type
+  def not_nil
+    if @value.nil?
+      raise Failure.new(self, "should not be nil")
+    end; self
+  end
 
-    def responds_to (*methods)
-      methods.each do |method|
-        unless @value.respond_to?(method)
-          raise Failure.new(self, "should respond to #{method}")
-        end
-      end; self
-    end
+  def not_blank
+    if @value.nil? || @value.empty?
+      raise Failure.new(self, "should not be blank")
+    end; self
+  end
 
-    def not_nil
-      if @value.nil?
-        raise Failure.new(self, "should not be nil")
-      end; self
-    end
+  def has_key (key)
+    unless @value.key?(key)
+      raise Failure.new(self, "should have key #{key}")
+    end; self
+  end
 
-    def not_blank
-      if @value.nil? || @value.empty?
-        raise Failure.new(self, "should not be blank")
-      end; self
-    end
+  def every_value (&block)
+    @value.values.each do |value|
+      yield Check.new(value)
+    end; self
+  end
 
-    def has_key (key)
-      unless @value.key?(key)
-        raise Failure.new(self, "should have key #{key}")
-      end; self
-    end
+  def gt (other, message = "should be greater than #{other}")
+    raise Failure.new(self, message) unless @value > other; self
+  end
 
-    def every_value (&block)
-      @value.values.each do |value|
-        yield Check.new(value)
-      end; self
-    end
-
-    def gt (other, message = "should be greater than #{other}")
-      raise Failure.new(self, message) unless @value > other; self
-    end
-
-    def includes (hash)
-      hash.each do |key, value|
-        unless @value.key?(key) && @value[key] == value
-          raise Failure.new(self, "should include #{key} => #{value}")
-        end
+  def includes (hash)
+    hash.each do |key, value|
+      unless @value.key?(key) && @value[key] == value
+        raise Failure.new(self, "should include #{key} => #{value}")
       end
     end
+  end
 
-    def string
-      type(String); self
-    end
+  def string
+    type(String); self
+  end
 
-    def integer
-      type(Integer); self
-    end
+  def integer
+    type(Integer); self
+  end
 
-    def symbol
-      type(Symbol); self
-    end
+  def symbol
+    type(Symbol); self
+  end
 
-    def hash
-      type(Hash); self
-    end
-
+  def hash
+    type(Hash); self
   end
 
   #
@@ -203,5 +192,4 @@ module Checked
     end
 
   end
-
 end

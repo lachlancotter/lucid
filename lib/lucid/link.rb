@@ -22,8 +22,8 @@ module Lucid
       SCOPE_PARAM = "scope".freeze
 
       def initialize (target, name, params)
-        @target = check(target).type(Component::Base).value
-        @name   = check(name).symbol.value
+        @target = Check[target].type(Component::Base).value
+        @name   = Check[name].symbol.value
         super(params)
       end
 
