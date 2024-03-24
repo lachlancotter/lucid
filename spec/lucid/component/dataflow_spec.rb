@@ -117,7 +117,7 @@ module Lucid
         view = Class.new(Component::Base) do
           use :foo
         end.new
-        expect { view.foo }.to raise_error(Component::Dataflow::Field::NoSuchField)
+        expect { view.foo }.to raise_error(Component::Field::NoSuchField)
       end
     end
 

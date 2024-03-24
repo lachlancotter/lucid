@@ -1,0 +1,51 @@
+module Lucid
+  module Component#
+    #
+    # A uniform interface over state variables and dependent fields that
+    # provides a consistent way to access and observe changing values.
+    #
+    class Field
+      include Observable
+
+      class NoSuchField < ArgumentError
+        def initialize (name)
+          super("No such field: #{name}")
+        end
+      end
+
+      def initialize (context, name, &block)
+        @context   = context
+        @name      = name
+        @block     = block
+        @value     = nil
+        @evaluated = false
+        params.each do |param|
+          @context.field(param).attach(self) { invalidate }
+        end
+      end
+
+      def value
+        unless @evaluated
+          @value     = @block.call(*args)
+          @evaluated = true
+        end
+        @value
+      end
+
+      def invalidate
+        @evaluated = false
+        @context.field(@name).notify
+      end
+
+      private
+
+      def params
+        @block.parameters.map { |param| param[1] }
+      end
+
+      def args
+        params.map { |param| @context.send(param) }
+      end
+    end
+  end
+end

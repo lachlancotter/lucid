@@ -14,21 +14,17 @@ module Lucid
         data.keys.map { |key| field(key) }.each(&:notify)
       end
 
+      def fields
+        @fields ||= {}
+      end
+
       def field (name)
-        @fields       ||= {}
-        @fields[name] ||= Field.new(self, name)
+        fields[name]
       end
 
       def field? (name)
-        return true if self.class.state_class.attributes.include?(name)
-        return true if (@lets || {}).key?(name)
-        false
+        fields.key?(name)
       end
-
-      # def lets
-      #   self.class.instance_variable_get(:@lets).each { |name| send(name) }
-      #   @lets
-      # end
 
       module ClassMethods
         #
@@ -37,8 +33,8 @@ module Lucid
         # component instance.
         #
         def let (name, &block)
-          after_initialize { (@lets ||= {})[name] = Let.new(self, name, &block) }
-          define_method(name) { @lets[name].value }
+          after_initialize { fields[name] = Field.new(self, name, &block) }
+          define_method(name) { fields[name].value }
         end
 
         #
@@ -69,66 +65,6 @@ module Lucid
           end
         end
       end
-
-      #
-      # An interface over state variables and dependent fields that
-      # provides a consistent way to access and observe changing values.
-      #
-      class Field
-        include Observable
-
-        class NoSuchField < ArgumentError
-          def initialize (name)
-            super("No such field: #{name}")
-          end
-        end
-
-        def initialize (context, name)
-          @context = context
-          @name    = name
-        end
-      end
-
-      #
-      # Encapsulates a dependent field that is calculated from other
-      # changing values, named as parameters of the block.
-      #
-      class Let
-        def initialize (context, name, &block)
-          @context   = context
-          @name      = name
-          @block     = block
-          @value     = nil
-          @evaluated = false
-          params.each do |param|
-            @context.field(param).attach(self) { invalidate }
-          end
-        end
-
-        def value
-          unless @evaluated
-            @value     = @block.call(*args)
-            @evaluated = true
-          end
-          @value
-        end
-
-        def invalidate
-          @evaluated = false
-          @context.field(@name).notify
-        end
-
-        private
-
-        def params
-          @block.parameters.map { |param| param[1] }
-        end
-
-        def args
-          params.map { |param| @context.send(param) }
-        end
-      end
-
     end
   end
 end
