@@ -5,7 +5,7 @@ module Lucid
       # Return a local link for the given name and params. Local
       # links are applied only to the current Linkable instance.
       #
-      def link (name = nil, params = {})
+      def link_to (name = nil, params = {})
         Check[name].symbol
         Link::Scoped.new(self, name, params)
       end
@@ -17,16 +17,12 @@ module Lucid
       #
       def visit (link)
         Check[link].type(Link)
-        visits?(link) do |application|
-          application.call(self, link)
-        end
+        visitations[link.key].call(self, link) if visitations.key?(link.key)
         nests.values.each { |nest| nest.visit(link) }
       end
 
-      def visits? (link)
-        Check[link].type(Link)
-        link_application = self.class.link(link.key)
-        yield link_application if link_application
+      def visitations
+        @visits ||= {}
       end
 
       def self.included (base)
@@ -45,12 +41,9 @@ module Lucid
         # link_key may be a Symbol or a Link subclass.
         #
         def visit (link_key, *attrs, **map, &block)
-          @links           ||= {}
-          @links[link_key] = LinkApplication.new(*attrs, **map, &block)
-        end
-
-        def link (link_key)
-          (@links || {})[link_key]
+          after_initialize do
+            visitations[link_key] = Visit.new(*attrs, **map, &block)
+          end
         end
       end
 
@@ -58,7 +51,7 @@ module Lucid
       # Applies a link to a component using a list of attribute symbols,
       # a Hash of symbols or a block.
       #
-      class LinkApplication
+      class Visit
         def initialize (*attrs, **map, &block)
           @attrs = attrs
           @map   = map
