@@ -6,7 +6,7 @@ module Lucid
     describe Reader do
       context "empty query" do
         it "returns an empty hash" do
-          reader = Reader.new("")
+          reader = Reader.new("/")
           map    = Map.build {}
           data   = reader.read(map)
           expect(data).to eq({})

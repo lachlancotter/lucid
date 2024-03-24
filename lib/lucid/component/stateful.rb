@@ -26,9 +26,9 @@ module Lucid
         # Defines the state attributes and validation rules
         # for this Stateful component class.
         #
-        def state (&block)
-          @state_class = Class.new(State::Base, &block)
-        end
+        # def state (&block)
+        #   @state_class = Class.new(State::Base, &block)
+        # end
 
         #
         # Access the state class. Provides a default if none

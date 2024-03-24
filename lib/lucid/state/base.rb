@@ -23,7 +23,7 @@ module Lucid
       include Checked
 
       def initialize(data = {})
-        @data = defaults.merge(data)
+        @data = validated(defaults.merge(data))
         raise Invalid, self unless valid?
       end
 
@@ -43,15 +43,13 @@ module Lucid
       #   Immutable::Hash[data.map { |k, v| [k, v] }]
       # end
 
-      # def validated (data)
-      #   if schema
-      #     schema.call(data).to_h
-      #   else
-      #     data
-      #   end.tap do |result|
-      #     check(result).hash.includes(data)
-      #   end
-      # end
+      def validated (data)
+        if schema
+          schema.call(data).to_h
+        else
+          data
+        end
+      end
 
       def defaults
         self.class.defaults || {}
@@ -89,7 +87,7 @@ module Lucid
       # Merges the new data into the state, modifying this object.
       #
       def update (data)
-        @data = @data.merge(data)
+        @data = validated(@data.merge(data))
       end
 
       #

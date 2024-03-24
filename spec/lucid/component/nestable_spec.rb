@@ -7,7 +7,7 @@ module Lucid
           class_b = Class.new(Component::Base)
 
           view = Class.new(Component::Base) do
-            nest :foo, switch(:val, a: class_a, b: class_b)
+            nest :foo, match(:val, a: class_a, b: class_b)
           end.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo).to be_a(class_a)
@@ -17,7 +17,7 @@ module Lucid
         it "configures the nested instance" do
           foo_class = Class.new(Component::Base)
           view = Class.new(Component::Base) do
-            nest :foo, switch(:val, a: foo_class)
+            nest :foo, match(:val, a: foo_class)
           end.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo.path).to eq("/foo")
@@ -29,7 +29,7 @@ module Lucid
             setting :bar
           end
           view = Class.new(Component::Base) do
-            nest :foo, switch(:val, a: foo_class), in: %w[english spanish], as: :bar
+            nest :foo, match(:val, a: foo_class), in: %w[english spanish], as: :bar
           end.new(val: "a")
 
           expect(view.foo(0)).to be_a(foo_class)
@@ -39,7 +39,7 @@ module Lucid
         it "exposes the nested class" do
           foo_class = Class.new(Component::Base)
           view_class = Class.new(Component::Base) do
-            nest :foo, switch(:val, a: foo_class)
+            nest :foo, match(:val, a: foo_class)
           end
           nest = view_class.nests[:foo]
           expect(nest.constructor(view_class.new(val: "a"))).to eq(foo_class)

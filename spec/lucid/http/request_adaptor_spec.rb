@@ -1,3 +1,5 @@
+require "lucid/http/request_adaptor"
+
 module Lucid
   module HTTP
     describe RequestAdaptor do

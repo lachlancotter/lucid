@@ -4,14 +4,14 @@ module Lucid
       describe "field_name" do
         context "top level" do
           it "is the name of the field" do
-            builder = Form::Builder.new(nil, { foo: "bar" }, nil)
+            builder = Form::Builder.new(nil, { foo: "bar" }, {})
             expect(builder.field_name(:foo)).to eq("foo")
           end
         end
 
         context "nested field" do
           it "includes the nested key" do
-            builder = Form::Builder.new(nil, { foo: { bar: "baz" } }, nil, Path.new(:foo))
+            builder = Form::Builder.new(nil, { foo: { bar: "baz" } }, {}, Path.new(:foo))
             expect(builder.field_name(:bar)).to eq("foo[bar]")
           end
         end

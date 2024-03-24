@@ -25,7 +25,7 @@ module Lucid
     context "with state" do
       it "renders the state" do
         view = Class.new(Component::Base) do
-          state { attribute :name }
+          param :name
         end.new(name: "World")
 
         template = Template.new(view) do

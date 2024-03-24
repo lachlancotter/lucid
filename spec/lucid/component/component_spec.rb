@@ -8,45 +8,45 @@ module Lucid
     #    State
     # ===================================================== #
 
-    describe ".state" do
-      it "defines attributes" do
-        view = Class.new(Component::Base) do
-          state do
-            attribute :foo
-          end
-        end.new
-        expect(view.state).to have_attributes(foo: nil)
-      end
+    # describe ".state" do
+    #   it "defines attributes" do
+    #     view = Class.new(Component::Base) do
+    #       state do
+    #         attribute :foo
+    #       end
+    #     end.new
+    #     expect(view.state).to have_attributes(foo: nil)
+    #   end
+    #
+    #   it "sets defaults" do
+    #     view = Class.new(Component::Base) do
+    #       state do
+    #         attribute :foo, default: "bar"
+    #       end
+    #     end.new
+    #     expect(view.state).to have_attributes(foo: "bar")
+    #   end
+    # end
 
-      it "sets defaults" do
-        view = Class.new(Component::Base) do
-          state do
-            attribute :foo, default: "bar"
-          end
-        end.new
-        expect(view.state).to have_attributes(foo: "bar")
-      end
-    end
-
-    describe "validation" do
-      context "valid state" do
-        it "coerces the input" do
-          view = Class.new(Component::Base) do
-            state do
-              attribute :count
-              validate do
-                required(:count).filled(:integer)
-              end
-            end
-          end.new(count: "1")
-          expect(view.state.count).to eq(1)
-        end
-      end
-
-      context "invalid state" do
-
-      end
-    end
+    # describe "validation" do
+    #   context "valid state" do
+    #     it "coerces the input" do
+    #       view = Class.new(Component::Base) do
+    #         state do
+    #           attribute :count
+    #           validate do
+    #             required(:count).filled(:integer)
+    #           end
+    #         end
+    #       end.new(count: "1")
+    #       expect(view.state.count).to eq(1)
+    #     end
+    #   end
+    #
+    #   context "invalid state" do
+    #
+    #   end
+    # end
 
     # ===================================================== #
     #    Templates
@@ -56,7 +56,7 @@ module Lucid
       context "main template" do
         it "renders the main template" do
           view = Class.new(Component::Base) do
-            state { attribute :name }
+            param :name
             template { div { text "Hello, #{state.name}" } }
           end.new(name: "World")
           expect(view.template.render).to eq("<div>Hello, World</div>")
