@@ -1,5 +1,3 @@
-require "checked"
-
 module Lucid
   module Component
     #

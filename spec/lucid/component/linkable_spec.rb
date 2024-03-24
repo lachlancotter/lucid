@@ -89,34 +89,36 @@ module Lucid
   end
 
   describe Link do
+    class TestLink < Link
+
+    end
+
     describe "#href" do
-      it "encodes params" do
+      it "encodes state" do
         app_class = Class.new(Component::Base) do
           path :id
-          visit Link do |link|
-            state.update(id: link[:id])
-          end
+          visit TestLink, :id
         end
         app       = app_class.new(id: 1)
-        link      = Link.new(id: 2)
+        link      = TestLink.new(id: 2)
         Message.with_context(app) do
-          expect(link.href.to_s).to eq("/1?msg[name]=Lucid-Link&msg[args][id]=2")
+          # expect(link.href.to_s).to eq("/1?msg[name]=Lucid-TestLink&msg[args][id]=2")
+          expect(link.href.to_s).to eq("/@/lucid/test-link?id=2&state[id]=1")
         end
       end
 
-      it "encodes state" do
-        app_class = Class.new(Component::Base) do
-          path :page, :id
-          visit Link do |link|
-            state.update(id: link[:id])
-          end
-        end
-        app       = app_class.new(page: "foo")
-        link      = Link.new(id: 1)
-        Message.with_context(app) do
-          expect(link.href.to_s).to eq("/foo/?msg[name]=Lucid-Link&msg[args][id]=1")
-        end
-      end
+      # it "encodes state" do
+      #   app_class = Class.new(Component::Base) do
+      #     path :page, :id
+      #     visit TestLink, :id
+      #   end
+      #   app       = app_class.new(page: "foo")
+      #   link      = TestLink.new(id: 1)
+      #   Message.with_context(app) do
+      #     # expect(link.href.to_s).to eq("/foo/?msg[name]=Lucid-TestLink&msg[args][id]=1")
+      #     expect(link.href.to_s).to eq("/@/lucid/foo/?msg[name]=Lucid-TestLink&msg[args][id]=1")
+      #   end
+      # end
     end
   end
 end

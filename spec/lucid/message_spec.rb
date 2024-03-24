@@ -7,7 +7,7 @@ module Lucid
             required(:foo)
           end
         end
-        message = message_class.new(foo: "bar")
+        message       = message_class.new(foo: "bar")
         expect(message).to be_valid
         expect(message.errors).to be_empty
       end
@@ -20,9 +20,29 @@ module Lucid
             required(:foo)
           end
         end
-        message = message_class.new
+        message       = message_class.new
         expect(message).to_not be_valid
         expect(message.errors[:foo]).to eq(["is missing"])
+      end
+    end
+
+    describe ".decode_params" do
+      it "decodes GET params" do
+        request = double("request", GET: { "id" => "1", "state" => { "foo" => "bar" } }, POST: {})
+        params  = Message.decode_params(request)
+        expect(params).to eq({ "id" => "1", "state" => { "foo" => "bar" } })
+      end
+
+      it "decodes POST params" do
+        request = double("request", GET: {}, POST: { "id" => "1", "state" => { "foo" => "bar" } })
+        params  = Message.decode_params(request)
+        expect(params).to eq({ "id" => "1", "state" => { "foo" => "bar" } })
+      end
+
+      it "decodes mixed params" do
+        request = double("request", GET: { "id" => "1" }, POST: { "state" => { "baz" => "qux" } })
+        params  = Message.decode_params(request)
+        expect(params).to eq({ "id" => "1", "state" => { "baz" => "qux" } })
       end
     end
   end

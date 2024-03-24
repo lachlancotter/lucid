@@ -20,6 +20,7 @@ module Lucid
     #
     class Scoped < Link
       SCOPE_PARAM = "scope".freeze
+      NAME_PARAM  = "name".freeze
 
       def initialize (target, name, params)
         @target = Check[target].type(Component::Base).value
@@ -29,7 +30,8 @@ module Lucid
 
       def query_params
         super.tap do |params|
-          params[MESSAGE_PARAM][SCOPE_PARAM] = @target.path.to_s
+          params[SCOPE_PARAM] = @target.path.to_s
+          params[NAME_PARAM]      = @name.to_s
         end
       end
 

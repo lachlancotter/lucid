@@ -1,6 +1,6 @@
 require "zeitwerk"
 require "awesome_print"
-require "./lib/checked"
+require "./lib/check"
 
 module Lucid
 

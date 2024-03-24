@@ -1,14 +1,12 @@
-require "checked"
+
 
 module Lucid
   module Component
     #
-    # A Switch is a factory for components of dynamic class.
+    # A Match is a factory for components of dynamic class.
     # It takes a key and a map of values to component classes.
     #
     class Match
-
-
       def initialize (key, map)
         @key = Check[key].symbol.value
         @map = Check[map].hash.every_value { |v| v.type(Class) }.value

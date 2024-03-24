@@ -6,12 +6,31 @@ module Lucid
     # Maps between Messages classes and names encoded for URLs.
     #
     module MessageName
+      #
+      # Converts a CamelCased class name to a slash and dash delimited
+      # identifier suitable for use in URLs.
+      # For example:
+      #   "Lucid::TestLink" => "lucid/test-link"
+      #   "Lucid::HTTP::MessageName" => "lucid/http/message-name"
+      #
       def self.encode (klass)
-        klass.name.gsub(/::/, '-')
+        klass.name.split('::').map do |part|
+          part.split(/(?=[A-Z])/).map do |word|
+            word.downcase
+          end.join('-')
+        end.join('/')
       end
 
+      #
+      # Converts a slash and dash delimited identifier to a CamelCased
+      # class name.
+      #
       def self.decode (name)
-        name.gsub(/-/, '::')
+        name.split('/').map do |part|
+          part.split('-').map do |word|
+            word.capitalize
+          end.join
+        end.join('::')
       end
 
       def self.to_class (name)

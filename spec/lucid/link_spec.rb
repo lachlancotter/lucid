@@ -4,13 +4,17 @@ module Lucid
       it "includes the link name" do
         component = Class.new(Component::Base).new({})
         link      = Link::Scoped.new(component, :inc, {})
-        expect(link.query_params["msg"]).to include("name" => "inc")
+        Message.with_context(component) do
+          expect(link.query_params).to include("name" => "inc")
+        end
       end
 
       it "includes the link params" do
         component = Class.new(Component::Base).new({})
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
-        expect(link.query_params["msg"]["args"]).to include("foo" => "bar")
+        Message.with_context(component) do
+          expect(link.query_params).to include("foo" => "bar")
+        end
       end
 
       it "includes the component path" do
@@ -18,30 +22,19 @@ module Lucid
           config.path = %w[a b c]
         end
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
-        expect(link.query_params["msg"]).to include({ "scope" => "/a/b/c" })
+        Message.with_context(component) do
+          expect(link.query_params).to include({ "scope" => "/a/b/c" })
+        end
       end
     end
   end
 
   describe Link do
     describe "#query_params" do
-      it "includes the link name" do
-        MyLink1 = Class.new(Link)
-        link    = MyLink1.new
-        expect(link.query_params["msg"]).to include({ "name" => "Lucid-MyLink1" })
-      end
-
       it "includes params" do
         MyLink2 = Class.new(Link)
         link    = MyLink2.new(foo: "bar")
-        expect(link.query_params).to eq({
-           "msg" => {
-              "name" => "Lucid-MyLink2",
-              "args" => {
-                 "foo" => "bar"
-              }
-           }
-        })
+        expect(link.query_params).to eq({ "foo" => "bar" })
       end
     end
   end

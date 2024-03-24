@@ -131,8 +131,8 @@ module Lucid
         @config[:command_bus]
       end
 
-      def href (message)
-        base_view.href(message)
+      def href
+        base_view.href
       end
 
       def notify (event)

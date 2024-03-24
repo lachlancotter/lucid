@@ -14,10 +14,10 @@ module Lucid
       #
       # Encodes an href from the receiver and the given message.
       #
-      def href (message = nil)
+      def href
         State::Writer.new(deep_state).tap do |buffer|
           buffer.write_component(self)
-          buffer.write_message(message) unless message.nil?
+          # buffer.write_message(message) unless message.nil?
         end.to_s
       end
 

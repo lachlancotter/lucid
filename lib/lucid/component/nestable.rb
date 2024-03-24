@@ -1,4 +1,4 @@
-require "checked"
+
 require "lucid/component/match"
 
 module Lucid
