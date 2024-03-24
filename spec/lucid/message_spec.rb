@@ -26,6 +26,15 @@ module Lucid
       end
     end
 
+    describe ".decode_name" do
+      it "decodes message names from URLs" do
+        url = "/@/shopping/product/list?category_slug=guitars-basses&state[step]=store"
+        request = double("request", fullpath: url)
+        name    = Message.decode_name(request)
+        expect(name).to eq("Shopping::Product::List")
+      end
+    end
+
     describe ".decode_params" do
       it "decodes GET params" do
         request = double("request", GET: { "id" => "1", "state" => { "foo" => "bar" } }, POST: {})

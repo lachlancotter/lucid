@@ -118,7 +118,11 @@ module Lucid
 
         def constructor (parent_component)
           Check[parent_component].has_type(Component::Base)
-          @constructor.is_a?(Match) ? @constructor.component_class(parent_component) : @constructor
+          if @constructor.is_a?(Match)
+            @constructor.component_class(parent_component)
+          else
+            @constructor
+          end
         end
 
         #

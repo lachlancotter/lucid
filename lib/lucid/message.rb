@@ -9,8 +9,8 @@ module Lucid
   # requests and decoded from HTTP responses.
   #
   class Message < Struct
-    POST          = "POST".freeze
-    GET           = "GET".freeze
+    POST = "POST".freeze
+    GET  = "GET".freeze
     # TARGET_PARAM  = "target".freeze
     MODE_PARAM = "mode".freeze
     EXECUTE    = "execute".freeze
@@ -25,7 +25,9 @@ module Lucid
       end
 
       def decode_name (request)
-        HTTP::MessageName.decode(request.fullpath.match(/\/@\/(\w+)/)[1])
+        pattern = /\/@\/(.*?)\?/
+        path = request.fullpath.match(pattern)[1]
+        HTTP::MessageName.decode(path)
       end
 
       def decode_params (request)
@@ -50,7 +52,7 @@ module Lucid
 
     def query_params
       message_params = params.map { |k, v| [k.to_s, v] }.to_h
-      message_params.merge!(state: Message.context.deep_state) if Message.context
+      message_params.merge!(state: Message.context.state) if Message.context
       message_params
     end
 

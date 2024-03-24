@@ -35,7 +35,7 @@ module Shopping
       }
       body {
         emit_template :branding
-        emit_view :current_step
+        emit_view :content
       }
     end
 

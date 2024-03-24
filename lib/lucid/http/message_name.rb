@@ -33,8 +33,7 @@ module Lucid
         end.join('::')
       end
 
-      def self.to_class (name)
-        class_name = decode(name)
+      def self.to_class (class_name)
         const_get(class_name).tap do |klass|
           raise "Message class #{class_name} not found" unless klass
           raise "Message class #{class_name} is not a link" unless

@@ -8,8 +8,6 @@ module Lucid
     # and messages.
     #
     class RequestAdaptor
-
-
       def initialize (request)
         @request = request
       end
@@ -19,7 +17,11 @@ module Lucid
       # end
 
       def state_reader (config)
-        State::Reader.new(href(config[:app_root]))
+        if has_message?
+          State::HashReader.new(message_params["state"])
+        else
+          State::Reader.new(href(config[:app_root]))
+        end
       end
 
       def href (app_root)
@@ -46,7 +48,9 @@ module Lucid
 
       def message
         if has_message?
-          message_class.new(message_params)
+          message_class.new(
+             message_params.reject { |key, _| key == "state" }
+          )
         else
           nil
         end

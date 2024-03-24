@@ -1,5 +1,3 @@
-
-
 module Lucid
   module Component
     #
@@ -25,8 +23,9 @@ module Lucid
       def component_class (parent_component)
         Check[parent_component].has_type(Component::Base)
         Check[parent_component.state.to_h].has_key(@key)
-        @map[parent_component.state[@key].to_sym].tap do |klass|
-          Check[klass].has_type(Class)
+        map_key = parent_component.state[@key].to_sym
+        @map.fetch(map_key) do
+          raise "no match for #{map_key} in #{parent_component.state}"
         end
       end
     end

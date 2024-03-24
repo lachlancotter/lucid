@@ -6,8 +6,6 @@ module Lucid
     # Read state from the URL string.
     #
     class Reader
-
-
       #
       # URL param includes a path and query string.
       #

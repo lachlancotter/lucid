@@ -71,7 +71,7 @@ module Lucid
           if @path.depth == 0
             key.to_s
           else
-            @path.head + "[#{ @path.tail.concat(key).components.join('][') }]"
+            @path.head.to_s + "[#{ @path.tail.concat(key).components.join('][') }]"
           end
         end
 
