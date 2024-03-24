@@ -120,5 +120,47 @@ module Lucid
         expect { view.foo }.to raise_error(Component::Dataflow::Field::NoSuchField)
       end
     end
+
+    # ===================================================== #
+    #    .watch
+    # ===================================================== #
+
+    describe ".watch" do
+      it "executes the block when the value changes" do
+        bar = nil
+        view = Class.new(Component::Base) do
+          param :foo, default: ""
+          watch(:foo) { bar = "foo" }
+        end.new
+        view.update(foo: "foo")
+        expect(bar).to eq("foo")
+      end
+
+      it "accepts multiple values" do
+        baz = 0
+        view = Class.new(Component::Base) do
+          param :foo, default: ""
+          param :bar, default: ""
+          watch(:foo, :bar) { baz += 1 }
+        end.new
+        view.update(foo: "foo")
+        view.update(bar: "bar")
+        expect(baz).to eq(2)
+      end
+
+      it "watches dependent fields" do
+        calls = 0
+        view = Class.new(Component::Base) do
+          param :foo, default: ""
+          let(:bar) { |foo| foo.upcase }
+          watch(:bar) { calls += 1 }
+        end.new
+        expect(view.bar).to eq("")
+        view.update(foo: "foo")
+        expect(view.bar).to eq("FOO")
+        expect(calls).to eq(1)
+      end
+    end
+
   end
 end

@@ -21,7 +21,7 @@ module Lucid
 
       def field? (name)
         return true if self.class.state_class.attributes.include?(name)
-        return true if (self.class.instance_variable_get(:@lets) || []).include?(name)
+        return true if (@lets || {}).key?(name)
         false
       end
 
@@ -37,13 +37,8 @@ module Lucid
         # component instance.
         #
         def let (name, &block)
-          @lets ||= []
-          @lets << name
-          define_method(name) do
-            @lets       ||= {}
-            @lets[name] ||= Let.new(self, name, &block)
-            @lets[name].value
-          end
+          after_initialize { (@lets ||= {})[name] = Let.new(self, name, &block) }
+          define_method(name) { @lets[name].value }
         end
 
         #
@@ -60,6 +55,17 @@ module Lucid
               end
             end
             raise Field::NoSuchField.new(name)
+          end
+        end
+
+        #
+        # Run an arbitrary block of code when a field changes.
+        #
+        def watch (*keys, &block)
+          after_initialize do
+            keys.each do |key|
+              field(key).attach(self) { instance_exec(&block) }
+            end
           end
         end
       end

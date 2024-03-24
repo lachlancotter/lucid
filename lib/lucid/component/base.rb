@@ -18,6 +18,7 @@ module Lucid
     #
     class Base
       include Checked
+      include Callbacks
       include Parameters
       include Stateful
       include Mappable
@@ -49,7 +50,7 @@ module Lucid
       def initialize (params = {}, &config)
         check(params).type(Hash, StateParam::FromHash, State::Reader)
         @params = StateParam.from(params)
-        @state = self.class.build_state(@params.read(state_map))
+        @state  = self.class.build_state(@params.read(state_map))
         # nests.each do |name, nest|
         #   nest.build(self, @params.seek(state_map.path_count, name))
         # end
@@ -57,6 +58,7 @@ module Lucid
         # @params = buffer_or_params if buffer_or_params.is_a?(Hash)
         # @state = self.class.normalize_state(params)
         configure(&config)
+        run_callbacks(:after_initialize)
       end
 
       def nested_state (key)
