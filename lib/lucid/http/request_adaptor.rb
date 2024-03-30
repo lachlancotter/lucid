@@ -35,11 +35,11 @@ module Lucid
       end
 
       def yield_link
-        tap { yield if has_link? }
+        tap { yield message if has_link? }
       end
 
       def yield_command
-        tap { yield if has_command? }
+        tap { yield message if has_command? }
       end
 
       def yield_no_message

@@ -82,31 +82,8 @@ module Lucid
         end
       end
 
-      def run_with_context
-        with_context { yield }
-      rescue State::Invalid => e
-        Logger.error(e.message)
-        @response.send_error(e)
-      end
-
-      def validate_message! (message)
-        if message.valid?
-          yield message
-        else
-          Validation::Failed.notify(message: message)
-          Logger.error(message, message.errors)
-        end
-      end
-
       def base_view
         @base_view ||= build(@request.state_reader(@config))
-      end
-
-      def build (state)
-        base_view_class.new(state) do |config|
-          config.app_root = @config[:app_root]
-          config.path     = Path.new
-        end
       end
 
       def base_view_class
@@ -130,6 +107,29 @@ module Lucid
       end
 
       private
+
+      def build (state)
+        base_view_class.new(state) do |config|
+          config.app_root = @config[:app_root]
+          config.path     = Path.new
+        end
+      end
+
+      def run_with_context
+        with_context { yield }
+      rescue State::Invalid => e
+        Logger.error(e.message)
+        @response.send_error(e)
+      end
+
+      def validate_message! (message)
+        if message.valid?
+          yield message
+        else
+          Validation::Failed.notify(message: message)
+          Logger.error(message, message.errors)
+        end
+      end
 
       def with_context (&block)
         Event.with_bus(event_bus) do
