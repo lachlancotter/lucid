@@ -38,7 +38,7 @@ module Lucid
         Message.present?(@request)
       end
 
-      def has_query?
+      def has_link?
         has_message? && message_class.ancestors.include?(Lucid::Link)
       end
 

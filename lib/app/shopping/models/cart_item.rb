@@ -1,3 +1,5 @@
+require "ostruct"
+
 module Shopping
   class CartItem < OpenStruct
     # :product_id, :quantity

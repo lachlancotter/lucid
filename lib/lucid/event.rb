@@ -1,6 +1,3 @@
-require "lucid/struct"
-require "lucid/busable"
-
 module Lucid
   #
   # Base class for events.

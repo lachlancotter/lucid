@@ -62,17 +62,19 @@ module Lucid
 
       def query
         with_context do
-          if @request.has_query?
-            validated!(@request.message) do |page|
+          if @request.has_link?
+            validated!(@request.message) do |link|
               Logger.link(@request.message)
-              base_view.visit(page)
+              base_view.visit(link)
             end
+            respond_with_delta
+          else
+            respond_with_refresh
           end
-          write_response
         end
       rescue State::Invalid => e
         Logger.error(e.message)
-        write_error_response(e)
+        respond_with_error(e)
       end
 
       def command
@@ -82,11 +84,11 @@ module Lucid
               command_bus.dispatch(command)
             end
           end
-          write_response
+          respond_with_delta
         end
       rescue State::Invalid => e
         Logger.error(e.message)
-        write_error_response(e)
+        respond_with_error(e)
       end
 
       def validated! (message)
@@ -98,14 +100,21 @@ module Lucid
         end
       end
 
-      def write_response
+      def respond_with_delta
+        @response.tap do
+          @response.status = 303
+          @response.location = base_view.href
+        end
+      end
+
+      def respond_with_refresh
         @response.tap do
           @response.location = base_view.href
           @response.body     = base_view.render
         end
       end
 
-      def write_error_response (error)
+      def respond_with_error (error)
         @response.tap do
           @response.status = 422
           @response.body   = "Invalid state"

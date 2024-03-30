@@ -23,6 +23,14 @@ unless defined?(LOADER)
   LOADER.setup
 end
 
+%w[state http html component].each do |dir|
+  path = "./lib/lucid/#{dir}"
+  Dir["#{path}/*.rb"].each do |f|
+    puts f
+    require f
+  end
+end
+
 %w[models events commands links views].each do |dir|
   path = "./lib/app/shopping/#{dir}"
   Dir["#{path}/*.rb"].each do |f|
@@ -33,7 +41,7 @@ end
 
 Shopping::Session.init
 
-require "app/shopping/app"
+require "./lib/app/shopping/app"
 # Shopping::App
 
 # %w[models commands events links views].each do |dir|

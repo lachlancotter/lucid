@@ -1,5 +1,3 @@
-require "lucid/event_handler"
-
 module Lucid
   module Component
     module Eventable

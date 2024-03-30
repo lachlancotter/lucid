@@ -1,7 +1,3 @@
-require "lucid/struct"
-require "lucid/http/message_name"
-require "lucid/html/anchor"
-
 module Lucid
   #
   # Messages are value objects that represent the intent of a user

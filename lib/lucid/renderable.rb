@@ -1,4 +1,3 @@
-require "lucid/template"
 require "nokogiri"
 
 module Lucid

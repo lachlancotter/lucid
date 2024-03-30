@@ -1,6 +1,4 @@
 
-require "lucid/component/match"
-
 module Lucid
   module Component
     #

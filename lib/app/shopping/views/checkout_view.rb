@@ -1,5 +1,3 @@
-require "lucid/validation"
-
 module Shopping
   class CheckoutView < Lucid::Component::Base
     nest :cart_view, CartView

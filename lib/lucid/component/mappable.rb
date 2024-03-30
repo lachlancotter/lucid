@@ -1,6 +1,3 @@
-require "lucid/location"
-require "lucid/state/map"
-
 module Lucid
   module Component
     #

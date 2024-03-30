@@ -1,3 +1,5 @@
+require "sinatra"
+
 module Shopping
   class App < Sinatra::Base
     configure do

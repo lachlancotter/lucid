@@ -1,5 +1,3 @@
-require "lucid/state/base"
-
 module Lucid
   module Component
     #

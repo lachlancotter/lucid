@@ -1,5 +1,3 @@
-require "lucid/message"
-
 module Lucid
   #
   # Represents a state in the information space that a user
