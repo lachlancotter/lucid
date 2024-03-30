@@ -34,6 +34,18 @@ module Lucid
         end
       end
 
+      def yield_link
+        tap { yield if has_link? }
+      end
+
+      def yield_command
+        tap { yield if has_command? }
+      end
+
+      def yield_no_message
+        tap { yield unless has_message? }
+      end
+
       def has_message?
         Message.present?(@request)
       end

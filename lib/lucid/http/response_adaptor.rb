@@ -9,6 +9,27 @@ module Lucid
         @response = response
       end
 
+      def send_delta (component)
+        tap do
+          self.status   = 303
+          self.location = component.href
+        end
+      end
+
+      def send_state (component)
+        tap do
+          self.location = component.href
+          self.body     = component.render
+        end
+      end
+
+      def send_error (error)
+        tap do
+          self.status = 422
+          self.body   = error.message
+        end
+      end
+
       def headers
         @response.headers
       end

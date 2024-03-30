@@ -22,16 +22,12 @@ module Lucid
       Logger.cycle(request, response) do
         cycle(request, response).query
       end
-    # rescue => e
-    #   Console.logger.error(self, e)
     end
 
     def command (request, response)
       Logger.cycle(request, response) do
         cycle(request, response).command
       end
-    # rescue => e
-    #   Console.logger.error(self, e)
     end
 
     def validate (request)
@@ -61,63 +57,44 @@ module Lucid
       end
 
       def query
-        with_context do
-          if @request.has_link?
-            validated!(@request.message) do |link|
-              Logger.link(@request.message)
-              base_view.visit(link)
+        run_with_context do
+          @request.yield_link do |link|
+            validate_message!(link) do |valid_link|
+              Logger.link(valid_link)
+              base_view.visit(valid_link)
+              @response.send_delta(base_view)
             end
-            respond_with_delta
-          else
-            respond_with_refresh
+          end.yield_no_message do
+            @response.send_state(base_view)
           end
         end
-      rescue State::Invalid => e
-        Logger.error(e.message)
-        respond_with_error(e)
       end
 
       def command
-        with_context do
-          if @request.has_command?
-            validated!(@request.message) do |command|
-              command_bus.dispatch(command)
+        run_with_context do
+          @request.yield_command do |command|
+            validate_message!(command) do |valid_command|
+              Logger.command(valid_command)
+              command_bus.dispatch(valid_command)
             end
+            @response.send_delta(base_view)
           end
-          respond_with_delta
         end
-      rescue State::Invalid => e
-        Logger.error(e.message)
-        respond_with_error(e)
       end
 
-      def validated! (message)
+      def run_with_context
+        with_context { yield }
+      rescue State::Invalid => e
+        Logger.error(e.message)
+        @response.send_error(e)
+      end
+
+      def validate_message! (message)
         if message.valid?
           yield message
         else
           Validation::Failed.notify(message: message)
           Logger.error(message, message.errors)
-        end
-      end
-
-      def respond_with_delta
-        @response.tap do
-          @response.status = 303
-          @response.location = base_view.href
-        end
-      end
-
-      def respond_with_refresh
-        @response.tap do
-          @response.location = base_view.href
-          @response.body     = base_view.render
-        end
-      end
-
-      def respond_with_error (error)
-        @response.tap do
-          @response.status = 422
-          @response.body   = "Invalid state"
         end
       end
 
