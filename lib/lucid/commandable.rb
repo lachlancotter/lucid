@@ -6,7 +6,6 @@ module Lucid
 
     def dispatch (command)
       if performs?(command)
-        Logger.command(command)
         perform(command)
       else
         raise NoHandlerError.new(command)

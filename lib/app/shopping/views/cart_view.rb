@@ -1,35 +1,13 @@
 module Shopping
   class CartView < Lucid::Component::Base
-
-    def cart
-      Session.current.cart
-    end
-
-    on Cart::ItemChanged do |event|
-      render
-    end
-
-    # ===================================================== #
-    #    Actions
-    # ===================================================== #
-
-    def inc_button (item)
-      Cart::AddProduct.button("+",
-         product_id: item.product_id, cart_id: cart.id
-      )
-    end
-
-    def dec_button (item)
-      Cart::RemoveProduct.button("-",
-         product_id: item.product_id, cart_id: cart.id
-      )
-    end
+    let(:cart) { Session.current.cart }
+    on(Cart::ItemChanged) { |event| render }
 
     # ===================================================== #
     #    Template
     # ===================================================== #
 
-    template do
+    template do |cart|
       div(class: "cart") {
         p cart.item_count
         h2 "Your Cart"
@@ -59,6 +37,22 @@ module Shopping
           emit dec_button(item)
         }
       }
+    end
+
+    # ===================================================== #
+    #    Helpers
+    # ===================================================== #
+
+    def inc_button (item)
+      Cart::AddProduct.button("+",
+         product_id: item.product_id, cart_id: cart.id
+      )
+    end
+
+    def dec_button (item)
+      Cart::RemoveProduct.button("-",
+         product_id: item.product_id, cart_id: cart.id
+      )
     end
 
     def format_currency(amount)

@@ -30,9 +30,9 @@ module Shopping
     # ===================================================== #
 
     template do
-      head {
-        tag(:link, rel: "stylesheet", href: "style.css")
-      }
+      # head {
+      #   link(rel: "stylesheet", href: "style.css")
+      # }
       body {
         emit_template :branding
         emit_view :content

@@ -38,20 +38,34 @@ module Lucid
         define_tag_method("label") unless respond_to?(:label)
       end
 
-      def state
-        @renderable.state
+      def fragment (name, *args, **opts)
+        @renderable.template(name, *args, **opts)
       end
 
-      def context
-        @renderable
+      def component (name)
+        @renderable.nested(name)
       end
 
-      def link (name)
-        @renderable.link(name)
+      # def state
+      #   @renderable.state
+      # end
+
+      # def context
+      #   @renderable
+      # end
+
+      def link_to (name, params)
+        @renderable.link_to(name, params)
       end
 
-      # def action (name)
-      #   @renderable.send(name)
+      # def emit (*args, **opts, &block)
+      #   if content.is_a?(Component::Base)
+      #     super
+      #   elsif content.is_a?(Template)
+      #     super
+      #   else
+      #     super(*args, **opts, &block)
+      #   end
       # end
 
       def emit_template (name, *a, **b, &block)
@@ -73,8 +87,7 @@ module Lucid
       # TODO maybe we should explicitly expose methods to the template
       #   instead of using method_missing?
       def method_missing(sym, *args, **opts, &block)
-        # puts "method_missing: #{sym}"
-        if @renderable.respond_to?(sym)
+        if @renderable.has_helper?(sym)
           @renderable.send(sym, *args, **opts, &block)
         else
           super

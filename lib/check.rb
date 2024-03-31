@@ -119,8 +119,6 @@ class Check
           caller: #{@check.caller_location}
         ----------------------------------------
         #{listing.snippet}
-        ----------------------------------------
-        #{backtrace.join("\n")}
       MESSAGE
     end
 

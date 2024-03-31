@@ -8,6 +8,7 @@ module Shopping
     end
 
     def self.in_category (category)
+      Check[category].type(Category)
       all.select { |p| p.category_id == category.id }
     end
 

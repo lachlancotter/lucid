@@ -51,6 +51,10 @@ module Lucid
         "<#{self.class.name || "Component"}(#{path}) #{state.to_h}>"
       end
 
+      def element_id
+        config.path.to_s.gsub("/", "-").gsub(/^-/, "")
+      end
+
       class StateParam
         def self.from (data)
           Check[data].type(Hash, State::HashReader, State::Reader)
