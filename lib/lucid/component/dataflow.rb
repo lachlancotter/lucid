@@ -11,7 +11,13 @@ module Lucid
       #
       def update (data)
         @state.update(data)
-        data.keys.each { |key| field(key).notify }
+        data.keys.each do |key|
+          if nests.key?(key)
+            nests[key].update(data[key])
+          else
+            field(key).notify
+          end
+        end
       end
 
       def fields

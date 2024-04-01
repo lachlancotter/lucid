@@ -85,6 +85,15 @@ module Lucid
         Nokogiri::HTML(to_s).to_xhtml(indent: 2, indent_text: ' ').to_s
       end
 
+      def changes (buffer = "")
+        if any?
+          buffer << to_s
+        else
+          @component.nests.each { |(name, sub)| sub.render.changes(buffer) }
+        end
+        buffer
+      end
+
       def to_s
         open_tag + template.render(*template_args) + close_tag
       end
