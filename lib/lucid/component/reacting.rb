@@ -1,6 +1,6 @@
 module Lucid
   module Component
-    module Dataflow
+    module Reacting
       def self.included(base)
         base.extend(ClassMethods)
       end

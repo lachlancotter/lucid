@@ -1,4 +1,4 @@
-require "lucid/renderable"
+require "lucid/rendering"
 
 module Lucid
   module HTML
@@ -24,8 +24,7 @@ module Lucid
       end
 
       class Builder
-
-        include Renderable
+        include Rendering
 
         def initialize (renderer, data, errors, path = Path.new)
           @renderer = renderer

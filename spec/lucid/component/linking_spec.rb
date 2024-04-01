@@ -1,7 +1,7 @@
-require "lucid/component/linkable"
+require "lucid/component/linking"
 
 module Lucid
-  describe Component::Linkable do
+  describe Component::Linking do
     describe "#visit" do
 
       context "global link" do
@@ -69,7 +69,7 @@ module Lucid
               }
             end
             app       = app_class.new
-            link      = app.nested(:foo).link_to(:set_count, count: 2)
+            link      = app.send(:foo).link_to(:set_count, count: 2)
             app.visit(link)
             expect(app.deep_state).to eq({ foo: { count: 2 } })
           end

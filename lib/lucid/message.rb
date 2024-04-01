@@ -48,7 +48,7 @@ module Lucid
 
     def query_params
       message_params = params.map { |k, v| [k.to_s, v] }.to_h
-      message_params.merge!(state: Message.context.state) if Message.context
+      message_params.merge!(state: Message.context.state.to_h) if Message.context
       message_params
     end
 

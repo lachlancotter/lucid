@@ -7,7 +7,7 @@ module Lucid
   # and defaults. This module provides a DSL for defining
   # configuration options and a store for the options.
   #
-  module Configurable
+  module Configuring
     def self.included (klass)
       klass.include(Dry::Configurable)
       klass.extend(ClassMethods)

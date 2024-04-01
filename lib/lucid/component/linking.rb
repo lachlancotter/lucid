@@ -1,6 +1,6 @@
 module Lucid
   module Component
-    module Linkable
+    module Linking
       #
       # Return a local link for the given name and params. Local
       # links are applied only to the current Linkable instance.

@@ -7,14 +7,14 @@ module Lucid
 
       include Callbacks
       include Stateful
-      include Mappable
-      include Configurable
-      include Linkable
-      include Eventable
-      include Nestable
-      include Renderable
-      include Echoable
-      include Dataflow
+      include Mapping
+      include Configuring
+      include Nesting
+      include Reacting
+      include Linking
+      include Responding
+      include Echoing
+      include Rendering
 
       # The path from the web root to the application root.
       # Used to encode URLs for the webserver. Useful

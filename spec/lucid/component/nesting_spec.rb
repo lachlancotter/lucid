@@ -1,5 +1,5 @@
 module Lucid
-  describe Component::Nestable do
+  describe Component::Nesting do
     describe ".nest" do
       context "dynamic constructor" do
         it "constructs with the given block" do

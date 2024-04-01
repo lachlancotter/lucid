@@ -1,6 +1,6 @@
 module Lucid
   module Component
-    module Eventable
+    module Responding
       def self.included (base)
         base.extend(ClassMethods)
       end

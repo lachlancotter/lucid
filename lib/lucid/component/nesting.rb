@@ -4,7 +4,7 @@ module Lucid
     # Nestable components can contain other components, defined with
     # the `nest` DSL method.
     #
-    module Nestable
+    module Nesting
       def self.included (base)
         base.extend(ClassMethods)
       end

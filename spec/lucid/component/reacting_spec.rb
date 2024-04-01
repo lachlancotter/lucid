@@ -1,5 +1,5 @@
 module Lucid
-  describe Component::Base do
+  describe Component::Reacting do
 
     # ===================================================== #
     #    .let
@@ -116,8 +116,8 @@ module Lucid
       it "raises when undefined" do
         view = Class.new(Component::Base) do
           use :foo
-        end.new
-        expect { view.foo }.to raise_error(Component::Field::NoSuchField)
+        end
+        expect { view.new }.to raise_error(Component::Field::NoSuchField)
       end
     end
 

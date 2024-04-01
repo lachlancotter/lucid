@@ -1,7 +1,7 @@
 require "nokogiri"
 
 module Lucid
-  module Renderable
+  module Rendering
     DEFAULT_TEMPLATE = :default
 
     def self.included (base)
@@ -89,7 +89,9 @@ module Lucid
         if any?
           buffer << to_s
         else
-          @component.nests.each { |(name, sub)| sub.render.changes(buffer) }
+          @component.nests.each do |(name, sub)|
+            sub.render.changes(buffer)
+          end
         end
         buffer
       end

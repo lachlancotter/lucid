@@ -3,7 +3,7 @@ module Lucid
     #
     # Capture invalid messages so they can be echoed back to the client.
     #
-    module Echoable
+    module Echoing
       def self.included (base)
         base.extend ClassMethods
       end

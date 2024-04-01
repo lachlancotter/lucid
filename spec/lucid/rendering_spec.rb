@@ -1,5 +1,5 @@
 module Lucid
-  describe Renderable do
+  describe Rendering do
     describe "render" do
       describe "default template" do
         it "renders" do

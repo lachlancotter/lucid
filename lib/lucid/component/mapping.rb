@@ -3,7 +3,7 @@ module Lucid
     #
     # A component that can be referenced by a URL.
     #
-    module Mappable
+    module Mapping
       def self.included (base)
         base.extend(ClassMethods)
       end

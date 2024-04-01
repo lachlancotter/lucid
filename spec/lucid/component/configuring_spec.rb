@@ -1,8 +1,8 @@
-require "lucid/configurable"
+require "lucid/configuring"
 require "lucid/component/base"
 
 module Lucid
-  describe Configurable do
+  describe Configuring do
 
     context "default" do
       it "sets the default" do
