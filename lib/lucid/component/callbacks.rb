@@ -9,6 +9,8 @@ module Lucid
         base.extend(ClassMethods)
       end
 
+      private
+
       def run_callbacks (name)
         self.class.callbacks(name).tap do |blocks|
           blocks.each { |block| instance_exec(&block) }

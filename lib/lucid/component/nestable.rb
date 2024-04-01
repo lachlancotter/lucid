@@ -1,4 +1,3 @@
-
 module Lucid
   module Component
     #
@@ -10,26 +9,8 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      #
-      # Build the nested component.
-      #
-      def nested (name, collection_key = nil)
-        nest_def = self.class.nests[name]
-        if nest_def.nil?
-          raise ArgumentError,
-             "No nested component named #{name} at #{config.path}"
-        else
-          @nests                                    ||= {}
-          @nests[nest_def.nest_key(collection_key)] ||= nest_def.build(
-             nested_state(nest_def.name), self, collection_key
-          )
-        end
-      end
-
-      def nests # Hash[Symbol => Component]
-        self.class.nests.keys.map do |name|
-          [name, nested(name)]
-        end.to_h
+      def nests # Hash[Symbol | String => Component]
+        @nests ||= {}
       end
 
       #
@@ -44,9 +25,20 @@ module Lucid
       module ClassMethods
         # DSL method to define a nested component.
         def nest (name, *args, **options, &block)
-          Nest.new(self, name, *args, **options, &block).tap do |nest|
-            nests[name] = nest
-            nest.install
+          Nest.new(name, *args, **options, &block).tap do |nest_def|
+            nests[name] = nest_def
+            after_initialize do
+              nest_def.instantiate(nests, nested_state(name), self)
+            end
+            if nest_def.collection.nil?
+              define_method(name) do
+                nests[nest_def.nest_key]
+              end
+            else
+              define_method(name) do |collection_key|
+                nests[nest_def.nest_key(collection_key)]
+              end
+            end
           end
         end
 
@@ -63,49 +55,31 @@ module Lucid
       # Build and configure a nested component.
       #
       class Nest
-
-
         #
-        # parent_class  - The class that will contain the nested view.
-        # name          - The name of the nested view in the parent.
         # constructor   - Class or block that returns a class to instantiate.
         # options[:in]  - The collection to iterate over (nil if not iterating).
         # options[:as]  - The name of the config key to use for the collection item in the nested view.
         # block         - Yielded a configuration object for the instantiated view.
         #
-        def initialize (parent_class, name, constructor, **options, &block)
-          @parent_class = parent_class
-          @name         = name
-          @constructor  = Check[constructor].has_type(Class, Match).value
-          @options      = options
-          @block        = block
+        def initialize (name, constructor, **options, &block)
+          @name        = name
+          @constructor = Check[constructor].has_type(Class, Match).value
+          @options     = options
+          @block       = block
         end
 
-        attr_reader :name
-
-        # def nested_class
-        #   @nested_class ||= @constructor.is_a?(Class) ?
-        #      @constructor : @constructor.call
-        # end
-
-        #
-        # Install the accessor method in the parent class.
-        #
-        def install
-          nest = self
+        def instantiate (hash, reader, parent)
           if collection.nil?
-            @parent_class.define_method(@name) do
-              nested(nest.name)
-            end
+            hash[nest_key] = build(reader, parent)
           else
-            @parent_class.define_method(@name) do |collection_key|
-              nested(nest.name, collection_key)
+            collection.each_with_index do |v, n|
+              hash[nest_key(n)] = build(reader, parent, n)
             end
           end
         end
 
-        def build (nested_state_reader, parent_component, collection_key = nil)
-          constructor(parent_component).new(nested_state_reader) do |config|
+        def build (reader, parent_component, collection_key = nil)
+          constructor(parent_component).new(reader) do |config|
             config.app_root    = parent_component.app_root
             config.path        = nested_path(parent_component, collection_key)
             config.parent      = parent_component
@@ -151,6 +125,7 @@ module Lucid
         # Looks up the value for the given collection key in the parent.
         #
         def value (parent_component, collection_key)
+          Check[collection_key].type(Symbol, Integer)
           if collection.is_a?(Symbol)
             parent_component.send(collection)[collection_key]
           else

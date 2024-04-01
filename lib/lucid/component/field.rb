@@ -1,5 +1,5 @@
 module Lucid
-  module Component#
+  module Component
     #
     # A uniform interface over state variables and dependent fields that
     # provides a consistent way to access and observe changing values.
@@ -13,9 +13,8 @@ module Lucid
         end
       end
 
-      def initialize (context, name, &block)
+      def initialize (context, &block)
         @context   = context
-        @name      = name
         @block     = block
         @value     = nil
         @evaluated = false
@@ -34,7 +33,7 @@ module Lucid
 
       def invalidate
         @evaluated = false
-        @context.field(@name).notify
+        notify
       end
 
       private

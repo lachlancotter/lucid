@@ -6,7 +6,6 @@ module Lucid
     class Base
 
       include Callbacks
-      include Parameters
       include Stateful
       include Mappable
       include Configurable
@@ -36,13 +35,13 @@ module Lucid
 
       def initialize (params = {}, &config)
         @params = StateParam.from(params)
-        @state  = self.class.build_state(@params.read(state_map))
+        @state  = self.class.build_state(@params)
         configure(&config)
         run_callbacks(:after_initialize)
       end
 
       def nested_state (key)
-        @params.seek(state_map.path_count, key).tap do |result|
+        @params.seek(self.class.state_map.path_count, key).tap do |result|
           Check[result].type(State::HashReader, State::Reader)
         end
       end

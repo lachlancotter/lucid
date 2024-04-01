@@ -39,9 +39,10 @@ module Lucid
         #
         # Instantiate a state object from the given data.
         #
-        def build_state (data)
+        def build_state (reader)
+          data = reader.read(state_map)
           # Exclude keys that belong to nested components.
-          state_class.new(data.reject { |k, v| nests.keys.include?(k) })
+          # state_class.new(data.reject { |k, v| nests.keys.include?(k) })
         end
 
         def normalize_state (state)

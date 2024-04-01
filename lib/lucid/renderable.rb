@@ -45,15 +45,21 @@ module Lucid
       self.class.templates
     end
 
+    def changed?
+      @changed == true
+    end
+
     module ClassMethods
       #
       # Defines a template with a name and a block that gives
       # the template definition.
       #
       def template (name = :default, &block)
-        Check[block].type(Proc)
         @templates       ||= {}
         @templates[name] = block
+        if name == :default
+          watch(*block.parameters.map(&:last)) { @changed = true }
+        end
       end
 
       #

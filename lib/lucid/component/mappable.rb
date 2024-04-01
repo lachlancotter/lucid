@@ -9,17 +9,12 @@ module Lucid
       end
 
       #
-      # Encodes an href from the receiver and the given message.
+      # Encodes component state as a URL.
       #
       def href
         State::Writer.new(deep_state).tap do |buffer|
           buffer.write_component(self)
-          # buffer.write_message(message) unless message.nil?
         end.to_s
-      end
-
-      def state_map
-        self.class.state_map
       end
 
       module ClassMethods
@@ -36,23 +31,24 @@ module Lucid
         end
 
         private def map_attrs (*args, default: nil, defaults: [])
-          @state_class ||= Class.new(State::Base)
-          @state_map   ||= State::Map.new
           args.each_with_index do |name, index|
-            @state_class.attribute(name, default: defaults[index] || default)
-            after_initialize { fields[name] = Field.new(self, name) { state.send(name) } }
+            state_class.attribute(name, default: defaults[index] || default)
+            after_initialize { fields[name] = Field.new(self) { state[name] } }
             define_method(name) { state.send(name) }
-            yield @state_map, name, index
+            yield state_map, name, index
           end
         end
 
         def validate (&block)
+          state_class.validate(&block)
+        end
+
+        def state_class
           @state_class ||= Class.new(State::Base)
-          @state_class.validate(&block)
         end
 
         def state_map
-          @state_map || State::Map.new
+          @state_map ||= State::Map.new
         end
       end
     end

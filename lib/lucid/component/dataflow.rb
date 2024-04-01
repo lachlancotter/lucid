@@ -11,7 +11,7 @@ module Lucid
       #
       def update (data)
         @state.update(data)
-        data.keys.map { |key| field(key) }.each(&:notify)
+        data.keys.each { |key| field(key).notify }
       end
 
       def fields
@@ -19,7 +19,17 @@ module Lucid
       end
 
       def field (name)
+        raise Field::NoSuchField.new(name) unless field?(name)
         fields[name]
+      end
+
+      #
+      # Return the nearest ancestor component that defines the specified field.
+      #
+      def field_in_ancestor (name)
+        raise Field::NoSuchField.new(name) if config.parent.nil?
+        return config.parent.field(name) if config.parent.field?(name)
+        config.parent.field_in_ancestor(name)
       end
 
       def field? (name)
@@ -33,7 +43,7 @@ module Lucid
         # component instance.
         #
         def let (name, &block)
-          after_initialize { fields[name] = Field.new(self, name, &block) }
+          after_initialize { fields[name] = Field.new(self, &block) }
           define_method(name) { fields[name].value }
         end
 
@@ -41,17 +51,8 @@ module Lucid
         # Declare a dependency on a field defined in a parent component.
         #
         def use (name)
-          define_method(name) do
-            current = config.parent
-            while current
-              if current.field?(name)
-                return current.send(name)
-              else
-                current = current.config.parent
-              end
-            end
-            raise Field::NoSuchField.new(name)
-          end
+          after_initialize { fields[name] = field_in_ancestor(name) }
+          define_method(name) { fields[name].value }
         end
 
         #

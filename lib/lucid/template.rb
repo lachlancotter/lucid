@@ -46,13 +46,13 @@ module Lucid
         @renderable.nested(name)
       end
 
-      # def state
-      #   @renderable.state
-      # end
-
-      # def context
-      #   @renderable
-      # end
+      #
+      # Explicit access to the context is useful in cases where a helper name
+      # conflicts with an HTML element name, and can't be involved implicitly.
+      #
+      def context
+        @renderable
+      end
 
       def link_to (name, params)
         @renderable.link_to(name, params)
