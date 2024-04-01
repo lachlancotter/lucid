@@ -76,11 +76,11 @@ module Lucid
         # puts "emit_view: #{name_or_instance.inspect}"
         if name_or_instance.is_a?(Component)
           subview = name_or_instance
-          emit subview.render(*a, **b, &block)
+          emit subview.render.to_s(*a, **b, &block)
         else
           view_name = name_or_instance
-          subview   = @renderable.nested(view_name)
-          emit subview.render(*a, **b, &block)
+          subview   = @renderable.send(view_name)
+          emit subview.render.to_s(*a, **b, &block)
         end
       end
 

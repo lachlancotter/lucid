@@ -28,7 +28,7 @@ module Lucid
 
       def write_component (component)
         tap do
-          write_state(component.state_map)
+          write_state(component.class.state_map)
           write_nests(component.nests)
         end
       end

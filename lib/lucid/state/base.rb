@@ -21,7 +21,6 @@ module Lucid
     #
     class Base
 
-
       def initialize(data = {})
         @data = validated(defaults.merge(data))
         raise Invalid, self unless valid?

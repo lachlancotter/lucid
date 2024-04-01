@@ -2,6 +2,8 @@ require "nokogiri"
 
 module Lucid
   module Renderable
+    DEFAULT_TEMPLATE = :default
+
     def self.included (base)
       base.extend(ClassMethods)
       if base.respond_to?(:after_initialize)
@@ -15,7 +17,8 @@ module Lucid
     # Access a template/partial to be rendered. Defaults
     # to the main template if no name is provided.
     #
-    def template (name = :default)
+    def template (name = DEFAULT_TEMPLATE)
+      Check[name].type(Symbol, String)
       template_block = templates.fetch(name.to_sym) do
         raise "Could not find template `#{name}` in #{self.class} at #{config.path}. Available templates: #{templates.keys}"
       end
@@ -35,9 +38,9 @@ module Lucid
       # Defines a template with a name and a block that gives
       # the template definition.
       #
-      def template (name = :default, &block)
+      def template (name = DEFAULT_TEMPLATE, &block)
         templates[name] = block
-        if name == :default
+        if name == DEFAULT_TEMPLATE
           watch(*block.parameters.map(&:last)) { render.replace }
         end
       end
@@ -61,14 +64,14 @@ module Lucid
 
       def initialize (component)
         @component     = component
-        @template_name = nil
+        @template_name = DEFAULT_TEMPLATE
         @mode          = NONE
       end
 
       def replace
         tap do
           @mode          = REPLACE
-          @template_name = :default
+          @template_name = DEFAULT_TEMPLATE
         end
       end
 
@@ -77,8 +80,9 @@ module Lucid
       end
 
       def call
-        return "" if @mode.nil?
-        Nokogiri::HTML(to_s).to_xhtml(indent: 2, indent_text: ' ')
+        return "" if @mode == NONE
+        raise "No template specified" if @template_name.nil?
+        Nokogiri::HTML(to_s).to_xhtml(indent: 2, indent_text: ' ').to_s
       end
 
       def to_s

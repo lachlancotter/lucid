@@ -19,7 +19,7 @@ module Lucid
       def send_state (component)
         tap do
           self.location = component.href
-          self.body     = component.render
+          self.body     = component.render.replace.call
         end
       end
 
