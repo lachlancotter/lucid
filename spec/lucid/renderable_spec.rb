@@ -8,7 +8,7 @@ module Lucid
               h1 { text "Hello, World" }
             end
           end.new
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render.replace.call).to match(/<h1>Hello, World<\/h1>/)
         end
       end
 
@@ -45,7 +45,7 @@ module Lucid
               "World"
             end
           end.new
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render.replace.call).to match(/<h1>Hello, World<\/h1>/)
         end
       end
 
@@ -59,17 +59,17 @@ module Lucid
               "World"
             end
           end.new
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render.replace.call).to match(/<h1>Hello, World<\/h1>/)
         end
       end
     end
 
-    describe "#changed?" do
+    describe "#any?" do
       it "is false when created" do
         view = Class.new(Component::Base) do
           param :foo
         end.new(foo: "foo")
-        expect(view.changed?).to be(false)
+        expect(view.render.any?).to be(false)
       end
 
       it "is true when template state dependencies change" do
@@ -80,7 +80,7 @@ module Lucid
           end
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changed?).to be(true)
+        expect(view.render.any?).to be(true)
       end
 
       it "is true when template let dependencies change" do
@@ -92,7 +92,7 @@ module Lucid
           end
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changed?).to be(true)
+        expect(view.render.any?).to be(true)
       end
 
       it "is true when template use dependencies change" do
@@ -106,8 +106,8 @@ module Lucid
           }
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changed?).to be(false)
-        expect(view.bar.changed?).to be(true)
+        expect(view.render.any?).to be(false)
+        expect(view.bar.render.any?).to be(true)
       end
 
       it "is false when template dependencies are unchanged" do
@@ -118,7 +118,7 @@ module Lucid
           end
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changed?).to be(false)
+        expect(view.render.any?).to be(false)
       end
     end
 

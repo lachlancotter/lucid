@@ -19,14 +19,15 @@ module Lucid
 
       module ClassMethods
         def after_initialize (&block)
-          @callbacks ||= {}
+          @callbacks                    ||= {}
           @callbacks[:after_initialize] ||= []
           @callbacks[:after_initialize] << block
         end
 
         def callbacks (name)
           @callbacks ||= {}
-          @callbacks[name] || []
+          (superclass.respond_to?(:callbacks) ? superclass.callbacks(name) : [])
+             .concat(@callbacks[name] || [])
         end
       end
     end

@@ -23,9 +23,8 @@ module Lucid
 
       # The path from the root view component to this component.
       # Used to identify components and actions.
-      setting :path, default: "/", constructor: -> (path) do
-        path.is_a?(Path) ? path : Path.new(path)
-      end
+      setting :path, default: "/",
+         constructor: -> (path) { path.is_a?(Path) ? path : Path.new(path) }
 
       setting :parent, default: nil
 
