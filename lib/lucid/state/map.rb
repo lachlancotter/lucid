@@ -37,38 +37,19 @@ module Lucid
         end
       end
 
-      # def build_tree (component)
-      #   component.nests.inject(state_map) do |map, (name, sub)|
-      #     map.nest(name, sub.state_map)
-      #   end
-      # end
-
-      # def encode (state, buffer = Writer.new(state))
-      #   raise "State must be a hash (#{state})" unless state.is_a?(Hash)
-      #   buffer.write(self)
-      #   buffer.to_s
-      # end
-      #
-      # def decode (buffer_or_query, state = {})
-      #   raise "State must be a hash (#{state})" unless state.is_a?(Hash)
-      #   buffer = normalize(buffer_or_query)
-      #   buffer.read(self)
-      # end
-
-      # def normalize (buffer_or_string)
-      #   if buffer_or_string.is_a?(Reader)
-      #     buffer_or_string
-      #   else
-      #     Reader.new(buffer_or_string)
-      #   end
-      # end
+      def decode (reader, state)
+        rules.each do |rule|
+          rule.decode(reader, state)
+        end
+      end
 
       #
       # Base class for rules.
       #
       class Rule
         def initialize (key)
-          @key = key
+          Check[key].type(Symbol, String)
+          @key     = key
         end
 
         attr_reader :key
@@ -119,26 +100,26 @@ module Lucid
       #
       # Pass control to a nested map.
       #
-      class Nest < Rule
-        def initialize (key, nested)
-          raise "no map provided" unless nested
-          super(key)
-          @nested = nested
-        end
-
-        def encode (state, buffer)
-          buffer.push_scope(@key)
-          @nested.encode(state[@key], buffer)
-          buffer.pop_scope
-        end
-
-        def decode (reader, state)
-          reader.with_scope(@key) do |scoped_reader|
-            state[@key] = {} unless state.key?(@key)
-            @nested.decode(scoped_reader, state[@key])
-          end
-        end
-      end
+      # class Nest < Rule
+      #   def initialize (key, nested)
+      #     raise "no map provided" unless nested
+      #     super(key)
+      #     @nested = nested
+      #   end
+      #
+      #   def encode (state, buffer)
+      #     buffer.push_scope(@key)
+      #     @nested.encode(state[@key], buffer)
+      #     buffer.pop_scope
+      #   end
+      #
+      #   def decode (reader, state)
+      #     reader.with_scope(@key) do |scoped_reader|
+      #       state[@key] = {} unless state.key?(@key)
+      #       @nested.decode(scoped_reader, state[@key])
+      #     end
+      #   end
+      # end
 
       def self.build (opts = {}, &block)
         Docile.dsl_eval(Builder.new(opts), &block).build
@@ -171,9 +152,9 @@ module Lucid
           param(*keys)
         end
 
-        def nest (key)
-          @rules << Nest.new(key, @nests[key])
-        end
+        # def nest (key)
+        #   @rules << Nest.new(key, @nests[key])
+        # end
 
         def build
           Map.new.tap do |map|

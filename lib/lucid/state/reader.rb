@@ -20,11 +20,7 @@ module Lucid
       #
       def read (map)
         Check[map].type(State::Map)
-        {}.tap do |state|
-          map.rules.each do |rule|
-            rule.decode(self, state)
-          end
-        end
+        {}.tap { |state| map.decode(self, state) }
       end
 
       #
@@ -39,6 +35,7 @@ module Lucid
       end
 
       def read_param (key)
+        Check[key].symbol
         @cursor.param(query_params, key)
       end
 
