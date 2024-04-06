@@ -8,7 +8,7 @@ require "binding_of_caller"
 #   Check[value].string.not_empty
 #
 class Check
-  STACK_DEPTH = 3
+  STACK_DEPTH = 2
 
   def self.[] (value)
     new(value)
