@@ -54,6 +54,7 @@ GEM
     escape_utils (1.3.0)
     fiber-annotation (0.2.0)
     fiber-local (1.0.0)
+    htmlbeautifier (1.4.2)
     immutable-ruby (0.1.0)
       concurrent-ruby (~> 1.1)
       sorted_set (~> 1.0)
@@ -127,6 +128,7 @@ DEPENDENCIES
   docile
   dry-configurable
   dry-schema
+  htmlbeautifier
   immutable-ruby
   nokogiri
   papercraft

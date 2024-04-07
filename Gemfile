@@ -8,7 +8,7 @@ gem "dry-configurable" # Configurable objects.
 gem "dry-schema" # Validate state.
 gem "immutable-ruby" # Immutable state.
 gem "papercraft" # Generate HTML from Ruby.
-gem "nokogiri" # Pretty-print HTML.
+gem "htmlbeautifier" # Pretty-print HTML.
 gem "console" # Pretty console logging.
 gem "binding_of_caller" # For assertions.
 

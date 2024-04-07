@@ -2,32 +2,68 @@ require "papercraft"
 
 module Lucid
   #
-  # Render PaperScript templates with a bound view context.
+  # Encapsulates a template for rendering a view.
   #
   class Template < Papercraft::Template
-    def initialize(renderable, &block)
+    def initialize (&block)
       raise "Template requires a block" unless block_given?
       super(mode: :html, &block)
-      @renderable = renderable
     end
 
-    def to_s
-      render
+    def bind (renderable)
+      Binding.new(self, renderable)
     end
 
-    def render (*args, **opts, &block)
-      template = self
-      ::Papercraft::Renderer.verify_proc_parameters(template, args, opts)
-      BoundRenderer.new(@renderable) do
-        push_emit_yield_block(block) if block
-        instance_exec(*args, **opts, &template)
-      end.to_s
+    #
+    # Binds a template to an instance of a renderable object such as a component,
+    # which provides context to the template during rendering.
+    #
+    class Binding
+      def initialize (template, renderable)
+        @template   = template
+        @renderable = renderable
+      end
+
+      def render (*args, **opts, &block)
+        template = @template
+        ::Papercraft::Renderer.verify_proc_parameters(template, args, opts)
+        RenderContext.new(@renderable) do
+          push_emit_yield_block(block) if block
+          instance_exec(*args, **opts, &template)
+        end.to_s
+      end
+
+      def parameters
+        @template.parameters
+      end
+    end
+
+    #
+    # Wraps template content in a container element. Needed to
+    # ensure that components are addressable by ID.
+    #
+    class Wrapper
+      def initialize (attrs)
+        @attrs = attrs
+      end
+
+      def wrap
+        "<div#{attrs}>#{yield}</div>"
+      end
+
+      def attrs
+        if @attrs.any?
+          " " + @attrs.map { |k, v| "#{k}=\"#{v}\"" }.join(" ")
+        else
+          ""
+        end
+      end
     end
 
     #
     # Extends Papercraft::HTMLRenderer to provide access to the view context.
     #
-    class BoundRenderer < Papercraft::HTMLRenderer
+    class RenderContext < Papercraft::HTMLRenderer
       def initialize(renderable, &block)
         @renderable = renderable
         super(&block)
@@ -73,15 +109,10 @@ module Lucid
       end
 
       def emit_view (name_or_instance, *a, **b, &block)
-        # puts "emit_view: #{name_or_instance.inspect}"
-        if name_or_instance.is_a?(Component)
-          subview = name_or_instance
-          emit subview.render.to_s(*a, **b, &block)
-        else
-          view_name = name_or_instance
-          subview   = @renderable.send(view_name)
-          emit subview.render.to_s(*a, **b, &block)
-        end
+        subview = name_or_instance.is_a?(Component) ?
+           name_or_instance : @renderable.send(name_or_instance)
+        wrapper = Wrapper.new(id: subview.element_id)
+        emit wrapper.wrap { subview.render.to_s(*a, **b, &block) }
       end
 
       # TODO maybe we should explicitly expose methods to the template

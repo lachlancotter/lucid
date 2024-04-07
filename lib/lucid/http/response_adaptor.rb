@@ -1,3 +1,5 @@
+require "htmlbeautifier"
+
 module Lucid
   module HTTP
     #
@@ -19,7 +21,7 @@ module Lucid
       def send_state (component)
         tap do
           self.location = component.href
-          self.body     = component.render.replace.call
+          self.body     = HtmlBeautifier.beautify(component.render.replace.call)
         end
       end
 

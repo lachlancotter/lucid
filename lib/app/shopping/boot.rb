@@ -12,6 +12,7 @@ end
 
 unless defined?(LOADER)
   LOADER = Zeitwerk::Loader.new
+  LOADER.push_dir("./lib/")
   LOADER.push_dir("./lib/lucid", namespace: Lucid)
   LOADER.push_dir("./lib/app/shopping/models", namespace: Shopping)
   LOADER.push_dir("./lib/app/shopping/events", namespace: Shopping)
@@ -19,15 +20,25 @@ unless defined?(LOADER)
   LOADER.push_dir("./lib/app/shopping/links", namespace: Shopping)
   LOADER.push_dir("./lib/app/shopping/views", namespace: Shopping)
   LOADER.push_dir("./lib/app/shopping/actions", namespace: Shopping)
+  LOADER.inflector.inflect('htmx' => 'HTMX')
   LOADER.enable_reloading
   LOADER.setup
 end
 
-%w[state http html component].each do |dir|
-  path = "./lib/lucid/#{dir}"
-  Dir["#{path}/*.rb"].each do |f|
-    puts f
-    require f
+%w[state http html component].each do |mod|
+  path = "./lib/lucid/#{mod}"
+
+  if File.exists?("#{path}.rb")
+    file = "#{path}.rb"
+    puts file
+    require file
+  end
+
+  if Dir.exists?(path)
+    Dir["#{path}/*.rb"].each do |entry|
+      puts entry
+      require entry
+    end
   end
 end
 

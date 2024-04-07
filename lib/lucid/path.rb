@@ -21,6 +21,10 @@ module Lucid
       to_s == other.to_s
     end
 
+    def root?
+      @components.empty?
+    end
+
     def head
       @components.first
     end

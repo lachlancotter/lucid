@@ -23,6 +23,35 @@ module Lucid
         end
       end
 
+      describe "element ID" do
+        context "root component" do
+          it "is omitted" do
+            view = Class.new(Component::Base) do
+              template do
+                h1 { text "Hello, World" }
+              end
+            end.new
+            expect(view.render.replace.call).to eq("<h1>Hello, World</h1>")
+          end
+        end
+
+        context "nested component" do
+          it "is the component path" do
+            view = Class.new(Component::Base) do
+              nest :foo, Class.new(Component::Base) {
+                template do
+                  h1 { text "Nested" }
+                end
+              }
+              template do
+                emit_view(:foo)
+              end
+            end.new
+            expect(view.render.replace.call).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
+          end
+        end
+      end
+
       describe "template with args" do
         it "renders" do
           view = Class.new(Component::Base) do

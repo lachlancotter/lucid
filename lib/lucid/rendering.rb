@@ -1,5 +1,3 @@
-require "nokogiri"
-
 module Lucid
   module Rendering
     DEFAULT_TEMPLATE = :default
@@ -13,20 +11,24 @@ module Lucid
 
     attr_reader :render
 
+    class TemplateNotFound < ArgumentError
+      def initialize (name, context)
+        super(<<~MSG)
+          Could not find template `#{name}` in #{context.class} at #{context.config.path}.
+          Available templates: #{context.class.templates.keys}
+        MSG
+      end
+    end
+
     #
     # Access a template/partial to be rendered. Defaults
     # to the main template if no name is provided.
     #
     def template (name = DEFAULT_TEMPLATE)
       Check[name].type(Symbol, String)
-      template_block = templates.fetch(name.to_sym) do
-        raise "Could not find template `#{name}` in #{self.class} at #{config.path}. Available templates: #{templates.keys}"
-      end
-      Template.new(self, &template_block)
-    end
-
-    def templates
-      self.class.templates
+      self.class.templates.fetch(name) do
+        raise TemplateNotFound.new(name, self)
+      end.bind(self)
     end
 
     def has_helper? (name)
@@ -39,7 +41,8 @@ module Lucid
       # the template definition.
       #
       def template (name = DEFAULT_TEMPLATE, &block)
-        templates[name] = block
+        templates[name] = Template.new(&block)
+
         if name == DEFAULT_TEMPLATE
           watch(*block.parameters.map(&:last)) { render.replace }
         end
@@ -51,16 +54,17 @@ module Lucid
     end
 
     #
-    # A fluent interface to render a component.
+    # A fluent interface to render a component in two steps.
+    # Step one is setting the render configuration.
+    # Step two is calling the render method.
+    # This allows for a separation of concerns between the
+    # logic of deciding what to render, and the actual rendering.
     #
     class Render
       NONE    = nil
       REPLACE = :replace
       APPEND  = :append
       PREPEND = :prepend
-
-      OPEN_TAG  = '<div id="ELEMENT_ID">'.freeze
-      CLOSE_TAG = '</div>'.freeze
 
       def initialize (component)
         @component     = component
@@ -82,9 +86,14 @@ module Lucid
       def call
         return "" if @mode == NONE
         raise "No template specified" if @template_name.nil?
-        Nokogiri::HTML(to_s).to_xhtml(indent: 2, indent_text: ' ').to_s
+        to_s
       end
 
+      #
+      # If this component is marked for rendering, then render it.
+      # Otherwise, search for nested components that are marked for
+      # rendering and render them.
+      #
       def changes (buffer = "")
         if any?
           buffer << to_s
@@ -97,7 +106,7 @@ module Lucid
       end
 
       def to_s
-        open_tag + template.render(*template_args) + close_tag
+        template.render(*template_args)
       end
 
       private
@@ -113,14 +122,6 @@ module Lucid
 
       def template
         @component.template(@template_name)
-      end
-
-      def open_tag
-        OPEN_TAG.sub("ELEMENT_ID", @component.element_id)
-      end
-
-      def close_tag
-        CLOSE_TAG
       end
     end
   end

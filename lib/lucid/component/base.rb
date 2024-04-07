@@ -50,7 +50,11 @@ module Lucid
       end
 
       def element_id
-        config.path.to_s.gsub("/", "-").gsub(/^-/, "")
+        if config.path.root?
+          "root"
+        else
+          config.path.to_s.gsub("/", "-").gsub(/^-/, "")
+        end
       end
 
       class StateParam

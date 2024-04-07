@@ -4,7 +4,7 @@ module Lucid
   describe Template do
     context "static" do
       it "renders with Papercraft" do
-        view = Class.new(Component::Base).new
+        view     = Class.new(Component::Base).new
         template = Template.new(view) do
           div { text "Hello, World" }
         end
@@ -12,9 +12,22 @@ module Lucid
       end
     end
 
+    it "renders script elements" do
+      view = Class.new(Component::Base) do
+        template do
+          head {
+            script(src: "https://example.com/script.js")
+          }
+        end
+      end.new
+      expect(view.render.to_s).to match(
+         '<head><script src="https://example.com/script.js"></script></head>'
+      )
+    end
+
     context "with template arguments" do
       it "renders the template" do
-        view = Class.new(Component::Base)
+        view     = Class.new(Component::Base)
         template = Template.new(view) do |name|
           div { text "Hello, #{name}" }
         end
