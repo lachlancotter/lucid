@@ -62,7 +62,7 @@ module Lucid
             validate_message!(link) do |valid_link|
               Logger.link(valid_link)
               base_view.visit(valid_link)
-              @response.send_delta(base_view)
+              @response.send_delta(base_view, htmx: @request.htmx?)
             end
           end.yield_no_message do
             @response.send_state(base_view)
@@ -77,7 +77,7 @@ module Lucid
               Logger.command(valid_command)
               command_bus.dispatch(valid_command)
             end
-            @response.send_delta(base_view)
+            @response.send_delta(base_view, htmx: @request.htmx?)
           end
         end
       end
