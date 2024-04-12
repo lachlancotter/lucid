@@ -1,13 +1,44 @@
-module HTMX
+#
+# DSL for generating HTMX attributes.
+#
+class HTMX < Hash
+  LIB = {
+     src:         "https://unpkg.com/htmx.org@1.9.11",
+     integrity:   "sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0",
+     crossorigin: "anonymous"
+  }
+
+  def self.boost
+    self[boost: true]
+  end
+
+  def self.oob
+    self["swap-oob": true]
+  end
 
   #
   # Convert options to HTMX attribute names.
   #
   def self.[] (**options)
-    {}.tap do |result|
-      options.each do |key, value|
-        result["hx-#{key}"] = value
+    HTMX.new.tap do |result|
+      options.each do |k, v|
+        result[map_key(k)] = map_value(v)
       end
+    end
+  end
+
+  def self.map_key (key)
+    "hx-#{key}"
+  end
+
+  def self.map_value (value)
+    case value
+    when true
+      "true"
+    when false
+      "false"
+    else
+      value.to_s
     end
   end
 

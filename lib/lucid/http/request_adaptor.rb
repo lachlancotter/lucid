@@ -34,6 +34,10 @@ module Lucid
         end
       end
 
+      def htmx?
+        @request.get_header("HTTP_HX_REQUEST") == "true"
+      end
+
       def yield_link
         tap { yield message if has_link? }
       end
@@ -77,7 +81,7 @@ module Lucid
       end
 
       def message_params
-        Message.decode_params(@request)
+        Message.decode_params(@request) || {}
       end
     end
   end

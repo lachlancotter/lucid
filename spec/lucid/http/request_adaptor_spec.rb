@@ -40,6 +40,24 @@ module Lucid
           end
         end
       end
+
+      describe ".htmx?" do
+        context "without an HTMX header" do
+          it "is false" do
+            request = Rack::Request.new({})
+            adaptor = RequestAdaptor.new(request)
+            expect(adaptor.htmx?).to be(false)
+          end
+        end
+
+        context "with an HTMX header" do
+          it "is true" do
+            request = Rack::Request.new("HTTP_HX_REQUEST" => "true")
+            adaptor = RequestAdaptor.new(request)
+            expect(adaptor.htmx?).to be(true)
+          end
+        end
+      end
     end
   end
 end

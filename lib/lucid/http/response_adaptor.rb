@@ -7,21 +7,30 @@ module Lucid
     # set the response state and update components.
     #
     class ResponseAdaptor
+      extend Forwardable
+
       def initialize (response)
         @response = response
       end
 
-      def send_delta (component)
+      def_delegators :@response,
+         :status, :headers, :location, :body,
+         :status=, :location=, :body=
+
+      def send_delta (component, htmx:)
         tap do
-          self.status   = 303
-          self.location = component.href
+          if htmx
+            send_htmx(component)
+          else
+            @response.redirect(component.href, 303)
+          end
         end
       end
 
       def send_state (component)
         tap do
           self.location = component.href
-          self.body     = HtmlBeautifier.beautify(component.render.replace.call)
+          self.body     = HtmlBeautifier.beautify(component.render(:replace).call)
         end
       end
 
@@ -32,23 +41,65 @@ module Lucid
         end
       end
 
-      def headers
-        @response.headers
+      private
+
+      def send_htmx (component)
+        ChangeSet.new(component).tap do |change_set|
+          if change_set.empty?
+            @response.status                 = 200
+            @response.headers["HX-Push-Url"] = component.href
+            @response.headers["HX-Reswap"]   = "none"
+          else
+            @response.status                 = 200
+            @response.headers["HX-Push-Url"] = component.href
+            @response.headers["HX-Retarget"] = change_set.target
+            @response.headers["HX-Reswap"]   = "outerHTML"
+            @response.body                   = HtmlBeautifier.beautify(change_set.to_s)
+          end
+        end
       end
 
-      def status= (status)
-        @response.status = status
+      #
+      # Format the set of changed components for HTMX.
+      #
+      class ChangeSet
+        def initialize (component)
+          @component = component
+        end
+
+        def empty?
+          branches.empty?
+        end
+
+        def branches
+          @branches ||= @component.render.branches
+        end
+
+        def target
+          branches.first.element_id
+        end
+
+        def to_s
+          head + tail.join("\n")
+        end
+
+        #
+        # The first component is the main element to target.
+        #
+        def head
+          branches.first.call(id: branches.first.element_id)
+        end
+
+        #
+        # Additional components are updated via swap-oob.
+        #
+        def tail
+          branches[1..-1].map do |branch|
+            HTMX.oob.merge(id: branch.element_id)
+          end
+        end
       end
 
-      def location= (location)
-        @response.headers["Location"] = location.to_s
-      end
-
-      # Temporary. We should add a higher level API for setting
-      # updated components.
-      def body= (body)
-        @response.body = body
-      end
     end
   end
 end
