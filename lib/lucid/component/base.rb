@@ -39,6 +39,29 @@ module Lucid
         run_callbacks(:after_initialize)
       end
 
+      #
+      # Return a Factory for building components of the receiver class with the
+      # given configuration.
+      #
+      def self.[] (**config)
+        Factory.new(self) { config }
+      end
+
+      #
+      # Return a Factory for building components of the receiver class that
+      # iterates over the given collection.
+      #
+      def self.enum (collection, &block)
+        Factory::Enumerated.new(self, collection, &block)
+      end
+
+      #
+      # Convenience method for matching values in a block.
+      #
+      def match (value, &block)
+        Match.on(value, &block)
+      end
+
       def nested_state (key)
         @params.seek(self.class.state_map.path_count, key).tap do |result|
           Check[result].type(State::HashReader, State::Reader)

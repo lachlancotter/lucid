@@ -103,10 +103,6 @@ module Lucid
 
     context "multiple nested path components" do
       it "nests only one path" do
-        # top.map("/:foo", :bar) do |bar|
-        #   bar.map("/:bar")
-        # end
-
         top = Class.new(Component::Base) do
           path :foo, defaults: ["top"]
 

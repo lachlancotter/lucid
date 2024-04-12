@@ -13,6 +13,10 @@ module Lucid
         @nests ||= {}
       end
 
+      def root?
+        config.parent.nil?
+      end
+
       #
       # The state for this and all nested components.
       #
@@ -24,27 +28,19 @@ module Lucid
 
       module ClassMethods
         # DSL method to define a nested component.
-        def nest (name, *args, **options, &block)
-          Nest.new(name, *args, **options, &block).tap do |nest_def|
-            nests[name] = nest_def
-            after_initialize do
-              nest_def.instantiate(nests, nested_state(name), self)
-            end
-            if nest_def.collection.nil?
-              define_method(name) do
-                nests[nest_def.nest_key]
-              end
-            else
-              define_method(name) do |collection_key|
-                nests[nest_def.nest_key(collection_key)]
-              end
+        def nest (name, component_class = nil, &block)
+          Nest.new(name, component_class, &block).tap do |nest|
+            nests[name] = nest
+            after_initialize { nest.bind(self).build(nested_state(name)) }
+            define_method(name) do |collection_key = nil|
+              nest.bind(self).get(collection_key)
             end
           end
         end
 
-        def match (key, map)
-          Match.new(key, map)
-        end
+        # def match (key, map)
+        #   Match.new(key, map)
+        # end
 
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
@@ -56,84 +52,80 @@ module Lucid
       #
       class Nest
         #
-        # constructor   - Class or block that returns a class to instantiate.
-        # options[:in]  - The collection to iterate over (nil if not iterating).
-        # options[:as]  - The name of the config key to use for the collection item in the nested view.
-        # block         - Yielded a configuration object for the instantiated view.
+        # name - The name of the nested component within the parent.
+        # component_class - The class of the nested component.
+        # constructor - A block returning a Factory instance that can
+        # build the nested component; or an enumerable that maps to
+        # a Factory.
         #
-        def initialize (name, constructor, **options, &block)
-          @name        = name
-          @constructor = Check[constructor].has_type(Class, Match).value
-          @options     = options
-          @block       = block
+        def initialize (name, component_class = nil, &block)
+          @name  = name
+          @block = normalize_constructor(component_class, &block)
         end
 
-        def instantiate (hash, reader, parent)
-          if collection.nil?
-            hash[nest_key] = build(reader, parent)
+        attr_reader :name, :block
+
+        def bind (parent)
+          Binding.new(self, parent)
+        end
+
+        private
+
+        def normalize_constructor (component_class, &block)
+          if block_given?
+            block
           else
-            collection.each_with_index do |v, n|
-              hash[nest_key(n)] = build(reader, parent, n)
+            lambda { Factory.new(component_class) { {} } }
+          end
+        end
+
+        #
+        # Bind a Nest expression to a concrete component instance.
+        #
+        class Binding
+          extend Forwardable
+
+          def initialize (nest, parent)
+            @nest   = nest
+            @parent = parent
+          end
+
+          def_delegators :@nest, :name, :block
+
+          def build (reader)
+            @parent.nests[name] = factory.build(reader, @parent, name)
+          end
+
+          def get (collection_key = nil)
+            collection_key ? @parent.nests[name][collection_key] : @parent.nests[name]
+          end
+
+          def factory
+            object = @parent.instance_exec(*factory_args, &block)
+            Match.on(object) do
+              instance_of(Factory) { object }
+              extends(Component::Base) { Factory.new(object) { {} } }
+              default { raise "Invalid factory: #{object.inspect}" }
+            end.tap do |result|
+              Check[result].type(Factory)
+            end
+          end
+
+          def component_class
+            factory.component_class
+          end
+
+          #
+          # Query the component for the arguments to pass to the block.
+          #
+          def factory_args
+            block.parameters.map do |(type, name)|
+              @parent.field(name).value
             end
           end
         end
 
-        def build (reader, parent_component, collection_key = nil)
-          constructor(parent_component).new(reader) do |config|
-            config.app_root    = parent_component.app_root
-            config.path        = nested_path(parent_component, collection_key)
-            config.parent      = parent_component
-            config[config_key] = value(parent_component, collection_key) if collection_key
-            parent_component.instance_exec(config, &@block) if @block
-          end
-        end
-
-        def constructor (parent_component)
-          Check[parent_component].has_type(Component::Base)
-          if @constructor.is_a?(Match)
-            @constructor.component_class(parent_component)
-          else
-            @constructor
-          end
-        end
-
-        #
-        # The key used to store the nested component in the parent instance.
-        #
-        def nest_key (collection_key = nil)
-          collection_key ? "#{@name}[#{collection_key}]" : @name
-        end
-
-        #
-        # The path to the nested component instance.
-        #
-        def nested_path (parent_component, collection_key = nil)
-          raise "not a path #{parent_component.path}" unless parent_component.path.is_a?(Path)
-          path_component = collection_key ? "#{@name}[#{collection_key}]" : @name
-          parent_component.path.concat(path_component)
-        end
-
-        def collection
-          @options[:in]
-        end
-
-        def config_key
-          @options[:as] || :model
-        end
-
-        #
-        # Looks up the value for the given collection key in the parent.
-        #
-        def value (parent_component, collection_key)
-          Check[collection_key].type(Symbol, Integer)
-          if collection.is_a?(Symbol)
-            parent_component.send(collection)[collection_key]
-          else
-            collection[collection_key]
-          end
-        end
       end
-
     end
   end
 end

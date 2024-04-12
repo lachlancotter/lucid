@@ -43,12 +43,17 @@ module Lucid
     # ensure that components are addressable by ID.
     #
     class Wrapper
-      def initialize (attrs)
-        @attrs = attrs
+      def initialize (component, attrs)
+        @component = component
+        @attrs     = attrs
       end
 
       def wrap
-        "<div#{attrs}>#{yield}</div>"
+        if @component.root?
+          yield
+        else
+          "<div#{attrs}>#{yield}</div>"
+        end
       end
 
       def attrs
@@ -108,11 +113,17 @@ module Lucid
         emit @renderable.template(name).render(*a, **b, &block)
       end
 
-      def emit_view (name_or_instance, *a, **b, &block)
-        subview = name_or_instance.is_a?(Component) ?
-           name_or_instance : @renderable.send(name_or_instance)
-        wrapper = Wrapper.new(id: subview.element_id)
-        emit wrapper.wrap { subview.render.to_s(*a, **b, &block) }
+      def emit_view (name_or_instance)
+        sv = subview(name_or_instance)
+        emit sv.render.replace.call(id: sv.element_id)
+      end
+
+      def subview (name_or_instance)
+        Match.on(name_or_instance) do
+          instance_of(Component::Base) { |instance| instance }
+          instance_of(Symbol) { |name| @renderable.send(name) }
+          default { raise ArgumentError, "Invalid view: #{name_or_instance}" }
+        end
       end
 
       # TODO maybe we should explicitly expose methods to the template

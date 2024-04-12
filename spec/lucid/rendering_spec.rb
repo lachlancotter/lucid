@@ -39,13 +39,9 @@ module Lucid
           it "is the component path" do
             view = Class.new(Component::Base) do
               nest :foo, Class.new(Component::Base) {
-                template do
-                  h1 { text "Nested" }
-                end
+                template { h1 { text "Nested" } }
               }
-              template do
-                emit_view(:foo)
-              end
+              template { emit_view(:foo) }
             end.new
             expect(view.render.replace.call).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
           end
@@ -153,20 +149,20 @@ module Lucid
       end
     end
 
-    describe "#changes" do
+    describe "#branches" do
       context "when unchanged" do
-        it "renders nothing" do
+        it "is empty" do
           view = Class.new(Component::Base) do
             template do
               h1 { text "Hello, World" }
             end
           end.new
-          expect(view.render.changes).to eq("")
+          expect(view.render.branches).to be_empty
         end
       end
 
       context "when changed" do
-        it "renders" do
+        it "contains the root component render" do
           view = Class.new(Component::Base) do
             param :foo
             template do |foo|
@@ -174,12 +170,12 @@ module Lucid
             end
           end.new
           view.update(foo: "bar")
-          expect(view.render.changes).to match(/<h1>bar<\/h1>/)
+          expect(view.render.branches).to eq([view.render])
         end
       end
 
       context "when child changed" do
-        it "renders the child" do
+        it "contains the child component render" do
           view = Class.new(Component::Base) do
             nest :bar, Class.new(Component::Base) {
               param :baz
@@ -189,12 +185,12 @@ module Lucid
             }
           end.new
           view.update(bar: { baz: "qux" })
-          expect(view.render.changes).to match(/<h1>qux<\/h1>/)
+          expect(view.render.branches).to eq([view.bar.render])
         end
       end
 
       context "when multiple children changed" do
-        it "renders multiple children" do
+        it "contains multiple child branches" do
           view = Class.new(Component::Base) do
             nest :a, Class.new(Component::Base) {
               param :foo
@@ -217,10 +213,10 @@ module Lucid
             end
           end.new
           view.update(a: { foo: "baz" }, b: { bar: "qux" })
-          changes = view.render.changes
-          expect(changes).not_to match(/<h1>Parent<\/h1>/)
-          expect(changes).to match(/<h1>baz<\/h1>/)
-          expect(changes).to match(/<h1>qux<\/h1>/)
+          branches = view.render.branches
+          expect(branches).not_to include(view.render)
+          expect(branches).to include(view.a.render)
+          expect(branches).to include(view.b.render)
         end
       end
     end

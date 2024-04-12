@@ -5,9 +5,9 @@ module Lucid
     context "static" do
       it "renders with Papercraft" do
         view     = Class.new(Component::Base).new
-        template = Template.new(view) do
+        template = Template.new do
           div { text "Hello, World" }
-        end
+        end.bind(view)
         expect(template.render).to eq("<div>Hello, World</div>")
       end
     end
@@ -20,7 +20,7 @@ module Lucid
           }
         end
       end.new
-      expect(view.render.to_s).to match(
+      expect(view.render.replace.call).to match(
          '<head><script src="https://example.com/script.js"></script></head>'
       )
     end
@@ -28,9 +28,9 @@ module Lucid
     context "with template arguments" do
       it "renders the template" do
         view     = Class.new(Component::Base)
-        template = Template.new(view) do |name|
+        template = Template.new do |name|
           div { text "Hello, #{name}" }
-        end
+        end.bind(view)
         expect(template.render("World")).to eq("<div>Hello, World</div>")
       end
     end
@@ -41,9 +41,9 @@ module Lucid
           param :name
         end.new(name: "World")
 
-        template = Template.new(view) do
+        template = Template.new do
           div { text "Hello, #{state[:name]}" }
-        end
+        end.bind(view)
         expect(template.render).to eq("<div>Hello, World</div>")
       end
     end

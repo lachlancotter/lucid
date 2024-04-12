@@ -8,6 +8,7 @@ module Lucid
         context "root component" do
           it "applies the destination state with a block" do
             app_class = Class.new(Component::Base) do
+              param :foo, default: ""
               visit Link, :foo
             end
             app       = app_class.new
@@ -17,6 +18,7 @@ module Lucid
 
           it "applies the destination state with a symbol" do
             app_class = Class.new(Component::Base) do
+              param :foo, default: ""
               visit Link, :foo
             end
             app       = app_class.new
@@ -26,19 +28,34 @@ module Lucid
 
           it "applies the destination state with a Hash" do
             app_class = Class.new(Component::Base) do
+              param :foo, default: ""
               visit Link, foo: "bar"
             end
             app       = app_class.new
             app.visit(Link.new)
             expect(app.deep_state).to eq({ foo: "bar" })
           end
+
+          it "triggers watchers" do
+            called    = false
+            app_class = Class.new(Component::Base) do
+              path :foo
+              watch(:foo) { called = true }
+              visit Link, :foo
+            end
+            app       = app_class.new
+            app.visit(Link.new(foo: "bar"))
+            expect(called).to be(true)
+          end
         end
 
         context "nested component" do
           it "applies the nested state" do
             app_class = Class.new(Component::Base) do
+              param :foo, default: ""
               visit Link, :foo
               nest :bar, Class.new(Component::Base) {
+                param :baz, default: ""
                 visit Link, :baz
               }
             end
@@ -53,6 +70,7 @@ module Lucid
         context "root component" do
           it "applies the destination state" do
             app_class = Class.new(Component::Base) do
+              param :count, default: 0
               visit :set_count, :count
             end
             app       = app_class.new(count: 1)
@@ -65,6 +83,7 @@ module Lucid
           it "applies the nested state" do
             app_class = Class.new(Component::Base) do
               nest :foo, Class.new(Component::Base) {
+                param :count, default: 0
                 visit :set_count, :count
               }
             end

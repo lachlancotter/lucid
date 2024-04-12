@@ -38,6 +38,12 @@ class Check
     end; self
   end
 
+  def extends (*modules)
+    unless modules.all? { |mod| @value.ancestors.include?(mod) }
+      raise Failure.new(self, "should extend #{modules.join(' and ')}")
+    end; self
+  end
+
   alias type has_type
 
   def responds_to (*methods)

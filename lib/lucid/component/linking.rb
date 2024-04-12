@@ -59,13 +59,25 @@ module Lucid
         end
 
         def call (component, link)
-          if @attrs.any?
-            component.state.update(
-               link.to_h.select { |k, _| @attrs.include?(k) }
-            )
-          end
-          component.state.update(@map) if @map.any?
+          data = delta(link)
+          component.update(data) if data.any?
           component.instance_exec(link, &@block) if @block
+        end
+
+        private
+
+        #
+        # Merge attributes from the link with constants from the visit.
+        #
+        def delta (link)
+          whitelist(link).merge(@map)
+        end
+
+        #
+        # Select specified attributes from the link.
+        #
+        def whitelist (link)
+          link.to_h.select { |k, _| @attrs.include?(k) }
         end
       end
     end

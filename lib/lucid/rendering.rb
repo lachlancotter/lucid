@@ -9,7 +9,11 @@ module Lucid
       end
     end
 
-    attr_reader :render
+    def render (method = nil, template = nil)
+      @render.tap do
+        @render.send(method) if method
+      end
+    end
 
     class TemplateNotFound < ArgumentError
       def initialize (name, context)
@@ -44,7 +48,9 @@ module Lucid
         templates[name] = Template.new(&block)
 
         if name == DEFAULT_TEMPLATE
-          watch(*block.parameters.map(&:last)) { render.replace }
+          watch(*block.parameters.map(&:last)) do
+            render.replace
+          end
         end
       end
 
@@ -79,34 +85,35 @@ module Lucid
         end
       end
 
+      def element_id
+        @component.element_id
+      end
+
       def any?
         @mode != NONE
       end
 
-      def call
+      def call (wrapper_attrs = {})
         return "" if @mode == NONE
         raise "No template specified" if @template_name.nil?
-        to_s
+        Template::Wrapper.new(@component, wrapper_attrs).wrap do
+          template.render(*template_args)
+        end
       end
 
       #
-      # If this component is marked for rendering, then render it.
-      # Otherwise, search for nested components that are marked for
-      # rendering and render them.
+      # Return a minimal list of components that need to be rendered.
       #
-      def changes (buffer = "")
-        if any?
-          buffer << to_s
-        else
-          @component.nests.each do |(name, sub)|
-            sub.render.changes(buffer)
+      def branches (list = [])
+        list.tap do
+          if any?
+            list << self
+          else
+            @component.nests.each do |(name, sub)|
+              sub.render.branches(list)
+            end
           end
         end
-        buffer
-      end
-
-      def to_s
-        template.render(*template_args)
       end
 
       private
