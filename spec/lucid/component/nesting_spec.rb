@@ -52,6 +52,25 @@ module Lucid
           expect(nested_view).to eq(view.foo)
         end
 
+        it "replaces the nested instance with a new class" do
+          foo_class   = Class.new(Component::Base)
+          bar_class   = Class.new(Component::Base)
+          base_class  = Class.new(Component::Base) do
+            param :val
+            nest(:foo) do |val|
+              Match.on(val) do
+                value("a") { foo_class }
+                value("b") { bar_class }
+              end
+            end
+          end
+          view        = base_class.new(val: "a")
+          nested_view = view.foo
+          view.update(val: "b")
+          expect(view.foo).to be_a(bar_class)
+          expect(view.foo).not_to eq(nested_view)
+        end
+
         it "iterates over a given collection" do
           foo_class = Class.new(Component::Base) { prop :bar }
           view      = Class.new(Component::Base) do

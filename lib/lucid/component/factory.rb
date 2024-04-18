@@ -13,6 +13,8 @@ module Lucid
         @config          = config
       end
 
+      attr_reader :component_class
+
       #
       # Instantiate a new component from the factory configuration.
       #

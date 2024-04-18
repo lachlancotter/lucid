@@ -1,8 +1,8 @@
 module Lucid
   module Component
     #
-    # Nestable components can contain other components, defined with
-    # the `nest` DSL method.
+    # Allows nesting of subcomponents within parent components using the
+    # `nest` DSL method. And propagates updates to the nested components.
     #
     module Nesting
       def self.included (base)
@@ -58,7 +58,9 @@ module Lucid
               end
             end
             if block_given?
-              watch(*block.parameters.map(&:last)) { nests[name].update_props }
+              watch(*block.parameters.map(&:last)) do
+                nests[name].update_component(nested_state(name))
+              end
             end
             define_method(name) do |collection_key = nil|
               nests[name].get(collection_key)
@@ -119,8 +121,12 @@ module Lucid
             @component = factory.build(reader, @parent, name)
           end
 
-          def update_props
-            factory.update_props(@component)
+          def update_component (reader)
+            if @component.is_a?(component_class)
+              factory.update_props(@component)
+            else
+              @component = factory.build(reader, @parent, name)
+            end
           end
 
           def get (collection_key = nil)
