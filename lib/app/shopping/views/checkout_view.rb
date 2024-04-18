@@ -1,6 +1,6 @@
 module Shopping
   class CheckoutView < Lucid::Component::Base
-    nest :cart_view, CartView
+    nest(:cart_view) { CartView }
     echo Order::SetShippingAddress, as: :address do
       { cart_id: cart.id }
     end

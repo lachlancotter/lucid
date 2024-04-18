@@ -33,6 +33,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         expect(page).to have_content("Gibson Les Paul")
         expect(page).to have_content("1")
@@ -47,6 +48,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         click_button "+"
         click_button "+"
@@ -59,6 +61,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         click_button "+"
         click_button "-"
@@ -71,6 +74,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         click_link "Checkout"
       end
@@ -86,6 +90,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         click_link "Checkout"
       end
@@ -108,6 +113,7 @@ module Shopping
       click_link "Guitars & Basses"
       click_link "Gibson Les Paul"
       click_button "Add to Cart"
+      click_link "Open Cart"
       within ".cart" do
         click_link "Checkout"
       end

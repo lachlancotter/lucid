@@ -13,34 +13,31 @@ module Shopping
     #    Nests
     # ===================================================== #
 
-    nest :content, match(:step,
-       store:    StoreView,
-       checkout: CheckoutView
-    )
-
-    # nest :content do |step|
-    #   match(step) do
-    #     is("store") { StoreView }
-    #     is("checkout") { CheckoutView }
-    #   end
-    # end
+    nest :content do |step|
+      Match.on(step) do
+        value("store") { StoreView }
+        value("checkout") { CheckoutView }
+      end
+    end
 
     # ===================================================== #
     #    Template
     # ===================================================== #
 
-    HTMX_LIB = {
-       src:         "https://unpkg.com/htmx.org@1.9.11/dist/htmx.js",
-       integrity:   "sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0",
-       crossorigin: "anonymous"
-    }
-
     template do
-      html(id: element_id) {
+      html {
         head {
-          script(HTMX_LIB)
+          script(HTMX::LIB)
+          script(
+            <<~JS
+              document.addEventListener("htmx:afterRequest", function (event) {
+                console.log("afterRequest");
+                console.log(event.detail.xhr.response);
+              });
+            JS
+          )
         }
-        body(HTMX[boost: true]) {
+        body(HTMX.boost) {
           emit_template :branding
           emit_view :content
         }

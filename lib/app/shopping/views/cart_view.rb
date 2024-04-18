@@ -7,7 +7,7 @@ module Shopping
     let(:cart) { Session.current.cart }
     let(:is_open) { |open| open == "1" }
 
-    on(Cart::ItemChanged) { |event| render }
+    on(Cart::ItemChanged) { render.replace }
 
     # ===================================================== #
     #    Template

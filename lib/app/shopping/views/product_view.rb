@@ -1,6 +1,6 @@
 module Shopping
   class ProductView < Lucid::Component::Base
-    setting :product, default: nil
+    prop :product, default: nil
 
     template do
       h2 { text product[:name] }
