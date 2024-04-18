@@ -13,12 +13,14 @@ module Lucid
         @config          = config
       end
 
-      def build (reader, parent, name, props = @config.call)
-        @component_class.new(reader) do |config|
-          config.parent   = parent
-          config.app_root = parent.app_root
-          config.path     = parent.path.concat(name)
-          props.each { |k, v| config[k] = v }
+      def build (reader, parent, name, config = Check[@config.call].hash.value)
+        @component_class.new(reader) do
+          {}.tap do |props|
+            props[:parent]   = parent
+            props[:app_root] = parent.props.app_root
+            props[:path]     = parent.props.path.concat(name)
+            config.each { |k, v| props[k] = v }
+          end
         end
       end
 
@@ -37,7 +39,9 @@ module Lucid
 
         def build (reader, parent, name)
           @enumerable.map.with_index do |item, index|
-            super(reader, parent, "#{name}[#{index}]", @config.call(item, index))
+            super(reader, parent, "#{name}[#{index}]",
+               Check[@config.call(item, index)].hash.value
+            )
           end
         end
       end
