@@ -19,7 +19,6 @@ module Shopping
     let(:product) { |product_id| Product.find(product_id) rescue nil }
     let(:category) { |category_slug| Category.find_by_slug(category_slug) }
     let(:products) { |category| Product.in_category(category) rescue [] }
-    let(:cart) { Session.current.cart }
 
     # ===================================================== #
     #    Subviews

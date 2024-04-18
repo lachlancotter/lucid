@@ -4,7 +4,7 @@ module Shopping
     visit Cart::Open, open: "1"
     visit Cart::Close, open: "0"
 
-    let(:cart) { Session.current.cart }
+    use :cart
     let(:is_open) { |open| open == "1" }
 
     on(Cart::ItemChanged) { render.replace }
@@ -32,21 +32,21 @@ module Shopping
           th "Actions"
         }
         cart.items.each do |item|
-          emit_template :item, item
+          emit_template :item, item, cart
         end
       }
       p { format_currency(cart.total) }
       p { emit Checkout::Link.link("Checkout") }
     end
 
-    template :item do |item|
+    template :item do |item, cart|
       tr {
         td item.product_name
         td item.quantity
         td format_currency(item.price)
         td {
-          emit inc_button(item)
-          emit dec_button(item)
+          emit inc_button(item, cart)
+          emit dec_button(item, cart)
         }
       }
     end
@@ -55,13 +55,13 @@ module Shopping
     #    Helpers
     # ===================================================== #
 
-    def inc_button (item)
+    def inc_button (item, cart)
       Cart::AddProduct.button("+",
          product_id: item.product_id, cart_id: cart.id
       )
     end
 
-    def dec_button (item)
+    def dec_button (item, cart)
       Cart::RemoveProduct.button("-",
          product_id: item.product_id, cart_id: cart.id
       )

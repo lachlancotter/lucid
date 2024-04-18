@@ -10,6 +10,12 @@ module Shopping
     visit Checkout::Link, step: "checkout"
 
     # ===================================================== #
+    #    Data
+    # ===================================================== #
+
+    let(:cart) { Session.current.cart }
+
+    # ===================================================== #
     #    Nests
     # ===================================================== #
 
@@ -28,14 +34,14 @@ module Shopping
       html {
         head {
           script(HTMX::LIB)
-          script(
-            <<~JS
-              document.addEventListener("htmx:afterRequest", function (event) {
-                console.log("afterRequest");
-                console.log(event.detail.xhr.response);
-              });
-            JS
-          )
+          # script(
+          #   <<~JS
+          #     document.addEventListener("htmx:afterRequest", function (event) {
+          #       console.log("afterRequest");
+          #       console.log(event.detail.xhr.response);
+          #     });
+          #   JS
+          # )
         }
         body(HTMX.boost) {
           emit_template :branding
