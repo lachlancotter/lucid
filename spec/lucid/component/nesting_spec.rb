@@ -1,20 +1,22 @@
 module Lucid
   describe Component::Nesting do
     describe ".nest" do
+
       context "dynamic constructor" do
         it "constructs with the given block" do
-          class_a = Class.new(Component::Base)
+          class_a = Class.new(Component::Base) { param :bar }
           class_b = Class.new(Component::Base)
 
-          view = Class.new(Component::Base) do
+          view_class = Class.new(Component::Base) do
             param :val
             nest :foo do |val|
-              match(val) do
-                is("a") { class_a }
-                is("b") { class_b }
+              Match.on(val) do
+                value("a") { class_a }
+                value("b") { class_b }
               end
             end
-          end.new(foo: { bar: "baz" }, val: "a")
+          end
+          view = view_class.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo).to be_a(class_a)
           expect(view.foo.state).to eq(bar: "baz")
@@ -27,12 +29,12 @@ module Lucid
             nest(:foo) { foo_class }
           end.new(foo: { bar: "baz" }, val: "a")
 
-          expect(view.foo.path).to eq("/foo")
-          expect(view.foo.app_root).to eq("/")
+          expect(view.foo.props.path).to eq("/foo")
+          expect(view.foo.props.app_root).to eq("/")
         end
 
         it "iterates over a given collection" do
-          foo_class = Class.new(Component::Base) { setting :bar }
+          foo_class = Class.new(Component::Base) { prop :bar }
           view      = Class.new(Component::Base) do
             param :val
             nest :foo do
@@ -41,17 +43,17 @@ module Lucid
           end.new(val: "a")
 
           expect(view.foo(0)).to be_a(foo_class)
-          expect(view.foo(0).bar).to eq("english")
+          expect(view.foo(0).props.bar).to eq("english")
         end
       end
 
       context "named constructor" do
         class NamedNestedComponent < Component::Base
-          setting :bar
-          setting :index
+          prop :bar
+          prop :index
 
           def render
-            "Nested #{config[:bar]}"
+            "Nested #{props[:bar]}"
           end
         end
 
@@ -69,23 +71,21 @@ module Lucid
                 { bar: e, index: i }
               end
             end
-          end.new do |config|
-            config.app_root = "/app/root"
-          end
+          end.new { { app_root: "/app/root" } }
 
           expect(view.foo(0)).to be_a(Component::Base)
-          expect(view.foo(0).config.bar).to eq("english")
-          expect(view.foo(0).config.index).to eq(0)
+          expect(view.foo(0).props.bar).to eq("english")
+          expect(view.foo(0).props.index).to eq(0)
           expect(view.foo(0).render).to eq("Nested english")
-          expect(view.foo(0).config.app_root).to eq("/app/root")
-          expect(view.foo(0).config.path.to_s).to eq("/foo[0]")
+          expect(view.foo(0).props.app_root).to eq("/app/root")
+          expect(view.foo(0).props.path.to_s).to eq("/foo[0]")
 
           expect(view.foo(1)).to be_a(Component::Base)
-          expect(view.foo(1).config.bar).to eq("spanish")
-          expect(view.foo(1).config.index).to eq(1)
+          expect(view.foo(1).props.bar).to eq("spanish")
+          expect(view.foo(1).props.index).to eq(1)
           expect(view.foo(1).render).to eq("Nested spanish")
-          expect(view.foo(1).config.app_root).to eq("/app/root")
-          expect(view.foo(1).config.path).to eq("/foo[1]")
+          expect(view.foo(1).props.app_root).to eq("/app/root")
+          expect(view.foo(1).props.path).to eq("/foo[1]")
         end
 
       end

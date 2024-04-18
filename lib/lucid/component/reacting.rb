@@ -12,8 +12,8 @@ module Lucid
       def update (data)
         @state.update(data)
         data.keys.each do |key|
-          if nests.key?(key)
-            nests[key].update(data[key])
+          if nest?(key)
+            nest(key).update(data[key])
           else
             field(key).notify
           end
@@ -25,7 +25,7 @@ module Lucid
       end
 
       def field (name)
-        raise Field::NoSuchField.new(name) unless field?(name)
+        raise Field::NoSuchField.new(name, self) unless field?(name)
         fields[name]
       end
 
@@ -33,9 +33,9 @@ module Lucid
       # Return the nearest ancestor component that defines the specified field.
       #
       def field_in_ancestor (name)
-        raise Field::NoSuchField.new(name) if config.parent.nil?
-        return config.parent.field(name) if config.parent.field?(name)
-        config.parent.field_in_ancestor(name)
+        raise Field::NoSuchField.new(name, self) if props.parent.nil?
+        return props.parent.field(name) if props.parent.field?(name)
+        props.parent.field_in_ancestor(name)
       end
 
       def field? (name)

@@ -9,12 +9,20 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      def nests # Hash[Symbol | String => Component]
+      def nests
         @nests ||= {}
       end
 
+      def nest? (key)
+        nests.key?(key)
+      end
+
+      def nest (key)
+        Check[nests[key]].type(Component::Base).value
+      end
+
       def root?
-        config.parent.nil?
+        props.parent.nil?
       end
 
       #
@@ -23,6 +31,15 @@ module Lucid
       def deep_state
         nests.inject(state.to_h) do |hash, (name, sub)|
           hash.merge(name => sub.deep_state)
+        end
+      end
+
+      #
+      # Read state for a nested component.
+      #
+      private def nested_state (key)
+        @params.seek(self.class.state_map.path_count, key).tap do |result|
+          Check[result].type(State::HashReader, State::Reader)
         end
       end
 
@@ -37,10 +54,6 @@ module Lucid
             end
           end
         end
-
-        # def match (key, map)
-        #   Match.new(key, map)
-        # end
 
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
@@ -103,9 +116,8 @@ module Lucid
           def factory
             object = @parent.instance_exec(*factory_args, &block)
             Match.on(object) do
-              instance_of(Factory) { object }
+              type(Factory) { object }
               extends(Component::Base) { Factory.new(object) { {} } }
-              default { raise "Invalid factory: #{object.inspect}" }
             end.tap do |result|
               Check[result].type(Factory)
             end

@@ -72,6 +72,12 @@ class Check
     end; self
   end
 
+  def every (&block)
+    @value.each do |value|
+      yield Check.new(value)
+    end; self
+  end
+
   def every_value (&block)
     @value.values.each do |value|
       yield Check.new(value)

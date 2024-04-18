@@ -1,39 +1,32 @@
-require "lucid/component/mapping"
+require "lucid/component/state_map"
 
 module Lucid
-  describe Component::Mapping do
+  describe Component::StateMap do
 
     describe ".path" do
       it "defines path params" do
-        instance = Class.new(Component::Base) do
-          path :foo
-        end.new(foo: "bar")
+        component_class = Class.new(Component::Base) { path :foo }
+        instance = component_class.new(foo: "bar")
         expect(instance.foo).to eq("bar")
       end
 
       it "sets defaults" do
-        instance = Class.new(Component::Base) do
-          path :count, default: 1
-        end.new({})
+        component_class = Class.new(Component::Base) { path :count, default: 1 }
+        instance = component_class.new({})
         expect(instance.count).to eq(1)
       end
     end
 
     describe ".param" do
       it "defines query params" do
-        component_class = Class.new(Component::Base) do
-          param :foo
-        end
+        component_class = Class.new(Component::Base) { param :foo }
         instance        = component_class.new(foo: "bar")
         expect(instance.foo).to eq("bar")
       end
 
       it "sets defaults" do
-        component_class = Class.new(Component::Base) do
-          param :count, default: 1
-        end
+        component_class = Class.new(Component::Base) { param :count, default: 1 }
         instance        = component_class.new({})
-        expect(component_class.state_class.defaults).to eq(count: 1)
         expect(instance.count).to eq(1)
       end
     end
@@ -48,10 +41,9 @@ module Lucid
 
       context "single param in path" do
         it "includes the param" do
-          view = Class.new(Component::Base) do
-            path :foo
-          end.new(foo: "bar")
-          expect(view.href.to_s).to eq("/bar")
+          component_class = Class.new(Component::Base) { path :foo }
+          instance = component_class.new(foo: "bar")
+          expect(instance.href.to_s).to eq("/bar")
         end
       end
 
@@ -108,7 +100,7 @@ module Lucid
 
           nest :bar, Class.new(Component::Base) {
             path :bar, default: "nested"
-          }, path: true
+          }
           nest :baz, Class.new(Component::Base) {
             param :baz, default: "baz"
           }
@@ -152,7 +144,6 @@ module Lucid
         end
       end
     end
-
 
   end
 end

@@ -1,3 +1,5 @@
+require "docile"
+
 module Lucid
   module State
     #
@@ -48,8 +50,7 @@ module Lucid
       #
       class Rule
         def initialize (key)
-          Check[key].type(Symbol, String)
-          @key     = key
+          @key = Check[key].type(Symbol, String).value
         end
 
         attr_reader :key

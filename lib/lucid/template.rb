@@ -99,16 +99,6 @@ module Lucid
         @renderable.link_to(name, params)
       end
 
-      # def emit (*args, **opts, &block)
-      #   if content.is_a?(Component::Base)
-      #     super
-      #   elsif content.is_a?(Template)
-      #     super
-      #   else
-      #     super(*args, **opts, &block)
-      #   end
-      # end
-
       def emit_template (name, *a, **b, &block)
         emit @renderable.template(name).render(*a, **b, &block)
       end
@@ -120,8 +110,8 @@ module Lucid
 
       def subview (name_or_instance)
         Match.on(name_or_instance) do
-          instance_of(Component::Base) { |instance| instance }
-          instance_of(Symbol) { |name| @renderable.send(name) }
+          type(Component::Base) { |instance| instance }
+          type(Symbol) { |name| @renderable.send(name) }
           default { raise ArgumentError, "Invalid view: #{name_or_instance}" }
         end
       end

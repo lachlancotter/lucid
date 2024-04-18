@@ -72,11 +72,11 @@ module Lucid
         end
 
         def branches
-          @branches ||= @component.render.branches
+          @component.render.branches
         end
 
         def target
-          branches.first.element_id
+          "##{branches.first.element_id}"
         end
 
         def to_s

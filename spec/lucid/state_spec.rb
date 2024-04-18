@@ -10,9 +10,7 @@ module Lucid
       end
 
       it "sets defaults" do
-        state_class = Class.new(State::Base) do
-          attribute :count, default: 1
-        end
+        state_class = Class.new(State::Base) { attribute :count, default: 1 }
         state       = state_class.new({})
         expect(state.count).to eq(1)
       end
@@ -28,14 +26,6 @@ module Lucid
         expect(state.count).to eq(2)
       end
     end
-
-    # it "mutates" do
-    #   state     = State::Base.new({ count: 1 })
-    #   new_state = state.mutate do |s|
-    #     s.count = 2
-    #   end
-    #   expect(new_state.count).to eq(2)
-    # end
   end
 
 end

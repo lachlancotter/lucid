@@ -6,9 +6,8 @@ module Lucid
     class Base
 
       include Callbacks
-      include Stateful
-      include Mapping
-      include Configuring
+      include StateMap
+      include Properties
       include Nesting
       include Reacting
       include Linking
@@ -16,25 +15,35 @@ module Lucid
       include Echoing
       include Rendering
 
-      # The path from the web root to the application root.
-      # Used to encode URLs for the webserver. Useful
-      # if you want to nest your application under a subdirectory.
-      setting :app_root, default: "/"
+      #
+      # The path from the web server root to the application root.
+      # Used to encode URLs for the webserver. Useful if you want to
+      # nest your application under a subdirectory.
+      #
+      prop :app_root, default: "/"
 
+      #
+      # This component's parent in the component tree.
+      #
+      prop :parent, default: nil
+
+      #
       # The path from the root view component to this component.
       # Used to identify components and actions.
-      setting :path, default: "/",
-         constructor: -> (path) { path.is_a?(Path) ? path : Path.new(path) }
-
-      setting :parent, default: nil
+      #
+      prop :path, default: "/" do |value|
+        Match.on(value) do
+          type(Path) { value }
+          default { Path.new(value) }
+        end
+      end
 
       def self.build (buffer, &config)
         new(buffer, &config)
       end
 
       def initialize (params = {}, &config)
-        @params = StateParam.from(params)
-        @state  = self.class.build_state(@params)
+        init_state(params)
         configure(&config)
         run_callbacks(:after_initialize)
       end
@@ -55,35 +64,15 @@ module Lucid
         Factory::Enumerated.new(self, collection, &block)
       end
 
-      #
-      # Convenience method for matching values in a block.
-      #
-      def match (value, &block)
-        Match.on(value, &block)
-      end
-
-      def nested_state (key)
-        @params.seek(self.class.state_map.path_count, key).tap do |result|
-          Check[result].type(State::HashReader, State::Reader)
-        end
-      end
-
       def inspect
-        "<#{self.class.name || "Component"}(#{path}) #{state.to_h}>"
+        "<#{self.class.name || "Component"}(#{props.path}) #{state.to_h}>"
       end
 
       def element_id
-        if config.path.root?
+        if props.path.root?
           "root"
         else
-          config.path.to_s.gsub("/", "-").gsub(/^-/, "")
-        end
-      end
-
-      class StateParam
-        def self.from (data)
-          Check[data].type(Hash, State::HashReader, State::Reader)
-          data.is_a?(Hash) ? State::HashReader.new(data) : data
+          props.path.to_s.gsub("/", "-").gsub(/^-/, "")
         end
       end
 

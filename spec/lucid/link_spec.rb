@@ -18,9 +18,7 @@ module Lucid
       end
 
       it "includes the component path" do
-        component = Class.new(Component::Base).new({}) do |config|
-          config.path = %w[a b c]
-        end
+        component = Class.new(Component::Base).new({}) { { path: %w[a b c] } }
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
         Message.with_context(component) do
           expect(link.query_params).to include({ "scope" => "/a/b/c" })

@@ -4,16 +4,21 @@ module Lucid
   # Used to encode paths through the component tree.
   #
   class Path
+    class InvalidComponents < ArgumentError
+      def initialize (components)
+        super("Path components must be a symbol, string, or an array of strings: #{components}")
+      end
+    end
+
     def initialize(components = [])
-      verify_components(components)
-      @components = if components.nil?
-        []
-      elsif components.is_a?(Symbol)
-        [components.to_s]
-      elsif components.is_a?(String)
-        components.split("/")
-      else
-        components
+      @components = Match.on(components) do
+        type(Array) do
+          Check[components].every { |e| e.type(Symbol, String) }.value
+        end
+        type(Symbol) { [components.to_s] }
+        type(String) { components.split("/") }
+        type(NilClass) { [] }
+        default { InvalidComponents.new(components) }
       end
     end
 
@@ -57,17 +62,5 @@ module Lucid
       "/" + join("/")
     end
 
-    private
-
-    def verify_components (components)
-      return if components.nil?
-      return if components.is_a?(String)
-      return if components.is_a?(Symbol)
-      return if components.is_a?(Array) && components.all? do |component|
-        component.is_a?(String) || component.is_a?(Symbol)
-      end
-      raise ArgumentError,
-         "Path components must be a symbol, string, or an array of strings: #{components}"
-    end
   end
 end

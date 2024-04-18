@@ -24,13 +24,25 @@ module Lucid
       block_binding.receiver.instance_exec(@value, &match_block)
     end
 
-    def is (pattern, &block)
-      throw :match, block if @value == pattern
+    # def is (pattern, &block)
+    #   throw :match, block if @value == pattern
+    # end
+
+    def value (val, &block)
+      throw :match, block if @value == val
     end
 
-    def instance_of (klass, &block)
+    def type (klass, &block)
       throw :match, block if @value.is_a?(klass)
     end
+
+    def responds_to (*methods, &block)
+      throw :match, block if methods.all? { |method| @value.respond_to?(method) }
+    end
+
+    # def instance_of (klass, &block)
+    #   throw :match, block if @value.is_a?(klass)
+    # end
 
     def extends (klass, &block)
       throw :match, block if @value.ancestors.include?(klass)

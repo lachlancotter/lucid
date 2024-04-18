@@ -28,7 +28,7 @@ module Lucid
 
       def query_params
         super.tap do |params|
-          params[SCOPE_PARAM] = @target.path.to_s
+          params[SCOPE_PARAM] = @target.props.path.to_s
           params[NAME_PARAM]  = @name.to_s
         end
       end
