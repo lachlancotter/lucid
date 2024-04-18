@@ -7,13 +7,13 @@ module Lucid
       it "defines path params" do
         component_class = Class.new(Component::Base) { path :foo }
         instance = component_class.new(foo: "bar")
-        expect(instance.foo).to eq("bar")
+        expect(instance.state.foo).to eq("bar")
       end
 
       it "sets defaults" do
         component_class = Class.new(Component::Base) { path :count, default: 1 }
         instance = component_class.new({})
-        expect(instance.count).to eq(1)
+        expect(instance.state.count).to eq(1)
       end
     end
 
@@ -21,13 +21,13 @@ module Lucid
       it "defines query params" do
         component_class = Class.new(Component::Base) { param :foo }
         instance        = component_class.new(foo: "bar")
-        expect(instance.foo).to eq("bar")
+        expect(instance.state.foo).to eq("bar")
       end
 
       it "sets defaults" do
         component_class = Class.new(Component::Base) { param :count, default: 1 }
         instance        = component_class.new({})
-        expect(instance.count).to eq(1)
+        expect(instance.state.count).to eq(1)
       end
     end
 

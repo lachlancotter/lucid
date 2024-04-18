@@ -173,7 +173,7 @@ module Lucid
           let(:bar) { |foo| foo.upcase }
           watch(:bar) { calls += 1 }
         end.new
-        expect(view.foo).to eq("")
+        expect(view.state.foo).to eq("")
         expect(view.bar).to eq("")
         view.update(foo: "foo")
         expect(view.bar).to eq("FOO")

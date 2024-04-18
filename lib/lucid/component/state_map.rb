@@ -61,7 +61,6 @@ module Lucid
           args.each_with_index do |name, index|
             state_class.attribute(name, default: defaults[index] || default)
             after_initialize { fields[name] = Field.new(self) { state[name] } }
-            define_method(name) { state.send(name) }
             yield state_map, name, index
           end
         end
