@@ -43,7 +43,7 @@ module Lucid
       end
 
       def args
-        params.map { |param| @context.send(param) }
+        params.map { |param| @context.field(param).value }
       end
     end
   end

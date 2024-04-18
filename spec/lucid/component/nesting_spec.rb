@@ -16,21 +16,40 @@ module Lucid
               end
             end
           end
-          view = view_class.new(foo: { bar: "baz" }, val: "a")
+          view       = view_class.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo).to be_a(class_a)
           expect(view.foo.state).to eq(bar: "baz")
         end
 
         it "configures the nested instance" do
-          foo_class = Class.new(Component::Base)
+          foo_class = Class.new(Component::Base) do
+            prop :bar
+          end
           view      = Class.new(Component::Base) do
             param :val
-            nest(:foo) { foo_class }
+            nest(:foo) { foo_class[bar: 1] }
           end.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo.props.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
+          expect(view.foo.props.parent).to eq(view)
+          expect(view.foo.props.bar).to eq(1)
+        end
+
+        it "propagates updates to the nested instance" do
+          foo_class   = Class.new(Component::Base) do
+            prop :bar
+          end
+          base_class  = Class.new(Component::Base) do
+            param :val
+            nest(:foo) { |val| foo_class[bar: val] }
+          end
+          view        = base_class.new(val: "1")
+          nested_view = view.foo
+          view.update(val: "2")
+          expect(view.foo.props.bar).to eq("2")
+          expect(nested_view).to eq(view.foo)
         end
 
         it "iterates over a given collection" do

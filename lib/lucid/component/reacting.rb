@@ -12,11 +12,7 @@ module Lucid
       def update (data)
         @state.update(data)
         data.keys.each do |key|
-          if nest?(key)
-            nest(key).update(data[key])
-          else
-            field(key).notify
-          end
+          field(key).invalidate if field?(key)
         end
       end
 

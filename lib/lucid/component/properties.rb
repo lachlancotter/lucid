@@ -10,16 +10,17 @@ module Lucid
 
       attr_reader :props
 
-      private
-
       def configure (&block)
         props_hash = block_given? ? Check[block.call].hash.value : {}
         @props = self.class.props_class.new(props_hash)
       end
 
+      private
+
       module ClassMethods
         def prop(name, default: nil, &constructor)
           props_class.attribute(name, default: default, &constructor)
+          after_initialize { fields[name] = Field.new(self) { props[name] } }
         end
 
         def props_class

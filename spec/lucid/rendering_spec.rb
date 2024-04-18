@@ -184,7 +184,7 @@ module Lucid
               end
             }
           end.new
-          view.update(bar: { baz: "qux" })
+          view.bar.update(baz: "qux")
           expect(view.render.branches).to eq([view.bar.render])
         end
       end
@@ -212,7 +212,8 @@ module Lucid
               emit_view :b
             end
           end.new
-          view.update(a: { foo: "baz" }, b: { bar: "qux" })
+          view.a.update(foo: "baz")
+          view.b.update(bar: "qux")
           branches = view.render.branches
           expect(branches).not_to include(view.render)
           expect(branches).to include(view.a.render)

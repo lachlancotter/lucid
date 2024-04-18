@@ -30,6 +30,14 @@ module Lucid
         expect(view.bar).to eq("foobaz")
       end
 
+      it "accepts property arguments" do
+        view = Class.new(Component::Base) do
+          prop :foo
+          let(:bar) { |foo| foo.upcase }
+        end.new { { foo: "foo" } }
+        expect(view.bar).to eq("FOO")
+      end
+
       it "caches the value per instance" do
         view_class = Class.new(Component::Base) do
           let(:foo) { rand }
@@ -100,6 +108,16 @@ module Lucid
         expect(view.child.foo).to eq("bar")
       end
 
+      it "inherits prop values" do
+        view = Class.new(Component::Base) do
+          prop :foo
+          nest :child, Class.new(Component::Base) {
+            use :foo
+          }
+        end.new { { foo: "bar" } }
+        expect(view.child.foo).to eq("bar")
+      end
+
       it "uses value overrides" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
@@ -127,7 +145,7 @@ module Lucid
 
     describe ".watch" do
       it "executes the block when the value changes" do
-        bar = nil
+        bar  = nil
         view = Class.new(Component::Base) do
           param :foo, default: ""
           watch(:foo) { bar = "foo" }
@@ -137,7 +155,7 @@ module Lucid
       end
 
       it "accepts multiple values" do
-        baz = 0
+        baz  = 0
         view = Class.new(Component::Base) do
           param :foo, default: ""
           param :bar, default: ""
@@ -150,7 +168,7 @@ module Lucid
 
       it "watches dependent fields" do
         calls = 0
-        view = Class.new(Component::Base) do
+        view  = Class.new(Component::Base) do
           param :foo, default: ""
           let(:bar) { |foo| foo.upcase }
           watch(:bar) { calls += 1 }

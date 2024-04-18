@@ -27,6 +27,7 @@ module Lucid
       end
 
       def write_component (component)
+        Check[component].type(Component::Base)
         tap do
           write_state(component.class.state_map)
           write_nests(component.nests)
@@ -41,7 +42,7 @@ module Lucid
 
       def write_nests (nests)
         nests.each do |(name, sub)|
-          with_scope(name) { write_component(sub) }
+          with_scope(name) { write_component(sub.component) }
         end
       end
 

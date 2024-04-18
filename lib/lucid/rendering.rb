@@ -109,7 +109,7 @@ module Lucid
           if any?
             list << self
           else
-            @component.nests.each do |(name, sub)|
+            @component.subcomponents.each do |(name, sub)|
               sub.render.branches(list)
             end
           end

@@ -9,16 +9,20 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      def nests
+      def nests # Hash[Symbol => Nest::Binding]
         @nests ||= {}
       end
 
-      def nest? (key)
-        nests.key?(key)
+      def subcomponents # Hash[Symbol => Component::Base]
+        nests.map do |(name, nest)|
+          [name, nest.component]
+        end.to_h
       end
 
-      def nest (key)
-        Check[nests[key]].type(Component::Base).value
+      def subcomponent (name)
+        subcomponents[name].tap do |sub|
+          Check[sub].type(Component::Base)
+        end
       end
 
       def root?
@@ -29,7 +33,7 @@ module Lucid
       # The state for this and all nested components.
       #
       def deep_state
-        nests.inject(state.to_h) do |hash, (name, sub)|
+        subcomponents.inject(state.to_h) do |hash, (name, sub)|
           hash.merge(name => sub.deep_state)
         end
       end
@@ -48,9 +52,16 @@ module Lucid
         def nest (name, component_class = nil, &block)
           Nest.new(name, component_class, &block).tap do |nest|
             nests[name] = nest
-            after_initialize { nest.bind(self).build(nested_state(name)) }
+            after_initialize do
+              nests[name] = nest.bind(self).tap do |binding|
+                binding.build(nested_state(name))
+              end
+            end
+            if block_given?
+              watch(*block.parameters.map(&:last)) { nests[name].update_props }
+            end
             define_method(name) do |collection_key = nil|
-              nest.bind(self).get(collection_key)
+              nests[name].get(collection_key)
             end
           end
         end
@@ -85,11 +96,7 @@ module Lucid
         private
 
         def normalize_constructor (component_class, &block)
-          if block_given?
-            block
-          else
-            lambda { Factory.new(component_class) { {} } }
-          end
+          block_given? ? block : lambda { Factory.new(component_class) { {} } }
         end
 
         #
@@ -99,18 +106,28 @@ module Lucid
           extend Forwardable
 
           def initialize (nest, parent)
-            @nest   = nest
-            @parent = parent
+            @nest      = nest
+            @parent    = parent
+            @component = nil
           end
+
+          attr_reader :component
 
           def_delegators :@nest, :name, :block
 
           def build (reader)
-            @parent.nests[name] = factory.build(reader, @parent, name)
+            @component = factory.build(reader, @parent, name)
+          end
+
+          def update_props
+            factory.update_props(@component)
           end
 
           def get (collection_key = nil)
-            collection_key ? @parent.nests[name][collection_key] : @parent.nests[name]
+            Match.on(collection_key) do
+              type(NilClass) { @component }
+              type(Integer) { @component[collection_key] }
+            end
           end
 
           def factory
@@ -131,9 +148,7 @@ module Lucid
           # Query the component for the arguments to pass to the block.
           #
           def factory_args
-            block.parameters.map do |(type, name)|
-              @parent.field(name).value
-            end
+            block.parameters.map { |(type, name)| @parent.field(name).value }
           end
         end
 

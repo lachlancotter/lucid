@@ -13,6 +13,9 @@ module Lucid
         @config          = config
       end
 
+      #
+      # Instantiate a new component from the factory configuration.
+      #
       def build (reader, parent, name, config = Check[@config.call].hash.value)
         @component_class.new(reader) do
           {}.tap do |props|
@@ -22,6 +25,13 @@ module Lucid
             config.each { |k, v| props[k] = v }
           end
         end
+      end
+
+      #
+      # Update an existing component with new configuration.
+      #
+      def update_props (component, config = Check[@config.call].hash.value)
+        component.configure { component.props.to_h.merge(config) }
       end
 
       #

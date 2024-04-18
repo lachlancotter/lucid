@@ -18,7 +18,7 @@ module Lucid
       def visit (link)
         Check[link].type(Link)
         visitations[link.key].call(self, link) if visitations.key?(link.key)
-        nests.values.each { |nest| nest.visit(link) }
+        subcomponents.values.each { |sub| sub.visit(link) }
       end
 
       def visitations
