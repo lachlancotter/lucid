@@ -18,7 +18,7 @@ module Lucid
     class TemplateNotFound < ArgumentError
       def initialize (name, context)
         super(<<~MSG)
-          Could not find template `#{name}` in #{context.class} at #{context.config.path}.
+          Could not find template `#{name}` in #{context.class} at #{context.props.path}.
           Available templates: #{context.class.templates.keys}
         MSG
       end

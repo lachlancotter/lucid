@@ -1,5 +1,8 @@
 module Lucid
   module Component
+    #
+    # Register event handlers that respond to notifications.
+    #
     module Responding
       def self.included (base)
         base.extend(ClassMethods)
@@ -8,7 +11,7 @@ module Lucid
       def notify (event)
         handler = self.class.event_handler(event.class)
         instance_exec(event, &handler) if handler.is_a?(Proc)
-        nests.values.each { |nest| nest.notify(event) }
+        subcomponents.values.each { |sub| sub.notify(event) }
       end
 
       private

@@ -109,9 +109,11 @@ module Lucid
       private
 
       def build (state)
-        base_view_class.new(state) do |config|
-          config.app_root = @config[:app_root]
-          config.path     = Path.new
+        base_view_class.new(state) do
+          {}.tap do |config|
+            config[:app_root] = @config[:app_root]
+            config[:path]     = Path.new
+          end
         end
       end
 
