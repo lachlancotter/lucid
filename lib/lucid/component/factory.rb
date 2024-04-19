@@ -34,6 +34,9 @@ module Lucid
       #
       def update_props (component, config = Check[@config.call].hash.value)
         component.configure { component.props.to_h.merge(config) }
+        config.keys.each do |key|
+          component.field(key).invalidate if component.field?(key)
+        end
       end
 
       #

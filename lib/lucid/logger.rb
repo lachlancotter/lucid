@@ -23,6 +23,11 @@ module Lucid
 
       def request (request)
         puts("#{request.request_method}: #{request.fullpath}")
+        request.env.each do |key, value|
+          if key.start_with?("HTTP_HX")
+            puts("        #{key}: #{value.inspect}")
+          end
+        end
       end
 
       def response (response)
