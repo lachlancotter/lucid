@@ -26,9 +26,9 @@ module Lucid
           base     = Class.new(Component::Base) { param :baz }
           message  = Message.new(foo: "bar")
           env      = {
-             "REQUEST_METHOD" => "GET",
-             "PATH_INFO"      => "/",
-             "QUERY_STRING"   => "baz=qux",
+             "REQUEST_METHOD"  => "GET",
+             "PATH_INFO"       => "/",
+             "QUERY_STRING"    => "baz=qux",
              "HTTP_HX_REQUEST" => "true"
           }
           request  = HTTP::RequestAdaptor.new(Rack::Request.new(env))
@@ -71,11 +71,47 @@ module Lucid
     end
 
     describe ".decode_name" do
-      it "decodes message names from URLs" do
-        url     = "/@/shopping/product/list?category_slug=guitars-basses&state[step]=store"
-        request = double("request", fullpath: url)
-        name    = Message.decode_name(request)
-        expect(name).to eq("Shopping::Product::List")
+      context "no namespace" do
+        it "raises an exception" do
+          url     = "/not/a/message"
+          request = double("request", fullpath: url)
+          expect { Message.decode_name(request) }.to raise_error(Message::InvalidName)
+        end
+      end
+
+      context "no message name" do
+        it "raises an exception" do
+          url     = "/@/"
+          request = double("request", fullpath: url)
+          expect { Message.decode_name(request) }.to raise_error(Message::InvalidName)
+        end
+      end
+
+      context "no params" do
+        it "decodes the message name" do
+          url     = "/@/shopping/product/list"
+          request = double("request", fullpath: url)
+          name    = Message.decode_name(request)
+          expect(name).to eq("Shopping::Product::List")
+        end
+      end
+
+      context "app root" do
+        it "decodes the message name" do
+          url     = "/app_root/@/shopping/product/list"
+          request = double("request", fullpath: url)
+          name    = Message.decode_name(request)
+          expect(name).to eq("Shopping::Product::List")
+        end
+      end
+
+      context "full message name and params" do
+        it "decodes message names from URLs" do
+          url     = "/@/shopping/product/list?category_slug=guitars-basses&state[step]=store"
+          request = double("request", fullpath: url)
+          name    = Message.decode_name(request)
+          expect(name).to eq("Shopping::Product::List")
+        end
       end
     end
 

@@ -12,17 +12,29 @@ module Lucid
     EXECUTE    = "execute".freeze
     VALIDATE   = "validate".freeze
 
+    PATTERN = /^(?:.*?\/@\/)(.+?)(\?.*)?$/
+
+    class InvalidName < StandardError
+      def self.check (fullpath)
+        raise new(fullpath) unless fullpath.match?(PATTERN)
+      end
+
+      def initialize (fullpath)
+        super("Cannot parse message URL: #{fullpath}")
+      end
+    end
+
     class << self
       #
       # Checks whether the request contains a message.
       #
       def present? (request)
-        request.fullpath.match?(/\/@\/\w+/)
+        request.fullpath.match?(PATTERN)
       end
 
       def decode_name (request)
-        pattern = /\/@\/(.*?)\?/
-        path    = request.fullpath.match(pattern)[1]
+        InvalidName.check(request.fullpath)
+        path = request.fullpath.match(PATTERN)[1]
         HTTP::MessageName.decode(path)
       end
 
