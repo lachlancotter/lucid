@@ -29,5 +29,17 @@ module Lucid
         expect(match).to eq("corge")
       end
     end
+
+    context "tuple match" do
+      it "matches arguments by order" do
+        match = Match.new("foo", "bar").match do
+          value("foo", "false") { "no match" }
+          value("bar", "false") { "no match" }
+          value("false", "bar") { "no match" }
+          value("foo", "bar") { "match" }
+        end
+        expect(match).to eq("match")
+      end
+    end
   end
 end

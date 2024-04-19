@@ -28,7 +28,7 @@ module Lucid
 
     describe ".decode_name" do
       it "decodes message names from URLs" do
-        url = "/@/shopping/product/list?category_slug=guitars-basses&state[step]=store"
+        url     = "/@/shopping/product/list?category_slug=guitars-basses&state[step]=store"
         request = double("request", fullpath: url)
         name    = Message.decode_name(request)
         expect(name).to eq("Shopping::Product::List")

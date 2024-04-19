@@ -12,25 +12,43 @@ module Lucid
         @request = request
       end
 
-      # def state (base_class, config)
-      #   base_class.decode_state(href(config[:app_root]))
-      # end
-
-      def state_reader (config)
-        if has_message?
-          State::HashReader.new(message_params["state"])
-        else
-          State::Reader.new(href(config[:app_root]))
+      def state_reader (app_root: "/")
+        Match.on(has_message?, htmx?) do
+          value(true, true) { state_from_hx_current_url(app_root) }
+          value(true, false) { state_from_message_params }
+          default { state_from_fullpath(app_root) }
+        end.tap do |result|
+          Check[result].type(State::Reader, State::HashReader)
         end
       end
 
-      def href (app_root)
-        if @request.fullpath == app_root && app_root == "/"
-          "/"
-        else
-          @request.fullpath.sub(/^#{app_root}/, "")
-        end.tap do |result|
-          Check[result].string.not_blank
+      def state_from_fullpath (app_root)
+        fullpath     = @request.fullpath
+        state_string = RequestAdaptor.normalize_path(fullpath, app_root)
+        State::Reader.new(state_string)
+      end
+
+      def state_from_hx_current_url (app_root)
+        current_url  = @request.get_header("HTTP_HX_CURRENT_URL")
+        state_string = RequestAdaptor.normalize_path(current_url, app_root)
+        State::Reader.new(state_string)
+      end
+
+      def state_from_message_params
+        State::HashReader.new(message_params["state"] || {})
+      end
+
+      def self.normalize_path (url, app_root)
+        Match.on(url) do
+          value("") { "/" }
+          value("/") { "/" }
+          type(String) do
+            uri   = URI.parse(url)
+            uri.path.sub(app_root, "").tap do |path|
+              query = uri.query || ""
+              path << "?" + query if query != ""
+            end
+          end
         end
       end
 
