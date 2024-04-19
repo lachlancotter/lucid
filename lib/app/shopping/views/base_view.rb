@@ -33,6 +33,7 @@ module Shopping
     template do
       html {
         head {
+          link_stylesheet("/style.css")
           script(HTMX::LIB)
           # script(
           #   <<~JS
