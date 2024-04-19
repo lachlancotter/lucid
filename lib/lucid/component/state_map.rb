@@ -35,6 +35,13 @@ module Lucid
         end.to_s
       end
 
+      #
+      # Add the component state to the given message parameters.
+      #
+      def merge_state (message_params)
+        message_params.merge(state: deep_state)
+      end
+
       module ClassMethods
         #
         # Map a path component to a state attribute.

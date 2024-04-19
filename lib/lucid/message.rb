@@ -22,7 +22,7 @@ module Lucid
 
       def decode_name (request)
         pattern = /\/@\/(.*?)\?/
-        path = request.fullpath.match(pattern)[1]
+        path    = request.fullpath.match(pattern)[1]
         HTTP::MessageName.decode(path)
       end
 
@@ -47,9 +47,11 @@ module Lucid
     end
 
     def query_params
-      message_params = params.map { |k, v| [k.to_s, v] }.to_h
-      message_params.merge!(state: Message.context.state.to_h) if Message.context
-      message_params
+      if Message.context.respond_to?(:merge_state)
+        Message.context.merge_state(params.to_h)
+      else
+        params.to_h
+      end
     end
 
     #

@@ -82,8 +82,16 @@ module Lucid
         end
       end
 
+      def htmx?
+        @request.htmx?
+      end
+
       def base_view
-        @base_view ||= build(@request.state_reader(@config))
+        @base_view ||= build(@request.state_reader(app_root: app_root))
+      end
+
+      def app_root
+        @config[:app_root]
       end
 
       def base_view_class
@@ -104,6 +112,18 @@ module Lucid
 
       def state
         base_view.deep_state
+      end
+
+      #
+      # Merge the current state to the message params unless HTMX is enabled.
+      # For HTMX requests, the current state is passed in the HX-Current-URL header.
+      #
+      def merge_state (message_params)
+        if htmx?
+          message_params
+        else
+          base_view.merge_state(message_params)
+        end
       end
 
       private
