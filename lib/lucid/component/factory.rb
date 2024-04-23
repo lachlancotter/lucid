@@ -23,6 +23,7 @@ module Lucid
           {}.tap do |props|
             props[:parent]   = parent
             props[:app_root] = parent.props.app_root
+            props[:session]  = parent.props.session
             props[:path]     = parent.props.path.concat(name)
             config.each { |k, v| props[k] = v }
           end

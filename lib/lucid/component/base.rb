@@ -23,6 +23,11 @@ module Lucid
       prop :app_root, default: "/"
 
       #
+      # Access to the Session for the current request.
+      #
+      prop :session
+
+      #
       # This component's parent in the component tree.
       #
       prop :parent, default: nil

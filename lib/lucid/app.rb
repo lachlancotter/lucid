@@ -19,13 +19,13 @@ module Lucid
     end
 
     def query (request, response)
-      Logger.cycle(request, response) do
+      Logger.cycle(request, response, @config[:session]) do
         cycle(request, response).query
       end
     end
 
     def command (request, response)
-      Logger.cycle(request, response) do
+      Logger.cycle(request, response, @config[:session]) do
         cycle(request, response).command
       end
     end
@@ -87,7 +87,11 @@ module Lucid
       end
 
       def base_view
-        @base_view ||= build(@request.state_reader(app_root: app_root))
+        @base_view ||= build(
+           @request.state_reader(
+              app_root: app_root
+           )
+        )
       end
 
       def app_root
@@ -98,8 +102,8 @@ module Lucid
         @config[:base_view_class]
       end
 
-      def command_bus
-        @config[:command_bus]
+      def command_bus_class
+        @config[:command_bus_class]
       end
 
       def href
@@ -132,9 +136,14 @@ module Lucid
         base_view_class.new(state) do
           {}.tap do |config|
             config[:app_root] = @config[:app_root]
+            config[:session]  = @config[:session]
             config[:path]     = Path.new
           end
         end
+      end
+
+      def command_bus
+        @command_bus ||= command_bus_class.new(@config[:session])
       end
 
       def run_with_context

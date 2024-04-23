@@ -10,21 +10,29 @@ module Lucid
       #
       # Wrap a request cycle.
       #
-      def cycle (request, response, &block)
+      def cycle (request, response, session_data, &block)
         block_result = nil
         Console.logger.info(request) do |buffer|
           @buffer = buffer
           request(request)
+          # session(session_data)
           block_result = block.call
           response(response)
         end
         block_result
       end
 
+      def session (hash)
+        puts("  📦 Session:")
+        hash.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
+      end
+
       def request (request)
         puts("#{request.request_method}: #{request.fullpath}")
         request.env.each do |key, value|
-          if key.start_with?("HTTP_HX")
+          if key.start_with?("HTTP_HX") #|| key.start_with?("HTTP_COOKIE")
             puts("        #{key}: #{value.inspect}")
           end
         end
@@ -32,6 +40,7 @@ module Lucid
 
       def response (response)
         puts("  📤 Response:")
+        puts("        Status: #{response.status}")
         response.headers.each do |key, value|
           puts("        #{key}: #{value.inspect}")
         end
