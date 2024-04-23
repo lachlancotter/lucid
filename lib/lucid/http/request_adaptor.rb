@@ -52,6 +52,10 @@ module Lucid
         end
       end
 
+      def cookies
+        @request.cookies
+      end
+
       def htmx?
         @request.get_header("HTTP_HX_REQUEST") == "true"
       end

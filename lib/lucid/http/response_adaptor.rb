@@ -15,7 +15,7 @@ module Lucid
 
       def_delegators :@response,
          :status, :headers, :location, :body,
-         :status=, :location=, :body=
+         :status=, :location=, :body=, :set_cookie
 
       def send_delta (component, htmx:)
         tap do
@@ -95,7 +95,7 @@ module Lucid
         #
         def tail
           branches[1..-1].map do |branch|
-            HTMX.oob.merge(id: branch.element_id)
+            branch.call(HTMX.oob.merge(id: branch.element_id))
           end
         end
       end
