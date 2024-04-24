@@ -8,8 +8,8 @@ module Lucid
       include Observable
 
       class NoSuchField < ArgumentError
-        def initialize (name, component)
-          super("No such field: #{name} in #{component.props.path}")
+        def initialize (name, path)
+          super("No such field: #{name} in #{path}")
         end
       end
 

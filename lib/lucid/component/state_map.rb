@@ -92,8 +92,9 @@ module Lucid
         #
         def build_state (reader)
           Check[reader].type(State::Reader, State::HashReader)
-          state_class.new(reader.read(state_map)).tap do |state|
-            extra_keys = reader.read(state_map).keys - state.keys
+          data = reader.read(state_map)
+          state_class.new(data).tap do |state|
+            extra_keys = data.keys - state.keys
             unless extra_keys.empty?
               puts "WARNING: Extra keys in state: #{extra_keys.inspect}. Ignoring."
             end

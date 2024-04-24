@@ -21,7 +21,7 @@ module Lucid
       end
 
       def field (name)
-        raise Field::NoSuchField.new(name, self) unless field?(name)
+        raise Field::NoSuchField.new(name, props.path) unless field?(name)
         fields[name]
       end
 
@@ -29,7 +29,7 @@ module Lucid
       # Return the nearest ancestor component that defines the specified field.
       #
       def field_in_ancestor (name)
-        raise Field::NoSuchField.new(name, self) if props.parent.nil?
+        raise Field::NoSuchField.new(name, props.path) if props.parent.nil?
         return props.parent.field(name) if props.parent.field?(name)
         props.parent.field_in_ancestor(name)
       end
@@ -52,8 +52,13 @@ module Lucid
         #
         # Declare a dependency on a field defined in a parent component.
         #
-        def use (name)
-          after_initialize { fields[name] = field_in_ancestor(name) }
+        def use (name, from: nil)
+          after_initialize do
+            fields[name] = Match.on(from) do
+              value(nil) { field_in_ancestor(name) }
+              value(:session) { props.session.field(name) }
+            end
+          end
           define_method(name) { fields[name].value }
         end
 

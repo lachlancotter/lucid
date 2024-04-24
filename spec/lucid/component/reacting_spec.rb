@@ -98,6 +98,14 @@ module Lucid
         expect(view.child.grandchild.foo).to eq("bar")
       end
 
+      it "inherits values from the session" do
+        session_class = Class.new(Lucid::Session) { attribute :foo }
+        session       = session_class.new(foo: "bar")
+        view_class    = Class.new(Component::Base) { use :foo, from: :session }
+        view          = view_class.new { { session: session } }
+        expect(view.foo).to eq("bar")
+      end
+
       it "inherits state values" do
         view = Class.new(Component::Base) do
           param :foo
