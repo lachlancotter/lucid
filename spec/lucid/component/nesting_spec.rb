@@ -38,9 +38,7 @@ module Lucid
         end
 
         it "propagates updates to the nested instance" do
-          foo_class   = Class.new(Component::Base) do
-            prop :bar
-          end
+          foo_class   = Class.new(Component::Base) { prop :bar }
           base_class  = Class.new(Component::Base) do
             param :val
             nest(:foo) { |val| foo_class[bar: val] }

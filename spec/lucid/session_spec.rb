@@ -12,7 +12,7 @@ module Lucid
       it "raises when invalid" do
         session_class = Class.new(Session) do
           attribute :foo
-          validate { required(:foo) }
+          validate { required(:foo).filled(:str?) }
         end
         expect {
           session_class.new({})

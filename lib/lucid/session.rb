@@ -7,6 +7,8 @@ module Lucid
   #
   class Session
     include Component::Callbacks
+    include Attributes
+    include Fields
 
     #
     # Indicates that the Session data is invalid.
@@ -46,49 +48,10 @@ module Lucid
       raise Invalid.new(result.errors.to_h) if result.failure?
     end
 
-    def field (name)
-      raise Component::Field::NoSuchField.new(name, "session") unless field?(name)
-      fields[name]
-    end
-
-    def field? (name)
-      fields.key?(name)
-    end
-
-    def fields
-      @fields ||= {}
-    end
-
-    def watch (*keys, &block)
-      keys.each { |key| field(key).attach(self, &block) }
-    end
-
     #
     # DSL
     #
     class << self
-      def attribute (name, default: nil, &constructor)
-        attributes[name] = State::Base::Attribute.new(name, default: default, &constructor)
-        after_initialize { fields[name] = Component::Field.new(self) { self[name] } }
-        define_method(name) { self[name] }
-      end
-
-      def attributes
-        @attributes ||= Match.on(superclass) do
-          responds_to(:attributes) { |sc| sc.attributes.dup }
-          default { {} }
-        end
-      end
-
-      def map_attributes (&block)
-        attributes.map { |name, attr| [name, block.call(attr)] }.to_h
-      end
-
-      def let (name, &block)
-        after_initialize { fields[name] = Component::Field.new(self, &block) }
-        define_method(name) { fields[name].value }
-      end
-
       def validate (&block)
         @schema = Dry::Schema.Params(&block)
       end

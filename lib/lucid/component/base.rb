@@ -9,7 +9,8 @@ module Lucid
       include StateMap
       include Properties
       include Nesting
-      include Reacting
+      include Fields
+      include FieldInheritance
       include Linking
       include Responding
       include Echoing
@@ -51,6 +52,17 @@ module Lucid
         init_state(params)
         configure(&config)
         run_callbacks(:after_initialize)
+      end
+
+      #
+      # Update a value in the state, and trigger invalidation of
+      # dependent fields.
+      #
+      def update (data)
+        @state.update(data)
+        data.keys.each do |key|
+          field(key).invalidate if field?(key)
+        end
       end
 
       #
