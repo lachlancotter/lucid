@@ -100,7 +100,7 @@ module Lucid
           }.merge(options))
         end
 
-        template :label do |key, text, options = {}|
+        template :label do |key, text = key, options = {}|
           label(key, { for: field_id(key) }.merge(options)) {
             emit text
           }

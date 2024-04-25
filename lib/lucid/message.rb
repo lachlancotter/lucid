@@ -113,7 +113,7 @@ module Lucid
       # Generate a form to compose this message type.
       #
       def form (params = {}, &block)
-        raise "no block" unless block
+        raise "no block" unless block_given?
         new(params).form(&block)
       end
 

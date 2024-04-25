@@ -13,7 +13,7 @@ module Lucid
     end
 
     def perform (command)
-      self.class.command_handlers.fetch(command.class).call(command)
+      instance_exec(command, &self.class.command_handlers.fetch(command.class))
     end
 
     def performs? (command)
