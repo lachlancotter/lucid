@@ -9,6 +9,7 @@ module Lucid
     include Component::Callbacks
     include Attributes
     include Fields
+    include Validated
 
     #
     # Indicates that the Session data is invalid.
@@ -46,17 +47,6 @@ module Lucid
       return unless self.class.schema
       result = self.class.schema.call(data)
       raise Invalid.new(result.errors.to_h) if result.failure?
-    end
-
-    #
-    # DSL
-    #
-    class << self
-      def validate (&block)
-        @schema = Dry::Schema.Params(&block)
-      end
-
-      attr_reader :schema
     end
   end
 end

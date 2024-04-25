@@ -23,6 +23,7 @@ module Lucid
       extend Forwardable
       include Component::Callbacks
       include Attributes
+      include Validated
 
       def initialize(data = {})
         @data = validated(
@@ -76,21 +77,6 @@ module Lucid
       #
       def update (data)
         @data = validated(@data.merge(data))
-      end
-
-      # ===================================================== #
-      #    Class Methods
-      # ===================================================== #
-
-      class << self
-        #
-        # Define validation rules.
-        #
-        def validate (&block)
-          @schema = Dry::Schema.Params(&block)
-        end
-
-        attr_reader :schema
       end
     end
   end
