@@ -15,6 +15,7 @@ module Lucid
       include Responding
       include Echoing
       include Rendering
+      include Guarded
 
       #
       # The path from the web server root to the application root.
