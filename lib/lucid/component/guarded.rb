@@ -10,6 +10,10 @@ module Lucid
         base.prepend(RenderOverride)
       end
 
+      def guards
+        @guards ||= []
+      end
+
       def denied?
         if_denied { return true }
         false
@@ -20,12 +24,26 @@ module Lucid
       end
 
       #
-      # Wrap the render method to guard access to the component.
+      # Wrap the render object to in a guard check so that the component cannot render
+      # if the guard condition denies access to the component.
       #
       module RenderOverride
-        def render
-          if_denied { |guard| raise Guard::Violation.new(guard) }
-          if_permitted { return super }
+        def render (*args)
+          GuardedRender.new(self, super(*args))
+        end
+
+        class GuardedRender < DelegateClass(Rendering::Render)
+          def initialize (component, delegate)
+            @component = component
+            super(delegate)
+          end
+
+          def call (*args)
+            @component.if_denied do |guard|
+              raise Guard::Violation.new(guard)
+            end
+            super(*args)
+          end
         end
       end
 
@@ -46,10 +64,10 @@ module Lucid
       # via the Denied event so that components can take action. Then check the
       # guard conditions again up to the maximum number of patrols.
       #
-      def patrol (max = MAX_PATROLS)
+      def check_guards (max = MAX_PATROLS, &block)
         max.times do
           if_denied { |result| notify Guard::Denied.new(result: result) }
-          if_permitted { return Permit }
+          if_permitted { return block.call }
         end
         raise MaxPatrolsExceeded
       end
@@ -59,14 +77,13 @@ module Lucid
       # denies access to the component. Always returns nil.
       #
       def if_denied (&block)
-        nil.tap do
-          self.class.guard_conditions.each do |guard|
-            guard.bind(self).if_denied { |result| return block.call(result) }
-          end
-          subcomponents.values.each do |sub|
-            sub.if_denied { |result| return block.call(result) }
-          end
+        guards.each do |guard|
+          guard.if_denied { |result| return block.call(result) }
         end
+        subcomponents.values.each do |sub|
+          sub.if_denied { |result| return block.call(result) }
+        end
+        nil
       end
 
       #
@@ -74,9 +91,8 @@ module Lucid
       # permit access to the component. Always returns nil.
       #
       def if_permitted (&block)
-        nil.tap do
-          block.call if permitted?
-        end
+        block.call if permitted?
+        nil
       end
 
       #
@@ -84,11 +100,16 @@ module Lucid
       #
       module ClassMethods
         def guard (&block)
-          guard_conditions << Guard.new(&block)
+          guards << Guard.new(&block)
+          after_initialize do
+            @guards = self.class.guards.map do |guard|
+              guard.bind(self)
+            end
+          end
         end
 
-        def guard_conditions
-          @guard_conditions ||= []
+        def guards
+          @guards ||= []
         end
       end
 

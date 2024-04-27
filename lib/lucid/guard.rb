@@ -102,8 +102,7 @@ module Lucid
 
     class Binding
       def initialize (guard, context)
-        @guard   = guard
-        @field   = Field.new(context, &guard.block)
+        @field = Field.new(context, &guard.block)
       end
 
       def call
