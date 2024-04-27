@@ -15,20 +15,22 @@ module Shopping
     template do |cart, is_open|
       p cart.item_count
       div(class: "cart") {
-        emit Cart::Open.link("Open Cart") unless is_open
-        emit Cart::Close.link("Close Cart") if is_open
-        emit_template :contents, cart if is_open
+        link_to Cart::Open, "Open Cart" unless is_open
+        link_to Cart::Close, "Close Cart" if is_open
+        fragment(:contents, cart) if is_open
       }
     end
 
     template :contents do |cart|
       h2 "Your Cart"
       table {
-        emit_template :header
-        cart.items.each { |item| emit_template :item, item, cart }
+        fragment :header
+        cart.items.each { |item|
+          fragment(:item, item, cart)
+        }
       }
       p { format_currency(cart.total) }
-      p { emit Checkout::Link.link("Checkout") }
+      p { link_to Checkout::Link, "Checkout" }
     end
 
     template :header do
@@ -46,8 +48,8 @@ module Shopping
         td item.quantity
         td format_currency(item.price)
         td {
-          emit inc_button(item, cart)
-          emit dec_button(item, cart)
+          button_to add_product(item, cart), "+"
+          button_to remove_product(item, cart), "-"
         }
       }
     end
@@ -56,16 +58,12 @@ module Shopping
     #    Helpers
     # ===================================================== #
 
-    def inc_button (item, cart)
-      Cart::AddProduct.button("+",
-         product_id: item.product_id, cart_id: cart.id
-      )
+    def add_product (item, cart)
+      Cart::AddProduct.new(product_id: item.product_id, cart_id: cart.id)
     end
 
-    def dec_button (item, cart)
-      Cart::RemoveProduct.button("-",
-         product_id: item.product_id, cart_id: cart.id
-      )
+    def remove_product (item, cart)
+      Cart::RemoveProduct.new(product_id: item.product_id, cart_id: cart.id)
     end
 
     def format_currency(amount)

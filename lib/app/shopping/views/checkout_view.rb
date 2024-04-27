@@ -10,27 +10,27 @@ module Shopping
 
     template do
       if cart.shipping_address.nil?
-        emit_template :form
+        fragment :form
       else
-        emit_template :complete
+        fragment :complete
       end
     end
 
     template :form do
       div(class: "checkout") {
         h2 "Checkout"
-        emit_view :cart_view
-        emit Order::SetShippingAddress.form(address_params) { |f|
+        subview :cart_view
+        form_for Order::SetShippingAddress[address_params] do |f|
           f.hidden(:cart_id)
           f.struct(:address) { |a|
-            emit_template :form_field, a, :name
-            emit_template :form_field, a, :street
-            emit_template :form_field, a, :city
-            emit_template :form_field, a, :state
-            emit_template :form_field, a, :zip
+            fragment(:form_field, a, :name)
+            fragment(:form_field, a, :street)
+            fragment(:form_field, a, :city)
+            fragment(:form_field, a, :state)
+            fragment(:form_field, a, :zip)
           }
           f.submit!("Continue")
-        }
+        end
       }
     end
 

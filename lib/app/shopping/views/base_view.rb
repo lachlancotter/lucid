@@ -47,17 +47,17 @@ module Shopping
           # )
         }
         body(HTMX.boost) {
-          emit_template :header
-          emit_view :content
-          emit_view :login
+          fragment :header
+          subview :content
+          subview :login
         }
       }
     end
 
     template :header do
       div(class: "header") do
-        emit_template :branding
-        emit_view :status_nav
+        fragment :branding
+        subview :status_nav
       end
     end
 

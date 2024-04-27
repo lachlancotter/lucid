@@ -116,10 +116,10 @@ module MultiCounter
           p "No Counters"
         else
           counters.all.each_with_index do |counter, index|
-            emit_view counter_view(index)
+            subview counter_view(index)
           end
         end
-        emit_template :form
+        fragment :form
       }
     end
 

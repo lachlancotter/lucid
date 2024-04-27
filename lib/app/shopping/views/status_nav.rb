@@ -7,8 +7,8 @@ module Shopping
       div(class: "status-nav") {
         text username
         br
-        emit Session::New.link("Login")
-        emit Admin::Link.link("Admin")
+        link_to Session::New, "Login"
+        link_to Admin::Link, "Admin"
       }
     end
   end

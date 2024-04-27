@@ -12,11 +12,13 @@ module Shopping
             h3 product.name
             p product.description
             p product.price
-            emit Cart::AddProduct.button("Add to Cart",
-               product_id: product.id, cart_id: cart.id
-            )
+            button_to add_product(product, cart), "Add to Cart"
           end
         }
+      end
+
+      def add_product (product, cart)
+        Cart::AddProduct[product_id: product.id, cart_id: cart.id]
       end
     end
   end

@@ -9,11 +9,11 @@ module Shopping
         div(class: "login") {
           div(class: "dialog") {
             h2 "Login"
-            emit Session::Authenticate.form { |f|
+            form_for Session::Authenticate do |f|
               emit f.label(:email, "Email")
               emit f.text(:email, placeholder: "Email")
               emit f.submit("Login")
-            }
+            end
           }
         }
       end

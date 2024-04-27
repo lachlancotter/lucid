@@ -1,8 +1,5 @@
 module Shopping
   class StoreView < Lucid::Component::Base
-    # path(:category_slug).maybe(:string)
-    # path(:product_id).maybe(:integer)
-
     path :category_slug, :product_id
     validate do
       optional(:product_id).maybe(:integer)
@@ -35,10 +32,10 @@ module Shopping
 
     template do
       div(class: "store") {
-        emit_view :nav
-        emit_view :product_list
-        emit_view :product_details
-        emit_view :cart_view
+        subview :nav
+        subview :product_list
+        subview :product_details
+        subview :cart_view
       }
     end
   end

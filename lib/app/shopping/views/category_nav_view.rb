@@ -1,24 +1,17 @@
 module Shopping
   class CategoryNavView < Lucid::Component::Base
-    # config do
-    #   option :items, Category.all
-    #   validate do
-    #     required(:items).filled.array
-    #   end
-    # end
-
-    def category_link (cat)
-      Product::List.link(cat.name, category_slug: cat.slug)
-    end
-
     template do
       ul {
         Category.all.each do |cat|
           li {
-            emit category_link(cat)
+            link_to product_list(cat), cat.name
           }
         end
       }
+    end
+
+    def product_list (category)
+      Product::List[category_slug: category.slug]
     end
   end
 end
