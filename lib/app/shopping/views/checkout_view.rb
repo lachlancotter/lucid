@@ -1,13 +1,8 @@
 module Shopping
   class CheckoutView < Lucid::Component::Base
+    use :cart, from: :session
     nest(:cart_view) { CartView }
-    echo Order::SetShippingAddress, as: :address do
-      { cart_id: cart.id }
-    end
-
-    def cart
-      Session.current.cart
-    end
+    echo(Order::SetShippingAddress, as: :address) { { cart_id: cart.id } }
 
     # ===================================================== #
     #   Template

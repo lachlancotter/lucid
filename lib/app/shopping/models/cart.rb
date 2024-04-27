@@ -1,8 +1,25 @@
 module Shopping
   class Cart
-    def self.get (id)
-      @carts     ||= {}
-      @carts[id] ||= Cart.new(id)
+    class InvalidID < ArgumentError
+      def initialize (id)
+        super("Invalid cart ID: #{id}")
+      end
+    end
+
+    def self.get (id = uuid)
+      carts[id] ||= Match.on(id) do
+        type(String) { Cart.new(id) }
+        type(NilClass) { Cart.new(uuid) }
+        default { Cart.new(uuid) }
+      end
+    end
+
+    def self.carts
+      @carts ||= {}
+    end
+
+    def self.uuid
+      SecureRandom.uuid
     end
 
     def initialize (id)

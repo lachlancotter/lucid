@@ -34,7 +34,7 @@ module Shopping
     # ===================================================== #
 
     template do
-      div(style: "display: flex; flex-direction: row; gap: 1em;") {
+      div(class: "store") {
         emit_view :nav
         emit_view :product_list
         emit_view :product_details

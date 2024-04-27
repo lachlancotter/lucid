@@ -5,7 +5,7 @@ module Shopping
       attribute :product_id
       validate do
         required(:product_id).filled(:integer)
-        required(:cart_id).filled(:integer)
+        required(:cart_id).filled(:string)
       end
     end
 
@@ -14,14 +14,14 @@ module Shopping
       attribute :cart_id
       validate do
         required(:product_id).filled(:integer)
-        required(:cart_id).filled(:integer)
+        required(:cart_id).filled(:string)
       end
     end
 
     class Empty < Lucid::Command
       attribute :cart_id
       validate do
-        required(:cart_id).filled(:integer)
+        required(:cart_id).filled(:string)
       end
     end
   end

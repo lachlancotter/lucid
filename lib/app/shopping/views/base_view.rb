@@ -5,26 +5,28 @@ module Shopping
     #    State
     # ===================================================== #
 
-    path :step, default: "store"
-    visit Product::Link, step: "store"
-    visit Checkout::Link, step: "checkout"
-
-    # ===================================================== #
-    #    Data
-    # ===================================================== #
-
-    let(:cart) { Session.current.cart }
+    path :page, default: "store"
+    visit Product::Link, page: "store"
+    visit Checkout::Link, page: "checkout"
+    visit Admin::Link, page: "admin"
 
     # ===================================================== #
     #    Nests
     # ===================================================== #
 
-    nest :content do |step|
-      Match.on(step) do
+    nest :content do |page|
+      Match.on(page) do
         value("store") { StoreView }
         value("checkout") { CheckoutView }
+        value("admin") { AdminView }
+        value("denied") { NotAuthorizedView }
       end
     end
+
+    nest(:status_nav) { StatusNav }
+    nest(:login) { LoginView }
+
+    on(Lucid::Guard::Denied) { update(page: "denied") }
 
     # ===================================================== #
     #    Template
@@ -45,10 +47,18 @@ module Shopping
           # )
         }
         body(HTMX.boost) {
-          emit_template :branding
+          emit_template :header
           emit_view :content
+          emit_view :login
         }
       }
+    end
+
+    template :header do
+      div(class: "header") do
+        emit_template :branding
+        emit_view :status_nav
+      end
     end
 
     template :branding do

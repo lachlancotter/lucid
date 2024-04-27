@@ -2,6 +2,8 @@ require "sinatra"
 
 module Shopping
   class App < Sinatra::Base
+    enable :sessions
+
     configure do
       set :environment, :development
       set :raise_errors, true
@@ -12,25 +14,34 @@ module Shopping
 
     get "/?*" do
       # LOADER.reload
-      app.query(request, response)
+      app(session).query(request, response)
     end
 
     post "/?*" do
       # LOADER.reload
-      app.command(request, response)
+      app(session).command(request, response)
     end
 
-    def app
-      Lucid::App.new(app_config)
+    def app (session)
+      Lucid::App.new(
+         {}.tap do |config|
+           config[:base_view_class]     = BaseView
+           config[:command_bus_class]   = Actions
+           config[:session]             = ShoppingSession.new(session)
+           config[:app_root]            = "/"
+         end
+      )
     end
 
-    # TODO make app Configurable
-    def app_config
-      {
-         base_view_class: BaseView,
-         command_bus:     Actions.new,
-         app_root:        "/"
-      }
+    class ShoppingSession < Lucid::Session
+      attribute(:cart_id) { |id| id || SecureRandom.uuid }
+      attribute(:user_email)
+      validate do
+        required(:cart_id)
+        optional(:user_email)
+      end
+      let(:cart) { |cart_id| Cart.get(cart_id) }
     end
+
   end
 end

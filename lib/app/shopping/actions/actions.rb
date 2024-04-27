@@ -2,10 +2,20 @@ module Shopping
   class Actions
     include Lucid::Commandable
 
+    def initialize (session)
+      @session = session
+    end
+
+    perform Session::Authenticate do |cmd|
+      @session.put(user_email: cmd.email)
+      Session::Authenticated.notify(email: cmd.email)
+    end
+
     perform Cart::AddProduct do |cmd|
       product = Product.find(cmd.product_id)
       cart    = Cart.get(cmd.cart_id)
       cart.add_product(product)
+      # @session[:cart_id] = cmd.cart_id
       notify_item_changed(cart, product)
     end
 
@@ -31,7 +41,7 @@ module Shopping
       Order::Placed.notify(cart_id: cmd.cart_id)
     end
 
-    def self.notify_item_changed (cart, product)
+    def notify_item_changed (cart, product)
       Cart::ItemChanged.notify({
          product_id: product.id,
          cart_id:    cart.id,

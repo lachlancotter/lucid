@@ -2,7 +2,7 @@ module Shopping
   class Product
     class ShowView < Lucid::Component::Base
       prop :product
-      use :cart
+      use :cart, from: :session
 
       template do |product, cart|
         div(class: "product-details") {

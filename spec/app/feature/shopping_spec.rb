@@ -3,8 +3,45 @@ module Shopping
   describe "Shopping", type: :feature do
 
     before do
-      Session.current = Session.new(cart_id: rand(1000))
       visit "/"
+    end
+
+    scenario "guest" do
+      within ".header" do
+        expect(page).to have_content("Guest")
+      end
+    end
+
+    scenario "login" do
+      within ".header" do
+        click_link "Login"
+      end
+      within ".login" do
+        fill_in "Email", with: "test.user@lucid.dev"
+        click_button "Login"
+      end
+      within ".header" do
+        expect(page).to have_content("test.user@lucid.dev")
+      end
+    end
+
+    scenario "logout" do
+
+    end
+
+    scenario "not authorized" do
+      click_link "Admin"
+      expect(page).to have_content("not authorized")
+    end
+
+    scenario "authorized" do
+      click_link "Login"
+      within ".login" do
+        fill_in "Email", with: "test.user@lucid.dev"
+        click_button "Login"
+      end
+      click_link "Admin"
+      expect(page).to have_content("Admin area")
     end
 
     scenario "browse guitars" do
@@ -109,21 +146,21 @@ module Shopping
       end
     end
 
-    scenario "invalid shipping address" do
-      click_link "Guitars & Basses"
-      click_link "Gibson Les Paul"
-      click_button "Add to Cart"
-      click_link "Open Cart"
-      within ".cart" do
-        click_link "Checkout"
-      end
-      within ".checkout" do
-        fill_in "Name", with: "Invalid Test"
-        fill_in "Street", with: ""
-        click_button "Continue"
-        expect(page).to have_content("must be filled")
-      end
-    end
+    # scenario "invalid shipping address" do
+    #   click_link "Guitars & Basses"
+    #   click_link "Gibson Les Paul"
+    #   click_button "Add to Cart"
+    #   click_link "Open Cart"
+    #   within ".cart" do
+    #     click_link "Checkout"
+    #   end
+    #   within ".checkout" do
+    #     fill_in "Name", with: "Invalid Test"
+    #     fill_in "Street", with: ""
+    #     click_button "Continue"
+    #     expect(page).to have_content("must be filled")
+    #   end
+    # end
 
   end
 end

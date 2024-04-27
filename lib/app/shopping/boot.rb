@@ -50,8 +50,6 @@ end
   end
 end
 
-Shopping::Session.init
-
 require "./lib/app/shopping/app"
 # Shopping::App
 

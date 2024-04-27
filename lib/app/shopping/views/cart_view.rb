@@ -4,9 +4,8 @@ module Shopping
     visit Cart::Open, open: "1"
     visit Cart::Close, open: "0"
 
-    use :cart
+    use :cart, from: :session
     let(:is_open) { |open| open == "1" }
-
     on(Cart::ItemChanged) { render.replace }
 
     # ===================================================== #
@@ -14,8 +13,8 @@ module Shopping
     # ===================================================== #
 
     template do |cart, is_open|
+      p cart.item_count
       div(class: "cart") {
-        p cart.item_count
         emit Cart::Open.link("Open Cart") unless is_open
         emit Cart::Close.link("Close Cart") if is_open
         emit_template :contents, cart if is_open
@@ -25,18 +24,20 @@ module Shopping
     template :contents do |cart|
       h2 "Your Cart"
       table {
-        tr {
-          th "Product"
-          th "Quantity"
-          th "Price"
-          th "Actions"
-        }
-        cart.items.each do |item|
-          emit_template :item, item, cart
-        end
+        emit_template :header
+        cart.items.each { |item| emit_template :item, item, cart }
       }
       p { format_currency(cart.total) }
       p { emit Checkout::Link.link("Checkout") }
+    end
+
+    template :header do
+      tr {
+        th "Product"
+        th "Quantity"
+        th "Price"
+        th "Actions"
+      }
     end
 
     template :item do |item, cart|
