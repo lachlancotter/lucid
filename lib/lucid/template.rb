@@ -79,41 +79,33 @@ module Lucid
         define_tag_method("label") unless respond_to?(:label)
       end
 
-      def fragment (name, *args, **opts)
-        @renderable.template(name, *args, **opts)
-      end
-
-      def component (name)
-        @renderable.nested(name)
-      end
-
       #
       # Explicit access to the context is useful in cases where a helper name
       # conflicts with an HTML element name, and can't be involved implicitly.
       #
-      def context
-        @renderable
+      # def context
+      #   @renderable
+      # end
+
+      def link_to (message, text = nil, **opts, &block)
+        emit get_message(message).link(text)
       end
 
-      def link_to (name, params)
-        @renderable.link_to(name, params)
+      def button_to (message, text = nil, **opts)
+        emit get_message(message).button(text)
       end
 
-      def emit_template (name, *a, **b, &block)
+      def form_for (message, **opts, &block)
+        emit get_message(message).form(**opts, &block)
+      end
+
+      def fragment (name, *a, **b, &block)
         emit @renderable.template(name).render(*a, **b, &block)
       end
 
-      def emit_view (name_or_instance)
-        sv = subview(name_or_instance)
+      def subview (name)
+        sv = @renderable.send(name)
         emit sv.render.replace.call(id: sv.element_id)
-      end
-
-      def subview (name_or_instance)
-        Match.on(name_or_instance) do
-          type(Component::Base) { |instance| instance }
-          type(Symbol) { |name| @renderable.send(name) }
-          default { raise ArgumentError, "Invalid view: #{name_or_instance}" }
-        end
       end
 
       # TODO maybe we should explicitly expose methods to the template
@@ -123,6 +115,20 @@ module Lucid
           @renderable.send(sym, *args, **opts, &block)
         else
           super
+        end
+      end
+
+      private
+
+      def get_message (message)
+        Match.on(message) do
+          type(Message) { message }
+          extends(Message)  { |klass| klass.new }
+          type(Symbol) { |name| @renderable.get_link(name, message_params) }
+          default do
+            raise ArgumentError,
+               "Message class, instance or symbol expected: #{message.inspect}"
+          end
         end
       end
     end

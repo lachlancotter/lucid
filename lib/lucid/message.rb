@@ -96,26 +96,33 @@ module Lucid
 
     class << self
       #
+      # Syntax sugar for construction.
+      #
+      def [] (**params)
+        new(**params)
+      end
+
+      #
       # Generate a link to get this message type.
       #
-      def link (text, params = {})
-        new(params).link(text)
-      end
+      # def link (text, **params)
+      #   new(**params).link(text)
+      # end
 
       #
       # Generate a button to send this message type.
       #
-      def button (label, params = {})
-        new(params).button(label)
-      end
+      # def button (label, **params)
+      #   new(**params).button(label)
+      # end
 
       #
       # Generate a form to compose this message type.
       #
-      def form (params = {}, &block)
-        raise "no block" unless block_given?
-        new(params).form(&block)
-      end
+      # def form (**params, &block)
+      #   raise "no block" unless block_given?
+      #   new(**params).form(&block)
+      # end
 
       #
       # Creates an evaluation context for messages so they can be

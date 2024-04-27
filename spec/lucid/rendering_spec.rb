@@ -41,7 +41,7 @@ module Lucid
               nest :foo, Class.new(Component::Base) {
                 template { h1 { text "Nested" } }
               }
-              template { emit_view(:foo) }
+              template { subview(:foo) }
             end.new
             expect(view.render.replace.call).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
           end
@@ -208,8 +208,8 @@ module Lucid
 
             template do
               h1 { text "Parent" }
-              emit_view :a
-              emit_view :b
+              subview :a
+              subview :b
             end
           end.new
           view.a.update(foo: "baz")
