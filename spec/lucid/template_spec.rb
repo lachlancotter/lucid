@@ -20,7 +20,8 @@ module Lucid
           }
         end
       end.new
-      expect(view.render.replace.call).to match(
+      view.element.replace
+      expect(view.render).to match(
          '<head><script src="https://example.com/script.js"></script></head>'
       )
     end

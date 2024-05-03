@@ -83,9 +83,9 @@ module Lucid
       # Explicit access to the context is useful in cases where a helper name
       # conflicts with an HTML element name, and can't be involved implicitly.
       #
-      # def context
-      #   @renderable
-      # end
+      def context
+        @renderable
+      end
 
       def link_to (message, text = nil, **opts, &block)
         emit get_message(message).link(text)
@@ -104,8 +104,9 @@ module Lucid
       end
 
       def subview (name)
-        sv = @renderable.send(name)
-        emit sv.render.replace.call(id: sv.element_id)
+        sv     = @renderable.send(name)
+        config = ChangeSet.new(sv, id: sv.element_id).replace
+        emit sv.render(config)
       end
 
       # TODO maybe we should explicitly expose methods to the template
@@ -123,7 +124,7 @@ module Lucid
       def get_message (message)
         Match.on(message) do
           type(Message) { message }
-          extends(Message)  { |klass| klass.new }
+          extends(Message) { |klass| klass.new }
           type(Symbol) { |name| @renderable.get_link(name, message_params) }
           default do
             raise ArgumentError,

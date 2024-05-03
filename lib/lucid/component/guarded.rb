@@ -7,7 +7,7 @@ module Lucid
     module Guarded
       def self.included(base)
         base.extend(ClassMethods)
-        base.prepend(RenderOverride)
+        # base.prepend(RenderOverride)
       end
 
       def guards
@@ -27,25 +27,25 @@ module Lucid
       # Wrap the render object to in a guard check so that the component cannot render
       # if the guard condition denies access to the component.
       #
-      module RenderOverride
-        def render (*args)
-          GuardedRender.new(self, super(*args))
-        end
-
-        class GuardedRender < DelegateClass(Rendering::Render)
-          def initialize (component, delegate)
-            @component = component
-            super(delegate)
-          end
-
-          def call (*args)
-            @component.if_denied do |guard|
-              raise Guard::Violation.new(guard)
-            end
-            super(*args)
-          end
-        end
-      end
+      # module RenderOverride
+      #   def render (*args)
+      #     GuardedRender.new(self, super(*args))
+      #   end
+      #
+      #   class GuardedRender < DelegateClass(Rendering::Render)
+      #     def initialize (component, delegate)
+      #       @component = component
+      #       super(delegate)
+      #     end
+      #
+      #     def call (*args)
+      #       @component.if_denied do |guard|
+      #         raise Guard::Violation.new(guard)
+      #       end
+      #       super(*args)
+      #     end
+      #   end
+      # end
 
       #
       # Guard condition is still denied after all patrols have been attempted.

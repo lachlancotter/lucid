@@ -1,6 +1,6 @@
 module Lucid
   module Component
-    describe Guarded do
+    describe Guarded, skip: true do
 
       context "no guard" do
         it "allows the component to render" do

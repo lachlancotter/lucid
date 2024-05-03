@@ -28,9 +28,10 @@ module Lucid
       end
 
       def send_state (component)
+        component.changes.replace
         tap do
           self.location = component.href
-          self.body     = HtmlBeautifier.beautify(component.render(:replace).call)
+          self.body     = HtmlBeautifier.beautify(component.render)
         end
       end
 
@@ -72,7 +73,11 @@ module Lucid
         end
 
         def branches
-          @component.render.branches
+          @component.changes.branches
+        end
+
+        def changes
+          branches.map(&:changes)
         end
 
         def target
@@ -87,14 +92,14 @@ module Lucid
         # The first component is the main element to target.
         #
         def head
-          branches.first.call(id: branches.first.element_id)
+          branches.first.changes.first.call
         end
 
         #
         # Additional components are updated via swap-oob.
         #
         def tail
-          branches[1..-1].map do |branch|
+          changes[1..-1].map do |branch|
             branch.call(HTMX.oob.merge(id: branch.element_id))
           end
         end

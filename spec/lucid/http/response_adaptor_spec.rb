@@ -25,7 +25,7 @@ module Lucid
                 }
               end
             end.new
-            component.render.replace
+            component.element.replace
             adaptor.send_delta(component, htmx: true)
             expect(adaptor.status).to eq(200)
             expect(adaptor.headers["HX-Push-Url"]).to eq("/foo")

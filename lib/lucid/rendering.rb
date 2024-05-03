@@ -5,14 +5,18 @@ module Lucid
     def self.included (base)
       base.extend(ClassMethods)
       if base.respond_to?(:after_initialize)
-        base.after_initialize { @render = Render.new(self) }
+        base.after_initialize { @changes = ChangeSet.new(self) }
       end
     end
 
-    def render (method = nil, template = nil)
-      @render.tap do
-        @render.send(method) if method
-      end
+    attr_reader :changes
+
+    def element
+      @changes
+    end
+
+    def render (changes = @changes)
+      changes.map(&:call).join
     end
 
     class TemplateNotFound < ArgumentError
@@ -49,86 +53,13 @@ module Lucid
 
         if name == DEFAULT_TEMPLATE
           watch(*block.parameters.map(&:last)) do
-            render.replace
+            changes.replace
           end
         end
       end
 
       def templates
         @templates ||= {}
-      end
-    end
-
-    #
-    # A fluent interface to render a component in two steps.
-    # Step one is setting the render configuration.
-    # Step two is calling the render method.
-    # This allows for a separation of concerns between the
-    # logic of deciding what to render, and the actual rendering.
-    #
-    class Render
-      NONE    = nil
-      REPLACE = :replace
-      APPEND  = :append
-      PREPEND = :prepend
-
-      def initialize (component)
-        @component     = component
-        @template_name = DEFAULT_TEMPLATE
-        @mode          = NONE
-      end
-
-      def replace
-        tap do
-          @mode          = REPLACE
-          @template_name = DEFAULT_TEMPLATE
-        end
-      end
-
-      def element_id
-        @component.element_id
-      end
-
-      def any?
-        @mode != NONE
-      end
-
-      def call (wrapper_attrs = {})
-        return "" if @mode == NONE
-        raise "No template specified" if @template_name.nil?
-        Template::Wrapper.new(@component, wrapper_attrs).wrap do
-          template.render(*template_args)
-        end
-      end
-
-      #
-      # Return a minimal list of components that need to be rendered.
-      #
-      def branches (list = [])
-        list.tap do
-          if any?
-            list << self
-          else
-            @component.subcomponents.each do |(name, sub)|
-              sub.render.branches(list)
-            end
-          end
-        end
-      end
-
-      private
-
-      def template_args
-        # TODO: maybe wrap the arguments in a Proxy object so that we can
-        #   defer evaluation until referenced within the template. OR define
-        #   them on the render context.
-        template.parameters.map do |(type, name)|
-          @component.field(name).value
-        end
-      end
-
-      def template
-        @component.template(@template_name)
       end
     end
   end
