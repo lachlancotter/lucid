@@ -45,7 +45,7 @@ module Lucid
     class Wrapper
       def initialize (component, attrs)
         @component = component
-        @attrs     = attrs
+        @attrs     = Check[attrs].hash.value
       end
 
       def wrap
@@ -104,9 +104,8 @@ module Lucid
       end
 
       def subview (name)
-        sv     = @renderable.send(name)
-        config = ChangeSet.new(sv, id: sv.element_id).replace
-        emit sv.render(config)
+        sv = @renderable.send(name)
+        emit ChangeSet::Replace.new(sv).call(id: sv.element_id)
       end
 
       # TODO maybe we should explicitly expose methods to the template

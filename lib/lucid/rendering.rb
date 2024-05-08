@@ -15,7 +15,7 @@ module Lucid
       @changes
     end
 
-    def render (changes = @changes)
+    def render
       changes.map(&:call).join
     end
 

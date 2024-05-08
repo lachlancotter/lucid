@@ -19,14 +19,40 @@ module Lucid
         end.to_h
       end
 
-      def subcomponent (name)
-        subcomponents[name].tap do |sub|
-          Check[sub].type(Component::Base)
+      def subcomponent (name, index = nil)
+        Match.on(subcomponents[name]) do
+          type(Component::Base) { |sub| sub }
+          type(Enumerable) do |enum|
+            enum[index].tap do |sub|
+              Check[sub].type(Component::Base).value
+            end
+          end
+          default { raise "No subcomponent named #{name}" }
         end
       end
 
       def root?
         props.parent.nil?
+      end
+
+      def path
+        if root?
+          Path.new
+        else
+          props.parent.path.concat(component_name)
+        end
+      end
+
+      def component_name
+        if props.name.match?(/\[\]/)
+          props.name.sub(/\[\]$/, "[#{collection_key}]")
+        else
+          props.name
+        end
+      end
+
+      def collection_key
+        raise "You must define a collection_key method to use collections."
       end
 
       #
@@ -54,7 +80,7 @@ module Lucid
             nests[name] = nest
             after_initialize do
               nests[name] = nest.bind(self).tap do |binding|
-                binding.build(nested_state(name))
+                binding.install(nested_state(name))
               end
             end
             if block_given?
@@ -62,14 +88,64 @@ module Lucid
                 nests[name].update_component(nested_state(name))
               end
             end
-            define_method(name) do |collection_key = nil|
-              nests[name].get(collection_key)
+            define_method(name) do
+              Match.on(nests[name].component) do
+                type(Enumerable) { Collection.new(nests[name]) }
+                default { |component| component }
+              end
             end
           end
         end
 
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
+        end
+      end
+
+      #
+      # An interface to access members of a nested component collection
+      # and to make insertions into the collection, triggering updates
+      # to the element ChangeSet.
+      #
+      class Collection
+        def initialize (nest_binding)
+          Check[nest_binding].type(Nest::Binding)
+          Check[nest_binding.component].type(Enumerable)
+          @nest_binding = nest_binding
+        end
+
+        def [] (index)
+          @nest_binding.component[index]
+        end
+
+        def append (props)
+          build(props).tap do |component|
+            @nest_binding.collection.push(component)
+            parent.element.append(component)
+          end
+        end
+
+        def prepend (props)
+          build(props).tap do |component|
+            @nest_binding.collection.unshift(component)
+            parent.element.prepend(component)
+          end
+        end
+
+        private
+
+        def collection_size
+          @nest_binding.collection.size
+        end
+
+        def build (props)
+          @nest_binding.build(props).tap do |component|
+            Check[component].type(Component::Base)
+          end
+        end
+
+        def parent
+          @nest_binding.parent
         end
       end
 
@@ -113,12 +189,20 @@ module Lucid
             @component = nil
           end
 
-          attr_reader :component
+          attr_reader :component, :parent
 
           def_delegators :@nest, :name, :block
 
-          def build (reader)
+          def collection
+            @component
+          end
+
+          def install (reader)
             @component = factory.build(reader, @parent, name)
+          end
+
+          def build (props)
+            factory.build_one(@parent, name, props)
           end
 
           def update_component (reader)
@@ -126,13 +210,6 @@ module Lucid
               factory.update_props(@component)
             else
               @component = factory.build(reader, @parent, name)
-            end
-          end
-
-          def get (collection_key = nil)
-            Match.on(collection_key) do
-              type(NilClass) { @component }
-              type(Integer) { @component[collection_key] }
             end
           end
 

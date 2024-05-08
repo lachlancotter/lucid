@@ -16,15 +16,15 @@ module Lucid
     def_delegators :@component, :element_id
 
     def replace (template_name = Rendering::DEFAULT_TEMPLATE)
-      tap { @changes = [Replace.new(@component, template_name, @wrapper_attrs)] }
+      tap { @changes = [Replace.new(@component, template_name)] }
     end
 
-    def append (template_name, *template_args)
-      tap { add_change Append.new(@component, template_name, *template_args) }
+    def append (subcomponent)
+      tap { add_change Append.new(subcomponent, to: @component) }
     end
 
-    def prepend (template_name, *template_args)
-      tap { add_change Prepend.new(@component, template_name, *template_args) }
+    def prepend (subcomponent)
+      tap { add_change Prepend.new(subcomponent, to: @component) }
     end
 
     def to_s
@@ -49,76 +49,102 @@ module Lucid
         end
       end
     end
-  end
-
-  #
-  # A change to be applied to a component.
-  #
-  class Change
-    def initialize (component, template_name, *template_args)
-      @component     = component
-      @template_name = template_name
-      @template_args = template_args
-    end
-
-    def template
-      @component.template(@template_name)
-    end
-  end
-
-  #
-  # Entirely replace the content of the element.
-  #
-  class Replace < Change
-    def initialize (component, template_name, wrapper_attrs)
-      super(component, template_name)
-      @wrapper_attrs = Check[wrapper_attrs].hash.value
-    end
-
-    def call
-      wrapper.wrap { template.render(*args) }
-    end
-
-    private
-
-    def wrapper
-      Template::Wrapper.new(@component, @wrapper_attrs)
-    end
 
     #
-    # In a replace operation, args are bound to the component's fields.
+    # A change to be applied to a component.
     #
-    def args
-      template.parameters.map do |(type, name)|
-        @component.field(name).value
+    # class Change
+    #   def initialize (component)
+    #     @component = Check[component].type(Component::Base).value
+    #   end
+    # end
+
+    #
+    # Entirely replace the content of the element.
+    #
+    class Replace
+      def initialize (component, template_name = Rendering::DEFAULT_TEMPLATE)
+        @component = Check[component].type(Component::Base).value
+        @template  = @component.template(template_name)
+      end
+
+      def call (wrapper_attrs = {})
+        wrapper(wrapper_attrs).wrap { @template.render(*args) }
+      end
+
+      private
+
+      def wrapper (attrs)
+        Template::Wrapper.new(@component, attrs)
+      end
+
+      #
+      # In a replace operation, args are bound to the component's fields.
+      #
+      def args
+        @template.parameters.map do |(type, name)|
+          @component.field(name).value
+        end
       end
     end
+
+    #
+    # Prepend a template as the first child of the element.
+    #
+    class Prepend
+      def initialize (component, to:)
+        @component = Check[component].type(Component::Base).value
+        @parent    = Check[to].type(Component::Base).value
+        @template  = @component.template
+      end
+
+      def call
+        wrapper.wrap { @template.render(*args) }
+      end
+
+      def wrapper
+        Template::Wrapper.new(@component, wrapper_attrs)
+      end
+
+      def wrapper_attrs
+        HTMX.oob(afterbegin: @parent.element_id).merge(id: @component.element_id)
+      end
+
+      def args
+        @template.parameters.map do |(type, name)|
+          @component.field(name).value
+        end
+      end
+    end
+
+    #
+    # Append a template as the last child of the element.
+    #
+    class Append
+      def initialize (component, to:)
+        @component = Check[component].type(Component::Base).value
+        @parent    = Check[to].type(Component::Base).value
+        @template  = @component.template
+      end
+
+      def call
+        wrapper.wrap { @template.render(*args) }
+      end
+
+      def wrapper
+        Template::Wrapper.new(@component, wrapper_attrs)
+      end
+
+      def wrapper_attrs
+        HTMX.oob(beforeend: @parent.element_id).merge(id: @component.element_id)
+      end
+
+      def args
+        @template.parameters.map do |(type, name)|
+          @component.field(name).value
+        end
+      end
+    end
+
   end
-
-  #
-  # Prepend a template as the first child of the element.
-  #
-  class Prepend < Change
-    def call
-      template.render(*args)
-    end
-
-    def args
-      @template_args
-    end
-  end
-
-  #
-  # Append a template as the last child of the element.
-  #
-  class Append < Change
-    def call
-      template.render(*args)
-    end
-
-    def args
-      @template_args
-    end
-  end
-
 end

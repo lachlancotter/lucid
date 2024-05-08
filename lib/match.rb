@@ -3,8 +3,8 @@
 #
 class Match
   class NoMatch < StandardError
-    def initialize (value)
-      super("No match for #{value}")
+    def initialize (*values)
+      super("No match for #{values.map(&:inspect).join(', ')}")
     end
   end
 
@@ -19,7 +19,7 @@ class Match
   def match (&block)
     block_binding = block.binding
     match_block   = catch(:match) { instance_eval(&block) }
-    raise NoMatch.new(@values) unless match_block
+    raise NoMatch.new(*@values) unless match_block
     block_binding.receiver.instance_exec(*@values, &match_block)
   end
 

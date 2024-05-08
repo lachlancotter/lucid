@@ -35,15 +35,9 @@ module Lucid
       prop :parent, default: nil
 
       #
-      # The path from the root view component to this component.
-      # Used to identify components and actions.
+      # The name of this component in the parent.
       #
-      prop :path, default: "/" do |value|
-        Match.on(value) do
-          type(Path) { value }
-          default { Path.new(value) }
-        end
-      end
+      prop :name, default: "root"
 
       def self.build (buffer, &config)
         new(buffer, &config)
@@ -87,10 +81,10 @@ module Lucid
       end
 
       def element_id
-        if props.path.root?
+        if path.root?
           "root"
         else
-          props.path.to_s.gsub("/", "-").gsub(/^-/, "")
+          path.to_s.gsub("/", "-").gsub(/^-/, "")
         end
       end
 

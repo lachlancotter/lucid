@@ -12,7 +12,7 @@ module Lucid
       # Return the nearest ancestor component that defines the specified field.
       #
       def field_in_ancestor (name)
-        raise Fields::NoSuchField.new(name, props.path) if props.parent.nil?
+        raise Fields::NoSuchField.new(name, path) if props.parent.nil?
         return props.parent.field(name) if props.parent.field?(name)
         props.parent.field_in_ancestor(name)
       end

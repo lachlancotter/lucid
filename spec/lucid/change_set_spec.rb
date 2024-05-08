@@ -11,6 +11,14 @@ module Lucid
       let(:view) do
         Class.new(Component::Base) do
           template { h1 { text "Hello, World" } }
+          nest(:subviews) do
+            Class.new(Component::Base) do
+              template { p { text "Item" } }
+              def collection_key
+                "foo"
+              end
+            end.enum([])
+          end
         end.new
       end
 
@@ -19,15 +27,15 @@ module Lucid
       it "sets a replace action" do
         changes.replace
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Replace)
+        expect(changes.first).to be_a(ChangeSet::Replace)
         expect(changes.to_s).to eq("<h1>Hello, World</h1>")
       end
 
       it "replaces any other changes" do
-        changes.append(:p, "Test")
+        view.subviews.append({})
         changes.replace
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Replace)
+        expect(changes.first).to be_a(ChangeSet::Replace)
         expect(changes.to_s).to eq("<h1>Hello, World</h1>")
       end
 
@@ -35,7 +43,7 @@ module Lucid
         changes.replace
         changes.replace
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Replace)
+        expect(changes.first).to be_a(ChangeSet::Replace)
         expect(changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
@@ -47,36 +55,51 @@ module Lucid
     describe "#append" do
       let(:view) do
         Class.new(Component::Base) do
+          prop :subview_class
           template { h1 { text "Hello, World" } }
-          template(:p) { |content| p content }
-        end.new
+          nest :item_views do
+            props.subview_class.enum([]) do |e, i|
+              { foo: i }
+            end
+          end
+        end.new { { subview_class: subview_class } }
+      end
+      let(:subview_class) do
+        Class.new(Component::Base) do
+          prop :foo
+          template { |foo| p { text "Item #{foo}" } }
+          def collection_key
+            props.foo
+          end
+        end
       end
 
       let(:changes) { view.changes }
 
       it "adds an append action" do
-        changes.append(:p, "test")
+        view.item_views.append(foo: 0)
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Append)
-        expect(changes.to_s).to eq("<p>test</p>")
+        expect(changes.first).to be_a(ChangeSet::Append)
+        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
       end
 
       it "is cumulative" do
-        changes.append(:p, "test")
-        changes.append(:p, "test")
+        view.item_views.append(foo: 0)
+        view.item_views.append(foo: 1)
         expect(changes.count).to eq(2)
-        expect(changes.to_s).to eq("<p>test</p><p>test</p>")
+        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
+        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[1\]"><p>Item 1<\/p><\/div>/)
       end
 
       it "defers to a replace action" do
         changes.replace
-        changes.append(:p, "test")
+        view.item_views.append(foo: 0)
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Replace)
+        expect(changes.first).to be_a(ChangeSet::Replace)
         expect(changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
-    
+
     # ===================================================== #
     #    #prepend
     # ===================================================== #
@@ -84,36 +107,46 @@ module Lucid
     describe "#prepend" do
       let(:view) do
         Class.new(Component::Base) do
+          prop :subview_class
           template { h1 { text "Hello, World" } }
-          template(:p) { |content| p content }
-        end.new
+          nest(:item_views) { props.subview_class.enum([]) {} }
+        end.new { { subview_class: subview_class } }
+      end
+      let(:subview_class) do
+        Class.new(Component::Base) do
+          prop :foo
+          def collection_key
+            props.foo
+          end
+          template { |foo| p { text "Item #{foo}" } }
+        end
       end
 
       let(:changes) { view.changes }
 
       it "adds an prepend action" do
-        changes.prepend(:p, "test")
+        view.item_views.prepend(foo: 0)
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Prepend)
-        expect(changes.to_s).to eq("<p>test</p>")
+        expect(changes.first).to be_a(ChangeSet::Prepend)
+        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
       end
 
       it "is cumulative" do
-        changes.prepend(:p, "test")
-        changes.prepend(:p, "test")
+        view.item_views.prepend(foo: 0)
+        view.item_views.prepend(foo: 1)
         expect(changes.count).to eq(2)
-        expect(changes.to_s).to eq("<p>test</p><p>test</p>")
+        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
+        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[1\]"><p>Item 1<\/p><\/div>/)
       end
 
       it "defers to a replace action" do
         changes.replace
-        changes.prepend(:p, "test")
+        view.item_views.prepend(foo: 0)
         expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(Replace)
+        expect(changes.first).to be_a(ChangeSet::Replace)
         expect(changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
-
 
     # ===================================================== #
     #    #any?

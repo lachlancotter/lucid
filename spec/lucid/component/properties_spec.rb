@@ -45,10 +45,9 @@ module Lucid
       end
 
       describe "standard properties" do
-        it "has a path" do
+        it "has a name" do
           view = Class.new(Component::Base).new
-          expect(view.props.path).to eq("/")
-          expect(view.props[:path]).to eq("/")
+          expect(view.props.name).to eq("root")
         end
 
         it "has a root" do

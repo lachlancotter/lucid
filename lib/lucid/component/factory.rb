@@ -18,22 +18,28 @@ module Lucid
       #
       # Instantiate a new component from the factory configuration.
       #
-      def build (reader, parent, name, config = Check[@config.call].hash.value)
+      def build (reader, parent, name, config = @config.call)
         @component_class.new(reader) do
-          {}.tap do |props|
-            props[:parent]   = parent
-            props[:app_root] = parent.props.app_root
-            props[:session]  = parent.props.session
-            props[:path]     = parent.props.path.concat(name)
-            config.each { |k, v| props[k] = v }
-          end
+          build_props(parent, name, Check[config].hash.value)
+        end
+      end
+
+      def build_props (parent, name, config = @config.call)
+        {}.tap do |props|
+          props[:parent]   = parent
+          props[:app_root] = parent.props.app_root
+          props[:session]  = parent.props.session
+          props[:name]     = name
+          # props[:path]     = parent.props.path.concat(name)
+          config.each { |k, v| props[k] = v }
         end
       end
 
       #
       # Update an existing component with new configuration.
       #
-      def update_props (component, config = Check[@config.call].hash.value)
+      def update_props (component, config = @config.call)
+        Check[config].hash
         component.configure { component.props.to_h.merge(config) }
         config.keys.each do |key|
           component.field(key).invalidate if component.field?(key)
@@ -45,7 +51,7 @@ module Lucid
       #
       # enumerable - The enumerable to iterate over.
       # config     - A block that takes an item and an index and returns a hash
-      #             of configuration values.
+      #             of props for the subcomponent.
       #
       class Enumerated < Factory
         def initialize (component_class, enumerable, &config)
@@ -53,12 +59,14 @@ module Lucid
           @enumerable = enumerable
         end
 
-        def build (reader, parent, name)
+        def build (reader, parent, name, config = @config)
           @enumerable.map.with_index do |item, index|
-            super(reader, parent, "#{name}[#{index}]",
-               Check[@config.call(item, index)].hash.value
-            )
+            super(reader, parent, "#{name}[]", Check[config.call(item, index)].hash.value)
           end
+        end
+
+        def build_one (parent, name, props)
+          @component_class.new({}) { build_props(parent, "#{name}[]", props) }
         end
       end
     end

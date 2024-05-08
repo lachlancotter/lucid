@@ -31,7 +31,7 @@ module Lucid
             nest(:foo) { foo_class[bar: 1] }
           end.new(foo: { bar: "baz" }, val: "a")
 
-          expect(view.foo.props.path).to eq("/foo")
+          expect(view.foo.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
           expect(view.foo.props.parent).to eq(view)
           expect(view.foo.props.bar).to eq(1)
@@ -78,8 +78,8 @@ module Lucid
             end
           end.new(val: "a")
 
-          expect(view.foo(0)).to be_a(foo_class)
-          expect(view.foo(0).props.bar).to eq("english")
+          expect(view.foo[0]).to be_a(foo_class)
+          expect(view.foo[0].props.bar).to eq("english")
         end
       end
 
@@ -87,6 +87,10 @@ module Lucid
         class NamedNestedComponent < Component::Base
           prop :bar
           prop :index
+
+          def collection_key
+            props.index
+          end
 
           def render
             "Nested #{props[:bar]}"
@@ -109,19 +113,19 @@ module Lucid
             end
           end.new { { app_root: "/app/root" } }
 
-          expect(view.foo(0)).to be_a(Component::Base)
-          expect(view.foo(0).props.bar).to eq("english")
-          expect(view.foo(0).props.index).to eq(0)
-          expect(view.foo(0).render).to eq("Nested english")
-          expect(view.foo(0).props.app_root).to eq("/app/root")
-          expect(view.foo(0).props.path.to_s).to eq("/foo[0]")
+          expect(view.foo[0]).to be_a(Component::Base)
+          expect(view.foo[0].props.bar).to eq("english")
+          expect(view.foo[0].props.index).to eq(0)
+          expect(view.foo[0].render).to eq("Nested english")
+          expect(view.foo[0].props.app_root).to eq("/app/root")
+          expect(view.foo[0].path.to_s).to eq("/foo[0]")
 
-          expect(view.foo(1)).to be_a(Component::Base)
-          expect(view.foo(1).props.bar).to eq("spanish")
-          expect(view.foo(1).props.index).to eq(1)
-          expect(view.foo(1).render).to eq("Nested spanish")
-          expect(view.foo(1).props.app_root).to eq("/app/root")
-          expect(view.foo(1).props.path).to eq("/foo[1]")
+          expect(view.foo[1]).to be_a(Component::Base)
+          expect(view.foo[1].props.bar).to eq("spanish")
+          expect(view.foo[1].props.index).to eq(1)
+          expect(view.foo[1].render).to eq("Nested spanish")
+          expect(view.foo[1].props.app_root).to eq("/app/root")
+          expect(view.foo[1].path).to eq("/foo[1]")
         end
 
       end
