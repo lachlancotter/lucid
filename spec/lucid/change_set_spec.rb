@@ -1,8 +1,87 @@
 # frozen_string_literal: true
 
 module Lucid
-  describe ChangeSet do
+  describe ChangeSet::Branches do
+    describe "#to_s" do
+      let(:item_class) do
+        Class.new(Component::Base) do
+          prop :foo
+          key { props.foo }
+          template { |foo| p { text "Item #{foo}" } }
+        end
+      end
+      let(:base_class) do
+        Class.new(Component::Base) do
+          prop :item_class
+          nest(:a) { Class.new(Component::Base) { template { h1 "Component A" } } }
+          nest(:b) { Class.new(Component::Base) { template { h1 "Component B" } } }
+          nest(:item_views) { props.item_class.enum([]) }
+        end
+      end
+      let(:view) { base_class.new { { item_class: item_class } } }
 
+      context "one change" do
+        it "omits the OOB attribute" do
+          view.a.element.replace
+          expect(view.a.changes.to_s).to match(/<h1>Component A<\/h1>/)
+          expect(view.a.changes.to_s).to match(/id="a"/)
+          expect(view.a.changes.to_s).not_to match(/hx-swap-oob/)
+        end
+      end
+
+      context "multiple changes" do
+        before do
+          view.item_views.append(foo: "One")
+          view.item_views.append(foo: "Two")
+        end
+
+        describe "first change" do
+          subject { view.changes[0] }
+          it "omits the OOB attribute" do
+            expect(subject).to match(/<p>Item One<\/p>/)
+            expect(subject).not_to match(/hx-swap-oob="beforeend:#root"/)
+            expect(subject).to match(/id="item_views\[One\]"/)
+          end
+        end
+
+        describe "other changes" do
+          subject { view.changes[1] }
+          it "includes the OOB attribute" do
+            expect(subject).to match(/<p>Item Two<\/p>/)
+            expect(subject).to match(/hx-swap-oob="beforeend:#root"/)
+            expect(subject).to match(/id="item_views\[Two\]"/)
+          end
+        end
+      end
+
+      context "nested changes" do
+        before do
+          view.a.element.replace
+          view.b.element.replace
+        end
+
+        describe "first change" do
+          subject { view.changes[0] }
+          it "omits the OOB attribute" do
+            expect(subject).to match(/<h1>Component A<\/h1>/)
+            expect(subject).not_to match(/hx-swap-oob/)
+            expect(subject).to match(/id="a"/)
+          end
+        end
+
+        describe "other changes" do
+          subject { view.changes[1] }
+          it "includes the OOB attribute" do
+            expect(subject).to match(/<h1>Component B<\/h1>/)
+            expect(subject).to match(/hx-swap-oob="innerHTML:#b/)
+            expect(subject).to match(/id="b"/)
+          end
+        end
+      end
+    end
+  end
+
+  describe ChangeSet do
     # ===================================================== #
     #    #replace
     # ===================================================== #
@@ -14,37 +93,33 @@ module Lucid
           nest(:subviews) do
             Class.new(Component::Base) do
               template { p { text "Item" } }
-              def collection_key
-                "foo"
-              end
+              key { "foo" }
             end.enum([])
           end
         end.new
       end
 
-      let(:changes) { view.changes }
-
       it "sets a replace action" do
-        changes.replace
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Replace)
-        expect(changes.to_s).to eq("<h1>Hello, World</h1>")
+        view.element.replace
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Replace)
+        expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
 
       it "replaces any other changes" do
         view.subviews.append({})
-        changes.replace
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Replace)
-        expect(changes.to_s).to eq("<h1>Hello, World</h1>")
+        view.element.replace
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Replace)
+        expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
 
       it "is idempotent" do
-        changes.replace
-        changes.replace
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Replace)
-        expect(changes.to_s).to eq("<h1>Hello, World</h1>")
+        view.element.replace
+        view.element.replace
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Replace)
+        expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
 
@@ -58,9 +133,7 @@ module Lucid
           prop :subview_class
           template { h1 { text "Hello, World" } }
           nest :item_views do
-            props.subview_class.enum([]) do |e, i|
-              { foo: i }
-            end
+            props.subview_class.enum([]) { |e, i| { foo: i } }
           end
         end.new { { subview_class: subview_class } }
       end
@@ -68,35 +141,34 @@ module Lucid
         Class.new(Component::Base) do
           prop :foo
           template { |foo| p { text "Item #{foo}" } }
-          def collection_key
-            props.foo
-          end
+          key { props.foo }
         end
       end
 
-      let(:changes) { view.changes }
-
       it "adds an append action" do
         view.item_views.append(foo: 0)
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Append)
-        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Append)
+        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
       end
 
       it "is cumulative" do
         view.item_views.append(foo: 0)
         view.item_views.append(foo: 1)
-        expect(changes.count).to eq(2)
-        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
-        expect(changes.to_s).to match(/<div hx-swap-oob="beforeend:#root" id="item_views\[1\]"><p>Item 1<\/p><\/div>/)
+        expect(view.changes.count).to eq(2)
+        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
+        expect(view.changes.to_s).to match(/id="item_views\[1\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 1<\/p>/)
       end
 
       it "defers to a replace action" do
-        changes.replace
+        view.element.replace
         view.item_views.append(foo: 0)
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Replace)
-        expect(changes.to_s).to eq("<h1>Hello, World</h1>")
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Replace)
+        expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
 
@@ -115,36 +187,35 @@ module Lucid
       let(:subview_class) do
         Class.new(Component::Base) do
           prop :foo
-          def collection_key
-            props.foo
-          end
+          key { props.foo }
           template { |foo| p { text "Item #{foo}" } }
         end
       end
 
-      let(:changes) { view.changes }
-
       it "adds an prepend action" do
         view.item_views.prepend(foo: 0)
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Prepend)
-        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Prepend)
+        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
       end
 
       it "is cumulative" do
         view.item_views.prepend(foo: 0)
         view.item_views.prepend(foo: 1)
-        expect(changes.count).to eq(2)
-        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[0\]"><p>Item 0<\/p><\/div>/)
-        expect(changes.to_s).to match(/<div hx-swap-oob="afterbegin:#root" id="item_views\[1\]"><p>Item 1<\/p><\/div>/)
+        expect(view.changes.count).to eq(2)
+        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
+        expect(view.changes.to_s).to match(/id="item_views\[1\]"/)
+        expect(view.changes.to_s).to match(/<p>Item 1<\/p>/)
       end
 
       it "defers to a replace action" do
-        changes.replace
+        view.element.replace
         view.item_views.prepend(foo: 0)
-        expect(changes.count).to eq(1)
-        expect(changes.first).to be_a(ChangeSet::Replace)
-        expect(changes.to_s).to eq("<h1>Hello, World</h1>")
+        expect(view.changes.count).to eq(1)
+        expect(view.changes.first).to be_a(ChangeSet::Replace)
+        expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
     end
 
@@ -194,7 +265,6 @@ module Lucid
           }
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changes.any?).to be(false)
         expect(view.bar.changes.any?).to be(true)
       end
 
@@ -206,7 +276,7 @@ module Lucid
           end
         end.new(foo: "foo")
         view.update(foo: "bar")
-        expect(view.changes.any?).to be(false)
+        expect(view.element.any?).to be(false)
       end
     end
 
@@ -222,7 +292,7 @@ module Lucid
               h1 { text "Hello, World" }
             end
           end.new
-          expect(view.changes.branches).to be_empty
+          expect(view.changes).to be_empty
         end
       end
 
@@ -235,7 +305,7 @@ module Lucid
             end
           end.new
           view.update(foo: "bar")
-          expect(view.changes.branches).to eq([view.changes])
+          expect(view.changes.map(&:component)).to eq([view])
         end
       end
 
@@ -250,7 +320,7 @@ module Lucid
             }
           end.new
           view.bar.update(baz: "qux")
-          expect(view.changes.branches).to eq([view.bar.changes])
+          expect(view.changes.map(&:component)).to eq([view.bar])
         end
       end
 
@@ -279,10 +349,9 @@ module Lucid
           end.new
           view.a.update(foo: "baz")
           view.b.update(bar: "qux")
-          branches = view.changes.branches
-          expect(branches).not_to include(view.changes)
-          expect(branches).to include(view.a.changes)
-          expect(branches).to include(view.b.changes)
+          expect(view.changes.map(&:component)).not_to include(view)
+          expect(view.changes.map(&:component)).to include(view.a)
+          expect(view.changes.map(&:component)).to include(view.b)
         end
       end
     end

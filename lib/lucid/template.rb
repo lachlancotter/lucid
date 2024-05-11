@@ -104,8 +104,7 @@ module Lucid
       end
 
       def subview (name)
-        sv = @renderable.send(name)
-        emit ChangeSet::Replace.new(sv).call(id: sv.element_id)
+        emit ChangeSet::Replace.new(@renderable.send(name)).call
       end
 
       # TODO maybe we should explicitly expose methods to the template

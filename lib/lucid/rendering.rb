@@ -5,18 +5,20 @@ module Lucid
     def self.included (base)
       base.extend(ClassMethods)
       if base.respond_to?(:after_initialize)
-        base.after_initialize { @changes = ChangeSet.new(self) }
+        base.after_initialize { @element = ChangeSet.new(self) }
       end
     end
 
-    attr_reader :changes
+    attr_reader :element
 
-    def element
-      @changes
+    def changes
+      ChangeSet::Branches.new.tap do |branches|
+        branches.append_component(self)
+      end
     end
 
     def render
-      changes.map(&:call).join
+      changes.to_s
     end
 
     class TemplateNotFound < ArgumentError
@@ -53,7 +55,7 @@ module Lucid
 
         if name == DEFAULT_TEMPLATE
           watch(*block.parameters.map(&:last)) do
-            changes.replace
+            element.replace
           end
         end
       end

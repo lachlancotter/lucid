@@ -28,10 +28,11 @@ module Lucid
       end
 
       def send_state (component)
-        component.changes.replace
         tap do
           self.location = component.href
-          self.body     = HtmlBeautifier.beautify(component.render)
+          self.body     = HtmlBeautifier.beautify(
+             ChangeSet::Replace.new(component).call
+          )
         end
       end
 
@@ -45,17 +46,17 @@ module Lucid
       private
 
       def send_htmx (component)
-        ChangeSet.new(component).tap do |change_set|
-          if change_set.empty?
+        Edits.new(component).tap do |edits|
+          if edits.empty?
             @response.status                 = 200
             @response.headers["HX-Push-Url"] = component.href
             @response.headers["HX-Reswap"]   = "none"
           else
             @response.status                 = 200
             @response.headers["HX-Push-Url"] = component.href
-            @response.headers["HX-Retarget"] = change_set.target
+            @response.headers["HX-Retarget"] = edits.target
             @response.headers["HX-Reswap"]   = "outerHTML"
-            @response.body                   = HtmlBeautifier.beautify(change_set.to_s)
+            @response.body                   = HtmlBeautifier.beautify(edits.to_s)
           end
         end
       end
@@ -63,7 +64,7 @@ module Lucid
       #
       # Format the set of changed components for HTMX.
       #
-      class ChangeSet
+      class Edits
         def initialize (component)
           @component = component
         end

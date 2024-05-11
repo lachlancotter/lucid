@@ -100,6 +100,10 @@ module Lucid
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
         end
+
+        def key (&block)
+          define_method(:collection_key) { instance_eval(&block) }
+        end
       end
 
       #

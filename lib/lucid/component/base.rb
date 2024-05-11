@@ -77,7 +77,7 @@ module Lucid
       end
 
       def inspect
-        "<#{self.class.name || "Component"}(#{props.path}) #{state.to_h}>"
+        "<#{self.class.name || "Component"}(#{path}) #{state.to_h}>"
       end
 
       def element_id
