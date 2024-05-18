@@ -44,7 +44,7 @@ module Lucid
           value("/") { "/" }
           type(String) do
             uri   = URI.parse(url)
-            uri.path.sub(app_root, "").tap do |path|
+            uri.path.sub(app_root, "/").tap do |path|
               query = uri.query || ""
               path << "?" + query if query != ""
             end

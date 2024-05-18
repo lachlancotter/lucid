@@ -214,6 +214,7 @@ module Lucid
               factory.update_props(@component)
             else
               @component = factory.build(reader, @parent, name)
+              @component.element.replace
             end
           end
 

@@ -1,16 +1,26 @@
 require "sinatra"
 require "rack/test"
+require "webdrivers"
 require "capybara/rspec"
 require "capybara-screenshot/rspec"
 
 require "app/shopping/boot"
 
-ENV["RACK_ENV"] = "test"
-Shopping::App.environment = :test
-Capybara.app = Shopping::App
-Capybara.default_driver = :rack_test
-Capybara.save_path = "/tmp/capybara"
-Capybara.server_errors = [StandardError]
+ENV["RACK_ENV"]            = "test"
+Shopping::App.environment  = :test
+
+# Basic configuration...
+Capybara.app               = Shopping::App
+Capybara.default_driver    = :rack_test
+Capybara.save_path         = "/tmp/capybara"
+Capybara.server_errors     = [StandardError]
+
+# JavaScript tests...
+Capybara.register_driver :selenium_chrome do |app|
+  Capybara::Selenium::Driver.new(app, browser: :chrome)
+end
+Capybara.javascript_driver = :selenium_chrome
+Capybara.server            = :webrick
 
 #
 # HTML Screenshots.

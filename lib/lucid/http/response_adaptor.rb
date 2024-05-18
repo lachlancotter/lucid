@@ -46,62 +46,17 @@ module Lucid
       private
 
       def send_htmx (component)
-        Edits.new(component).tap do |edits|
-          if edits.empty?
+        component.changes.tap do |changes|
+          if changes.empty?
             @response.status                 = 200
             @response.headers["HX-Push-Url"] = component.href
             @response.headers["HX-Reswap"]   = "none"
           else
             @response.status                 = 200
             @response.headers["HX-Push-Url"] = component.href
-            @response.headers["HX-Retarget"] = edits.target
+            @response.headers["HX-Retarget"] = changes.primary_target
             @response.headers["HX-Reswap"]   = "outerHTML"
-            @response.body                   = HtmlBeautifier.beautify(edits.to_s)
-          end
-        end
-      end
-
-      #
-      # Format the set of changed components for HTMX.
-      #
-      class Edits
-        def initialize (component)
-          @component = component
-        end
-
-        def empty?
-          branches.empty?
-        end
-
-        def branches
-          @component.changes.branches
-        end
-
-        def changes
-          branches.map(&:changes)
-        end
-
-        def target
-          "##{branches.first.element_id}"
-        end
-
-        def to_s
-          head + tail.join("\n")
-        end
-
-        #
-        # The first component is the main element to target.
-        #
-        def head
-          branches.first.changes.first.call
-        end
-
-        #
-        # Additional components are updated via swap-oob.
-        #
-        def tail
-          changes[1..-1].map do |branch|
-            branch.call(HTMX.oob.merge(id: branch.element_id))
+            @response.body                   = HtmlBeautifier.beautify(changes.to_s)
           end
         end
       end

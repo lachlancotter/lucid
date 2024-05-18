@@ -54,6 +54,11 @@ module Lucid
         0.upto(@changes.count - 1).map { |index| self[index] }.join
       end
 
+      def primary_target
+        return "" if @changes.empty?
+        "#" + @changes.first.component.element_id
+      end
+
       def append_component (component)
         append_change_set(component.element)
         append_children(component) unless component.element.replace?
