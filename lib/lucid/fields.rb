@@ -27,6 +27,10 @@ module Lucid
       keys.each { |key| field(key).attach(self, &block) }
     end
 
+    def invalidate (*keys)
+      keys.each { |key| field(key).invalidate }
+    end
+
     module ClassMethods
       #
       # Define a dependent field that is calculated from the specified

@@ -18,8 +18,8 @@ module Lucid
       any? { |c| c.is_a?(Replace) }
     end
 
-    def replace (template_name = Rendering::DEFAULT_TEMPLATE)
-      tap { @changes = [Replace.new(@component, template_name)] }
+    def replace
+      tap { @changes = [Replace.new(@component)] }
     end
 
     def append (subcomponent)
@@ -119,9 +119,9 @@ module Lucid
     # Entirely replace the content of the element.
     #
     class Replace < Change
-      def initialize (component, template_name = Rendering::DEFAULT_TEMPLATE)
+      def initialize (component)
         super(component)
-        @template = @component.template(template_name)
+        @template = @component.template(Rendering::BASE_TEMPLATE)
       end
 
       private

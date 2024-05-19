@@ -11,7 +11,7 @@ module Lucid
       def notify (event)
         handler = self.class.event_handler(event.class)
         instance_exec(event, &handler) if handler.is_a?(Proc)
-        subcomponents.values.each { |sub| sub.notify(event) }
+        each_subcomponent { |sub| sub.notify(event) }
       end
 
       private

@@ -5,8 +5,6 @@ module Lucid
     # parameter scopes.
     #
     class Stack
-
-
       def initialize (top = {})
         @scope = [Check[top].hash.value]
       end
@@ -29,9 +27,7 @@ module Lucid
         Check[@scope.length].gt(1, "underflow")
         @scope.pop
         # If no params were added to the scope, remove it.
-        @scope.last.delete_if do |k, v|
-          v.is_a?(Hash) && v.empty?
-        end
+        @scope.last.delete_if { |k, v| v.is_a?(Hash) && v.empty? }
       end
 
       def with_scope (key, &block)

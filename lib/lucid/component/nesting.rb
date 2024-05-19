@@ -24,6 +24,10 @@ module Lucid
         nest.enum? ? nest.collection[index] : nest.component
       end
 
+      def each_subcomponent (&block)
+        subcomponents.values.flatten.each(&block)
+      end
+
       def root?
         props.parent.nil?
       end
@@ -56,10 +60,12 @@ module Lucid
           case sub
           when Component::Base
             hash.merge(name => sub.deep_state)
-          when Enumerable
-            hash.merge(name => sub.map do |e|
-              { e.collection_key => e.deep_state }
-            end)
+          when Collection
+            hash.merge(
+               name => sub.map do |e|
+                 { e.collection_key => e.deep_state }
+               end
+            )
           else
             raise "Unexpected subcomponent type: #{sub.class}"
           end
@@ -125,11 +131,11 @@ module Lucid
         end
 
         def is_a? (klass)
-          __getobj__.is_a?(klass) || super
+          self.__getobj__.is_a?(klass) || super
         end
 
         def === (other)
-          __getobj__ === other || super
+          self.__getobj__ === other || super
         end
       end
 
@@ -199,9 +205,7 @@ module Lucid
             end
           end
 
-          def update_collection (reader)
-
-          end
+          def update_collection (reader) end
 
           def factory
             object = @parent.instance_exec(*factory_args, &block)

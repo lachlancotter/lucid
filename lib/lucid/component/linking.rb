@@ -18,7 +18,7 @@ module Lucid
       def visit (link)
         Check[link].type(Link)
         visitations[link.key].call(self, link) if visitations.key?(link.key)
-        subcomponents.values.each { |sub| sub.visit(link) }
+        each_subcomponent { |sub| sub.visit(link) }
       end
 
       def visitations

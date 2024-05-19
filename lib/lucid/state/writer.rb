@@ -9,7 +9,6 @@ module Lucid
     #
     class Writer
 
-
       def initialize (state = {})
         @state    = Stack.new(state)
         @segments = []
@@ -41,8 +40,11 @@ module Lucid
       end
 
       def write_nests (nests)
-        nests.each do |(name, sub)|
-          with_scope(name) { write_component(sub.component) }
+        nests.each do |(name, nest)|
+          # TODO handle state for collections
+          unless nest.enum?
+            with_scope(name) { write_component(nest.component) }
+          end
         end
       end
 

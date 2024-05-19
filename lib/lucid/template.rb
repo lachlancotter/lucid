@@ -52,8 +52,12 @@ module Lucid
         if @component.root?
           yield
         else
-          "<div#{attrs}>#{yield}</div>"
+          "<#{tag}#{attrs}>#{yield}</#{tag}>"
         end
+      end
+
+      def tag
+        @component.tag
       end
 
       def attrs
@@ -103,8 +107,12 @@ module Lucid
         emit @renderable.template(name).render(*a, **b, &block)
       end
 
-      def subview (name)
-        emit ChangeSet::Replace.new(@renderable.send(name)).call
+      def subview (name_or_component)
+        component = Match.on(name_or_component) do
+          type(Symbol) { |name| @renderable.send(name) }
+          type(Component::Base) { |component| component }
+        end
+        emit ChangeSet::Replace.new(component).call
       end
 
       # TODO maybe we should explicitly expose methods to the template

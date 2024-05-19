@@ -1,6 +1,6 @@
 module Lucid
   module Rendering
-    DEFAULT_TEMPLATE = :default
+    BASE_TEMPLATE = :__base__
 
     def self.included (base)
       base.extend(ClassMethods)
@@ -34,11 +34,15 @@ module Lucid
     # Access a template/partial to be rendered. Defaults
     # to the main template if no name is provided.
     #
-    def template (name = DEFAULT_TEMPLATE)
+    def template (name = BASE_TEMPLATE)
       Check[name].type(Symbol, String)
       self.class.templates.fetch(name) do
         raise TemplateNotFound.new(name, self)
       end.bind(self)
+    end
+
+    def tag
+      self.class.instance_variable_get(:@tag) || :div
     end
 
     def has_helper? (name)
@@ -47,17 +51,21 @@ module Lucid
 
     module ClassMethods
       #
-      # Defines a template with a name and a block that gives
-      # the template definition.
+      # Define the base template for this component.
       #
-      def template (name = DEFAULT_TEMPLATE, &block)
-        templates[name] = Template.new(&block)
-
-        if name == DEFAULT_TEMPLATE
-          watch(*block.parameters.map(&:last)) do
-            element.replace
-          end
+      def element (tag = :div, &block)
+        templates[BASE_TEMPLATE] = Template.new(&block)
+        @tag = tag
+        watch(*block.parameters.map(&:last)) do
+          element.replace
         end
+      end
+
+      #
+      # Define a template fragment that can be used in other templates.
+      #
+      def template (name, &block)
+        templates[name] = Template.new(&block)
       end
 
       def templates
