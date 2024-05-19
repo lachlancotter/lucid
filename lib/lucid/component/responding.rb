@@ -29,7 +29,10 @@ module Lucid
         end
 
         def event_handler (event_class)
-          (@event_handlers || {})[event_class]
+          (@event_handlers || {}).fetch(event_class) do
+            return nil unless event_class <= Event
+            event_handler(event_class.superclass)
+          end
         end
       end
     end

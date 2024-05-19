@@ -30,9 +30,7 @@ module Lucid
       def send_state (component)
         tap do
           self.location = component.href
-          self.body     = HtmlBeautifier.beautify(
-             ChangeSet::Replace.new(component).call
-          )
+          self.body     = HtmlBeautifier.beautify(component.render_full)
         end
       end
 
@@ -55,7 +53,7 @@ module Lucid
             @response.status                 = 200
             @response.headers["HX-Push-Url"] = component.href
             @response.headers["HX-Retarget"] = changes.primary_target
-            @response.headers["HX-Reswap"]   = "outerHTML"
+            @response.headers["HX-Reswap"]   = changes.primary_swap
             @response.body                   = HtmlBeautifier.beautify(changes.to_s)
           end
         end

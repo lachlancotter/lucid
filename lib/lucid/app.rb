@@ -77,6 +77,7 @@ module Lucid
       def command
         run_with_context do
           @request.yield_command do |command|
+            base_view # Build the tree before dispatching the command.
             validate_message!(command) do |valid_command|
               Logger.command(valid_command)
               command_bus.dispatch(valid_command)

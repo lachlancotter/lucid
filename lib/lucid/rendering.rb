@@ -11,14 +11,18 @@ module Lucid
 
     attr_reader :element
 
+    def render_full
+      ChangeSet::Replace.new(self).call
+    end
+
+    def render_changes
+      changes.to_s
+    end
+
     def changes
       ChangeSet::Branches.new.tap do |branches|
         branches.append_component(self)
       end
-    end
-
-    def render
-      changes.to_s
     end
 
     class TemplateNotFound < ArgumentError

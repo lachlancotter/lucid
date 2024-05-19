@@ -42,7 +42,7 @@ module Lucid
 
       def component_name
         if props.name.match?(/\[\]/)
-          props.name.sub(/\[\]$/, "[#{collection_key}]")
+          props.name.sub(/\[\]$/, "-#{collection_key}")
         else
           props.name
         end

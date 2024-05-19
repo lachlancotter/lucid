@@ -22,8 +22,9 @@ module Lucid
       tap { @changes = [Replace.new(@component)] }
     end
 
-    def append (subcomponent)
-      tap { add_change Append.new(subcomponent, to: @component) }
+    def append (subcomponent, to: "")
+      selector = "#{@component.element_id} #{to}"
+      tap { add_change Append.new(subcomponent, to: selector) }
     end
 
     def prepend (subcomponent)
@@ -56,7 +57,12 @@ module Lucid
 
       def primary_target
         return "" if @changes.empty?
-        "#" + @changes.first.component.element_id
+        "#" + @changes.first.target
+      end
+
+      def primary_swap
+        return "none" if @changes.empty?
+        @changes.first.swap.to_s
       end
 
       def append_component (component)
@@ -124,10 +130,18 @@ module Lucid
         @template = @component.template(Rendering::BASE_TEMPLATE)
       end
 
+      def swap
+        :outerHTML
+      end
+
+      def target
+        @component.element_id
+      end
+
       private
 
       def wrapper_attrs (oob:)
-        super.merge(oob ? HTMX.oob(innerHTML: @component.element_id) : {})
+        super.merge(oob ? HTMX.oob(swap => target) : {})
       end
     end
 
@@ -140,10 +154,14 @@ module Lucid
         @parent = Check[to].type(Component::Base).value
       end
 
+      def swap
+        :afterbegin
+      end
+
       private
 
       def wrapper_attrs (oob:)
-        super.merge(oob ? HTMX.oob(afterbegin: @parent.element_id) : {})
+        super.merge(oob ? HTMX.oob(swap => @parent.element_id) : {})
       end
     end
 
@@ -153,13 +171,21 @@ module Lucid
     class Append < Change
       def initialize (component, to:)
         super(component)
-        @parent = Check[to].type(Component::Base).value
+        @selector = to
+      end
+
+      def swap
+        :beforeend
+      end
+
+      def target
+        @selector
       end
 
       private
 
       def wrapper_attrs (oob:)
-        super.merge(oob ? HTMX.oob(beforeend: @parent.element_id) : {})
+        super.merge(oob ? HTMX.oob(swap => target) : {})
       end
     end
 
