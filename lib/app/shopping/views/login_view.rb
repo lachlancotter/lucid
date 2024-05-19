@@ -1,10 +1,10 @@
 module Shopping
   class LoginView < Lucid::Component::Base
     param :show, default: "false"
-    visit(Session::New) { update(show: "true") }
+    visit Session::New, show: "true"
     on(Session::Authenticated) { update(show: "false") }
 
-    template do |show|
+    element do |show|
       if on(show)
         div(class: "login") {
           div(class: "dialog") {

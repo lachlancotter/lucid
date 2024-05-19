@@ -2,10 +2,16 @@ module Shopping
   class Cart
     class ItemChanged < Lucid::Event
       validate do
-        required(:product_id)
+        required(:product_id).filled
         required(:cart_id).filled
-        required(:quantity)
+        required(:quantity).filled
       end
+    end
+
+    class ItemAdded < ItemChanged
+    end
+
+    class ItemRemoved < ItemChanged
     end
 
     class Emptied < Lucid::Event

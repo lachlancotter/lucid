@@ -3,11 +3,7 @@ module Shopping
     class ListView < Lucid::Component::Base
       prop :products
 
-      def show_product(product)
-        Product::Show[product_id: product.id]
-      end
-
-      template do |products|
+      element do |products|
         div(class: "product-list") {
           h2 "Products"
           products.each do |product|
@@ -19,6 +15,9 @@ module Shopping
         }
       end
 
+      def show_product(product)
+        Product::Show[product_id: product.id]
+      end
     end
   end
 end

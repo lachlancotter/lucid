@@ -1,14 +1,14 @@
 module Shopping
   class CheckoutView < Lucid::Component::Base
     use :cart, from: :session
-    nest(:cart_view) { CartView }
+    nest(:cart_view) { Cart::BaseView }
     echo(Order::SetShippingAddress, as: :address) { { cart_id: cart.id } }
 
     # ===================================================== #
     #   Template
     # ===================================================== #
 
-    template do
+    element do
       if cart.shipping_address.nil?
         fragment :form
       else

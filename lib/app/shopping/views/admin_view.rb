@@ -9,7 +9,7 @@ module Shopping
       end
     end
 
-    template do |user_email|
+    element do |user_email|
       div(class: "admin") do
         h1 "Admin area"
         p "You are logged in as #{user_email}"

@@ -1,6 +1,6 @@
 module Shopping
   class CategoryNavView < Lucid::Component::Base
-    template do
+    element do
       ul {
         Category.all.each do |cat|
           li {

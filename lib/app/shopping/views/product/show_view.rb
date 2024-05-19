@@ -4,7 +4,7 @@ module Shopping
       prop :product
       use :cart, from: :session
 
-      template do |product, cart|
+      element do |product, cart|
         div(class: "product-details") {
           if product.nil?
             text "No product selected."

@@ -1,9 +1,9 @@
 module Shopping
   class StatusNav < Lucid::Component::Base
     let(:username) { |session| session[:user_email] || "Guest" }
-    on(Session::Authenticated) { render.replace }
+    on(Session::Authenticated) { element.replace }
 
-    template do |username|
+    element do |username|
       div(class: "status-nav") {
         text username
         br

@@ -32,7 +32,7 @@ module Shopping
     #    Template
     # ===================================================== #
 
-    template do
+    element do
       html {
         head {
           link_stylesheet("/style.css")

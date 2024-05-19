@@ -7,6 +7,10 @@ module Shopping
       end
     end
 
+    def self.slugs
+      @slugs ||= all.map(&:slug)
+    end
+
     def self.find_by_slug (slug)
       all.find { |c| c.slug == slug }
     end
