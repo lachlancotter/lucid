@@ -65,7 +65,7 @@ module Lucid
       # given configuration.
       #
       def self.[] (**config)
-        Factory.new(self) { config }
+        Factory::Singleton.new(self) { config }
       end
 
       #

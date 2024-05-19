@@ -4,9 +4,11 @@ module Lucid
       it "inherits let value from parent" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
-          nest :child, Class.new(Component::Base) {
-            use :foo
-          }
+          nest :child do
+            Class.new(Component::Base) {
+              use :foo
+            }
+          end
         end.new
         expect(view.child.foo).to eq("bar")
       end
@@ -14,11 +16,15 @@ module Lucid
       it "inherits let values from ancestors" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
-          nest :child, Class.new(Component::Base) {
-            nest :grandchild, Class.new(Component::Base) {
-              use :foo
+          nest :child do
+            Class.new(Component::Base) {
+              nest :grandchild do
+                Class.new(Component::Base) {
+                  use :foo
+                }
+              end
             }
-          }
+          end
         end.new
         expect(view.child.grandchild.foo).to eq("bar")
       end
@@ -34,9 +40,11 @@ module Lucid
       it "inherits state values" do
         view = Class.new(Component::Base) do
           param :foo
-          nest :child, Class.new(Component::Base) {
-            use :foo
-          }
+          nest :child do
+            Class.new(Component::Base) {
+              use :foo
+            }
+          end
         end.new(foo: "bar")
         expect(view.child.foo).to eq("bar")
       end
@@ -44,9 +52,11 @@ module Lucid
       it "inherits prop values" do
         view = Class.new(Component::Base) do
           prop :foo
-          nest :child, Class.new(Component::Base) {
-            use :foo
-          }
+          nest :child do
+            Class.new(Component::Base) {
+              use :foo
+            }
+          end
         end.new { { foo: "bar" } }
         expect(view.child.foo).to eq("bar")
       end
@@ -54,12 +64,16 @@ module Lucid
       it "uses value overrides" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
-          nest :child, Class.new(Component::Base) {
-            let(:foo) { "baz" }
-            nest :grandchild, Class.new(Component::Base) {
-              use :foo
+          nest :child do
+            Class.new(Component::Base) {
+              let(:foo) { "baz" }
+              nest :grandchild do
+                Class.new(Component::Base) {
+                  use :foo
+                }
+              end
             }
-          }
+          end
         end.new
         expect(view.child.grandchild.foo).to eq("baz")
       end

@@ -15,7 +15,7 @@ module Lucid
           prop :item_class
           nest(:a) { Class.new(Component::Base) { template { h1 "Component A" } } }
           nest(:b) { Class.new(Component::Base) { template { h1 "Component B" } } }
-          nest(:item_views) { props.item_class.enum([]) }
+          nest(:item_views) { props.item_class.enum([]) { |i| { foo: i } } }
         end
       end
       let(:view) { base_class.new { { item_class: item_class } } }
@@ -31,8 +31,8 @@ module Lucid
 
       context "multiple changes" do
         before do
-          view.item_views.append(foo: "One")
-          view.item_views.append(foo: "Two")
+          view.element.append(view.item_views.build("One"))
+          view.element.append(view.item_views.build("Two"))
         end
 
         describe "first change" do
@@ -133,7 +133,7 @@ module Lucid
           prop :subview_class
           template { h1 { text "Hello, World" } }
           nest :item_views do
-            props.subview_class.enum([]) { |e, i| { foo: i } }
+            props.subview_class.enum([]) { |i| { foo: i } }
           end
         end.new { { subview_class: subview_class } }
       end
@@ -146,7 +146,7 @@ module Lucid
       end
 
       it "adds an append action" do
-        view.item_views.append(foo: 0)
+        view.element.append(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Append)
         expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
@@ -154,8 +154,8 @@ module Lucid
       end
 
       it "is cumulative" do
-        view.item_views.append(foo: 0)
-        view.item_views.append(foo: 1)
+        view.element.append(view.item_views.build(0))
+        view.element.append(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
         expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -165,7 +165,7 @@ module Lucid
 
       it "defers to a replace action" do
         view.element.replace
-        view.item_views.append(foo: 0)
+        view.element.append(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -181,7 +181,7 @@ module Lucid
         Class.new(Component::Base) do
           prop :subview_class
           template { h1 { text "Hello, World" } }
-          nest(:item_views) { props.subview_class.enum([]) {} }
+          nest(:item_views) { props.subview_class.enum([]) { |i| { foo: i } } }
         end.new { { subview_class: subview_class } }
       end
       let(:subview_class) do
@@ -193,7 +193,7 @@ module Lucid
       end
 
       it "adds an prepend action" do
-        view.item_views.prepend(foo: 0)
+        view.element.prepend(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Prepend)
         expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
@@ -201,8 +201,8 @@ module Lucid
       end
 
       it "is cumulative" do
-        view.item_views.prepend(foo: 0)
-        view.item_views.prepend(foo: 1)
+        view.element.prepend(view.item_views.build(0))
+        view.element.prepend(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
         expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -212,7 +212,7 @@ module Lucid
 
       it "defers to a replace action" do
         view.element.replace
-        view.item_views.prepend(foo: 0)
+        view.element.prepend(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -257,12 +257,14 @@ module Lucid
       it "is true when template use dependencies change" do
         view = Class.new(Component::Base) do
           param :foo
-          nest :bar, Class.new(Component::Base) {
-            use :foo
-            template do |foo|
-              h1 { text foo }
-            end
-          }
+          nest :bar do
+            Class.new(Component::Base) {
+              use :foo
+              template do |foo|
+                h1 { text foo }
+              end
+            }
+          end
         end.new(foo: "foo")
         view.update(foo: "bar")
         expect(view.bar.changes.any?).to be(true)
@@ -312,12 +314,14 @@ module Lucid
       context "when child changed" do
         it "contains the child component render" do
           view = Class.new(Component::Base) do
-            nest :bar, Class.new(Component::Base) {
-              param :baz
-              template do |baz|
-                h1 { text baz }
-              end
-            }
+            nest :bar do
+              Class.new(Component::Base) {
+                param :baz
+                template do |baz|
+                  h1 { text baz }
+                end
+              }
+            end
           end.new
           view.bar.update(baz: "qux")
           expect(view.changes.map(&:component)).to eq([view.bar])
@@ -327,19 +331,23 @@ module Lucid
       context "when multiple children changed" do
         it "contains multiple child branches" do
           view = Class.new(Component::Base) do
-            nest :a, Class.new(Component::Base) {
-              param :foo
-              template do |foo|
-                h1 { text foo }
-              end
-            }
+            nest :a do
+              Class.new(Component::Base) {
+                param :foo
+                template do |foo|
+                  h1 { text foo }
+                end
+              }
+            end
 
-            nest :b, Class.new(Component::Base) {
-              param :bar
-              template do |bar|
-                h1 { text bar }
-              end
-            }
+            nest :b do
+              Class.new(Component::Base) {
+                param :bar
+                template do |bar|
+                  h1 { text bar }
+                end
+              }
+            end
 
             template do
               h1 { text "Parent" }

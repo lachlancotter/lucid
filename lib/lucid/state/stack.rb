@@ -22,9 +22,7 @@ module Lucid
       def push_scope (key)
         Check[key].symbol.value
         @scope.last[key] = {} unless @scope.last.key?(key)
-        (@scope.push @scope.last[key]).tap do
-          Check[@scope.last].hash
-        end
+        @scope.push(@scope.last[key]).tap { Check[@scope.last].hash }
       end
 
       def pop_scope

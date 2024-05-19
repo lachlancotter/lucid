@@ -13,22 +13,15 @@ module Lucid
         @nests ||= {}
       end
 
-      def subcomponents # Hash[Symbol => Component::Base]
+      def subcomponents # Hash[Symbol => Component::Base | Enumerable]
         nests.map do |(name, nest)|
-          [name, nest.component]
+          [name, nest.enum? ? nest.collection : nest.component]
         end.to_h
       end
 
       def subcomponent (name, index = nil)
-        Match.on(subcomponents[name]) do
-          type(Component::Base) { |sub| sub }
-          type(Enumerable) do |enum|
-            enum[index].tap do |sub|
-              Check[sub].type(Component::Base).value
-            end
-          end
-          default { raise "No subcomponent named #{name}" }
-        end
+        nest = nests.fetch(name) { raise "No subcomponent named #{name}" }
+        nest.enum? ? nest.collection[index] : nest.component
       end
 
       def root?
@@ -60,7 +53,16 @@ module Lucid
       #
       def deep_state
         subcomponents.inject(state.to_h) do |hash, (name, sub)|
-          hash.merge(name => sub.deep_state)
+          case sub
+          when Component::Base
+            hash.merge(name => sub.deep_state)
+          when Enumerable
+            hash.merge(name => sub.map do |e|
+              { e.collection_key => e.deep_state }
+            end)
+          else
+            raise "Unexpected subcomponent type: #{sub.class}"
+          end
         end
       end
 
@@ -75,13 +77,11 @@ module Lucid
 
       module ClassMethods
         # DSL method to define a nested component.
-        def nest (name, component_class = nil, &block)
-          Nest.new(name, component_class, &block).tap do |nest|
+        def nest (name, &block)
+          Nest.new(name, &block).tap do |nest|
             nests[name] = nest
             after_initialize do
-              nests[name] = nest.bind(self).tap do |binding|
-                binding.install(nested_state(name))
-              end
+              nests[name] = nest.bind(self, nested_state(name))
             end
             if block_given?
               watch(*block.parameters.map(&:last)) do
@@ -89,9 +89,10 @@ module Lucid
               end
             end
             define_method(name) do
-              Match.on(nests[name].component) do
-                type(Enumerable) { Collection.new(nests[name]) }
-                default { |component| component }
+              if nests[name].enum?
+                nests[name].collection
+              else
+                nests[name].component
               end
             end
           end
@@ -111,45 +112,24 @@ module Lucid
       # and to make insertions into the collection, triggering updates
       # to the element ChangeSet.
       #
-      class Collection
-        def initialize (nest_binding)
+      class Collection < SimpleDelegator
+        def initialize (nest_binding, collection)
           Check[nest_binding].type(Nest::Binding)
-          Check[nest_binding.component].type(Enumerable)
+          Check[collection].type(Enumerable)
           @nest_binding = nest_binding
+          super(collection)
         end
 
-        def [] (index)
-          @nest_binding.component[index]
+        def build (model)
+          @nest_binding.build(model)
         end
 
-        def append (props)
-          build(props).tap do |component|
-            @nest_binding.collection.push(component)
-            parent.element.append(component)
-          end
+        def is_a? (klass)
+          __getobj__.is_a?(klass) || super
         end
 
-        def prepend (props)
-          build(props).tap do |component|
-            @nest_binding.collection.unshift(component)
-            parent.element.prepend(component)
-          end
-        end
-
-        private
-
-        def collection_size
-          @nest_binding.collection.size
-        end
-
-        def build (props)
-          @nest_binding.build(props).tap do |component|
-            Check[component].type(Component::Base)
-          end
-        end
-
-        def parent
-          @nest_binding.parent
+        def === (other)
+          __getobj__ === other || super
         end
       end
 
@@ -159,26 +139,19 @@ module Lucid
       class Nest
         #
         # name - The name of the nested component within the parent.
-        # component_class - The class of the nested component.
         # constructor - A block returning a Factory instance that can
         # build the nested component; or an enumerable that maps to
         # a Factory.
         #
-        def initialize (name, component_class = nil, &block)
+        def initialize (name, &block)
           @name  = name
-          @block = normalize_constructor(component_class, &block)
+          @block = block
         end
 
         attr_reader :name, :block
 
-        def bind (parent)
-          Binding.new(self, parent)
-        end
-
-        private
-
-        def normalize_constructor (component_class, &block)
-          block_given? ? block : lambda { Factory.new(component_class) { {} } }
+        def bind (parent, reader)
+          Binding.new(self, parent, reader)
         end
 
         #
@@ -187,42 +160,54 @@ module Lucid
         class Binding
           extend Forwardable
 
-          def initialize (nest, parent)
-            @nest      = nest
-            @parent    = parent
-            @component = nil
+          def initialize (nest, parent, reader)
+            @nest   = nest
+            @parent = parent
+            install(reader)
           end
 
-          attr_reader :component, :parent
-
+          attr_reader :parent, :component, :collection
           def_delegators :@nest, :name, :block
 
-          def collection
-            @component
-          end
-
           def install (reader)
-            @component = factory.build(reader, @parent, name)
+            factory.build(reader, @parent, name).tap do |result|
+              case result
+              when Component::Base
+                @component = result
+              when Enumerable
+                @collection = Collection.new(self, result)
+              else
+                raise "Unexpected component type: #{result.class}"
+              end
+            end
           end
 
-          def build (props)
-            factory.build_one(@parent, name, props)
+          def enum?
+            @collection.is_a?(Collection)
+          end
+
+          def build (model, index = collection.size)
+            factory.build_item(@parent, name, model, index)
           end
 
           def update_component (reader)
             if @component.is_a?(component_class)
-              factory.update_props(@component)
+              factory.update_component(@component)
             else
-              @component = factory.build(reader, @parent, name)
+              install(reader)
               @component.element.replace
             end
+          end
+
+          def update_collection (reader)
+
           end
 
           def factory
             object = @parent.instance_exec(*factory_args, &block)
             Match.on(object) do
               type(Factory) { object }
-              extends(Component::Base) { Factory.new(object) { {} } }
+              extends(Component::Base) { Factory::Singleton.new(object) { {} } }
             end.tap do |result|
               Check[result].type(Factory)
             end

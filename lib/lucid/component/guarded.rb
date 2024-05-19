@@ -81,7 +81,14 @@ module Lucid
           guard.if_denied { |result| return block.call(result) }
         end
         subcomponents.values.each do |sub|
-          sub.if_denied { |result| return block.call(result) }
+          Match.on(sub) do
+            type(Component::Base) do |singleton|
+              singleton.if_denied { |result| return block.call(result) }
+            end
+            type(Enumerable) do |enum|
+              enum.each { |sub| sub.if_denied { |result| return block.call(result) } }
+            end
+          end
         end
         nil
       end

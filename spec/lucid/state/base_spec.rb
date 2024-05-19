@@ -6,37 +6,39 @@ module Lucid
     describe ".build" do
       context "defaults" do
         it "initializes default attribute values" do
-          buffer = State::Reader.new("/")
+          buffer          = State::Reader.new("/")
           component_class = Class.new(Component::Base) do
             param :foo, default: "bar"
           end
-          component = component_class.build(buffer)
+          component       = component_class.build(buffer)
           expect(component.state.to_h).to eq(foo: "bar")
         end
       end
 
       context "root component" do
         it "parses the URL" do
-          buffer = State::Reader.new("/foo/bar?baz=qux")
+          buffer          = State::Reader.new("/foo/bar?baz=qux")
           component_class = Class.new(Component::Base) do
             path :foo, :bar
             param :baz
           end
-          component = component_class.build(buffer)
+          component       = component_class.build(buffer)
           expect(component.state.to_h).to eq(foo: "foo", bar: "bar", baz: "qux")
         end
       end
 
       context "nested component" do
         it "parses the URL" do
-          buffer = State::Reader.new("/foo/bar")
+          buffer          = State::Reader.new("/foo/bar")
           component_class = Class.new(Component::Base) do
             path :foo
-            nest :sub, Class.new(Component::Base) {
-              path :bar
-            }
+            nest :sub do
+              Class.new(Component::Base) {
+                path :bar
+              }
+            end
           end
-          component = component_class.build(buffer)
+          component       = component_class.build(buffer)
           expect(component.state.to_h).to eq(foo: "foo")
           expect(component.deep_state).to eq(foo: "foo", sub: { bar: "bar" })
           expect(component.sub.state.to_h).to eq(bar: "bar")

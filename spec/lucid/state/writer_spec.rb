@@ -111,6 +111,17 @@ module Lucid
           expect(writer.to_s).to eq("/baz?qux[kiln]=corge")
         end
       end
+
+      context "nested collection", skip: true do
+        it "maps collection elements" do
+          data = { foo: [{ bar: "baz" }, { bar: "qux" }] }
+          writer = Writer.new(data)
+          map = Map.build { query :bar }
+          writer.with_scope(:foo) do
+            writer.write_collection(map)
+          end
+        end
+      end
     end
   end
 end

@@ -6,13 +6,13 @@ module Lucid
     describe ".path" do
       it "defines path params" do
         component_class = Class.new(Component::Base) { path :foo }
-        instance = component_class.new(foo: "bar")
+        instance        = component_class.new(foo: "bar")
         expect(instance.state.foo).to eq("bar")
       end
 
       it "sets defaults" do
         component_class = Class.new(Component::Base) { path :count, default: 1 }
-        instance = component_class.new({})
+        instance        = component_class.new({})
         expect(instance.state.count).to eq(1)
       end
     end
@@ -42,7 +42,7 @@ module Lucid
       context "single param in path" do
         it "includes the param" do
           component_class = Class.new(Component::Base) { path :foo }
-          instance = component_class.new(foo: "bar")
+          instance        = component_class.new(foo: "bar")
           expect(instance.href.to_s).to eq("/bar")
         end
       end
@@ -70,9 +70,11 @@ module Lucid
       it "includes the nested path" do
         top = Class.new(Component::Base) do
           path :foo, nest: :bar, default: "top"
-          nest :bar, Class.new(Component::Base) {
-            path :bar, default: "nested"
-          }
+          nest :bar do
+            Class.new(Component::Base) {
+              path :bar, default: "nested"
+            }
+          end
         end.new
         expect(top.href.to_s).to eq("/top/nested")
       end
@@ -82,12 +84,16 @@ module Lucid
       it "includes the nested path" do
         top = Class.new(Component::Base) do
           path :foo, nest: :bar, defaults: ["top"]
-          nest :bar, Class.new(Component::Base) {
-            path :bar, default: "nested"
-          }
-          nest :baz, Class.new(Component::Base) {
-            param :quox, default: "quox"
-          }
+          nest :bar do
+            Class.new(Component::Base) {
+              path :bar, default: "nested"
+            }
+          end
+          nest :baz do
+            Class.new(Component::Base) {
+              param :quox, default: "quox"
+            }
+          end
         end.new
         expect(top.href.to_s).to eq("/top/nested?baz[quox]=quox")
       end
@@ -98,12 +104,16 @@ module Lucid
         top = Class.new(Component::Base) do
           path :foo, defaults: ["top"]
 
-          nest :bar, Class.new(Component::Base) {
-            path :bar, default: "nested"
-          }
-          nest :baz, Class.new(Component::Base) {
-            param :baz, default: "baz"
-          }
+          nest :bar do
+            Class.new(Component::Base) {
+              path :bar, default: "nested"
+            }
+          end
+          nest :baz do
+            Class.new(Component::Base) {
+              param :baz, default: "baz"
+            }
+          end
         end.new
         expect(top.href.to_s).to eq("/top/nested?baz[baz]=baz")
       end

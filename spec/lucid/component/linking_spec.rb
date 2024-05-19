@@ -54,10 +54,12 @@ module Lucid
             app_class = Class.new(Component::Base) do
               param :foo, default: ""
               visit Link, :foo
-              nest :bar, Class.new(Component::Base) {
-                param :baz, default: ""
-                visit Link, :baz
-              }
+              nest :bar do
+                Class.new(Component::Base) {
+                  param :baz, default: ""
+                  visit Link, :baz
+                }
+              end
             end
             app       = app_class.new
             app.visit(Link.new(foo: "bar", baz: "qux"))
@@ -82,10 +84,12 @@ module Lucid
         context "nested component" do
           it "applies the nested state" do
             app_class = Class.new(Component::Base) do
-              nest :foo, Class.new(Component::Base) {
-                param :count, default: 0
-                visit :set_count, :count
-              }
+              nest :foo do
+                Class.new(Component::Base) {
+                  param :count, default: 0
+                  visit :set_count, :count
+                }
+              end
             end
             app       = app_class.new
             link      = app.send(:foo).link_to(:set_count, count: 2)

@@ -51,8 +51,8 @@ module Lucid
         end
 
         it "replaces the nested instance with a new class" do
-          foo_class   = Class.new(Component::Base)
-          bar_class   = Class.new(Component::Base)
+          foo_class   = Class.new(Component::Base) { template {} }
+          bar_class   = Class.new(Component::Base) { template {} }
           base_class  = Class.new(Component::Base) do
             param :val
             nest(:foo) do |val|
@@ -99,7 +99,7 @@ module Lucid
 
         it "nests a child component" do
           view = Class.new(Component::Base) do
-            nest :foo, NamedNestedComponent
+            nest(:foo) { NamedNestedComponent }
           end.new
           expect(view.foo).to be_a(Component::Base)
         end

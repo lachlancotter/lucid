@@ -40,9 +40,11 @@ module Lucid
         context "nested component" do
           it "is the component path" do
             view = Class.new(Component::Base) do
-              nest :foo, Class.new(Component::Base) {
-                template { h1 { text "Nested" } }
-              }
+              nest :foo do
+                Class.new(Component::Base) {
+                  template { h1 { text "Nested" } }
+                }
+              end
               template { subview(:foo) }
             end.new
             view.element.replace
