@@ -51,8 +51,8 @@ module Lucid
         end
 
         it "replaces the nested instance with a new class" do
-          foo_class   = Class.new(Component::Base) { template {} }
-          bar_class   = Class.new(Component::Base) { template {} }
+          foo_class   = Class.new(Component::Base) { element {} }
+          bar_class   = Class.new(Component::Base) { element {} }
           base_class  = Class.new(Component::Base) do
             param :val
             nest(:foo) do |val|
@@ -118,17 +118,29 @@ module Lucid
           expect(view.foo[0].props.index).to eq(0)
           expect(view.foo[0].render).to eq("Nested english")
           expect(view.foo[0].props.app_root).to eq("/app/root")
-          expect(view.foo[0].path.to_s).to eq("/foo[0]")
+          expect(view.foo[0].path.to_s).to eq("/foo-0")
 
           expect(view.foo[1]).to be_a(Component::Base)
           expect(view.foo[1].props.bar).to eq("spanish")
           expect(view.foo[1].props.index).to eq(1)
           expect(view.foo[1].render).to eq("Nested spanish")
           expect(view.foo[1].props.app_root).to eq("/app/root")
-          expect(view.foo[1].path).to eq("/foo[1]")
+          expect(view.foo[1].path).to eq("/foo-1")
         end
 
       end
     end
+
+    describe ".slot" do
+      it "accepts components as props" do
+        nested = Class.new(Component::Base) { element { p "Nested content" } }
+        base   = Class.new(Component::Base) do
+          slot :nested
+          element { div(class: "wrapper") { subview(:nested) } }
+        end.new { { nested: nested } }
+        expect(base.render_full).to eq('<div class="wrapper"><div id="nested"><p>Nested content</p></div></div>')
+      end
+    end
+
   end
 end

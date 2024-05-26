@@ -104,6 +104,14 @@ module Lucid
           end
         end
 
+        #
+        # Defines a slot for a nested component provided as a prop.
+        #
+        def slot (name)
+          prop name
+          nest(name) { props[name] }
+        end
+
         def nests # Hash[Symbol => Nest]
           @nests ||= {}
         end
