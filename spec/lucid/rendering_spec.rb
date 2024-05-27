@@ -1,26 +1,13 @@
 module Lucid
   describe Rendering do
     describe "render" do
-      describe "default template" do
+      describe "template" do
         it "renders" do
           view = Class.new(Component::Base) do
-            template do
-              h1 { text "Hello, World" }
-            end
+            element { h1 { text "Hello, World" } }
           end.new
           view.element.replace
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
-        end
-      end
-
-      describe "named template" do
-        it "renders" do
-          view = Class.new(Component::Base) do
-            template :foo do
-              h1 { text "Hello, World" }
-            end
-          end.new
-          expect(view.template(:foo).render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
       end
 
@@ -28,12 +15,10 @@ module Lucid
         context "root component" do
           it "is omitted" do
             view = Class.new(Component::Base) do
-              template do
-                h1 { text "Hello, World" }
-              end
+              element { h1 { text "Hello, World" } }
             end.new
             view.element.replace
-            expect(view.render).to eq("<h1>Hello, World</h1>")
+            expect(view.render_full).to eq("<h1>Hello, World</h1>")
           end
         end
 
@@ -42,13 +27,13 @@ module Lucid
             view = Class.new(Component::Base) do
               nest :foo do
                 Class.new(Component::Base) {
-                  template { h1 { text "Nested" } }
+                  element { h1 { text "Nested" } }
                 }
               end
-              template { subview(:foo) }
+              element { subview(:foo) }
             end.new
             view.element.replace
-            expect(view.render).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
+            expect(view.render_full).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
           end
         end
       end
@@ -57,7 +42,7 @@ module Lucid
         it "renders" do
           view = Class.new(Component::Base) do
             param :name
-            template do |name|
+            element do |name|
               h1 { text "Hello, #{name}" }
             end
           end.new
@@ -68,7 +53,7 @@ module Lucid
       describe "template with context" do
         it "renders" do
           view = Class.new(Component::Base) do
-            template do
+            element do
               h1 { text "Hello, #{name}" }
             end
 
@@ -76,15 +61,14 @@ module Lucid
               "World"
             end
           end.new
-          view.element.replace
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
       end
 
       describe "context with name collision" do
         it "renders" do
           view = Class.new(Component::Base) do
-            template do
+            element do
               h1 { text "Hello, #{context.label}" }
             end
 
@@ -92,8 +76,7 @@ module Lucid
               "World"
             end
           end.new
-          view.element.replace
-          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
       end
     end

@@ -4,9 +4,10 @@ gem "rack"
 gem "zeitwerk"
 gem "sinatra"
 gem "docile" # Build DSLs.
-gem "dry-configurable" # Configurable objects.
-gem "dry-schema" # Validate state.
-gem "immutable-ruby" # Immutable state.
+gem "dry-types" # Type checking.
+# gem "dry-configurable" # Configurable objects.
+gem "dry-schema" # Validate messages.
+# gem "immutable-ruby" # Immutable state.
 gem "papercraft" # Generate HTML from Ruby.
 gem "htmlbeautifier" # Pretty-print HTML.
 gem "console" # Pretty console logging.

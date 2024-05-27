@@ -14,22 +14,16 @@ module Lucid
 
         context "with HTMX" do
           it "sends the updated components" do
-            adaptor   = ResponseAdaptor.new(Rack::Response.new)
-            # render    = double(changes: "<html><body>foo</body></html>")
-            # component = double(href: "/foo", render: render)
+            adaptor = ResponseAdaptor.new(Rack::Response.new)
             component = Class.new(Component::Base) do
               path "foo"
-              template do
-                html {
-                  body { text "foo" }
-                }
-              end
+              element(:html) { body { text "foo" } }
             end.new
             component.element.replace
             adaptor.send_delta(component, htmx: true)
             expect(adaptor.status).to eq(200)
             expect(adaptor.headers["HX-Push-Url"]).to eq("/foo")
-            expect(adaptor.body).to eq("<html><body>foo</body></html>")
+            expect(adaptor.body).to eq("<body>foo</body>")
           end
         end
       end

@@ -11,32 +11,27 @@ module Lucid
     describe "validation" do
       it "raises when invalid" do
         session_class = Class.new(Session) do
-          attribute :foo
-          validate { required(:foo).filled(:str?) }
+          attribute :foo, Types.string
         end
         expect {
           session_class.new({})
-        }.to raise_error(Session::Invalid)
+        }.to raise_error(Dry::Types::CoercionError)
       end
     end
 
     describe "mutation" do
       it "updates the original hash" do
-        hash    = {}
-        session = Session.new(hash)
+        hash          = {}
+        session_class = Class.new(Session) { attribute :foo, Types.string.default("") }
+        session       = session_class.new(hash)
         session.put(foo: "bar")
         expect(hash[:foo]).to eq("bar")
       end
 
       it "raises when invalid" do
-        session_class = Class.new(Session) do
-          attribute :foo
-          validate { required(:foo).filled(:str?) }
-        end
-        session       = session_class.new(foo: "bar")
-        expect {
-          session.put(foo: "")
-        }.to raise_error(Session::Invalid)
+        session_class = Class.new(Session) { attribute :foo, Types.integer.default(1) }
+        session       = session_class.new(foo: 2)
+        expect { session.put(foo: "") }.to raise_error(Dry::Types::CoercionError)
       end
     end
 
@@ -53,8 +48,8 @@ module Lucid
 
     describe "notification" do
       it "notifies when fields are changed" do
-        session_class = Class.new(Session) { attribute :foo }
-        session       = session_class.new(foo: "bar")
+        session_class  = Class.new(Session) { attribute :foo }
+        session        = session_class.new(foo: "bar")
         observed_value = nil
         session.watch(:foo) { observed_value = session[:foo] }
         session.put(foo: "baz")

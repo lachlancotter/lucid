@@ -19,8 +19,8 @@ module Lucid
     end
 
     module ClassMethods
-      def attribute (name, default: nil, &constructor)
-        attributes[name] = Def.new(name, default: default, &constructor)
+      def attribute (name, type = Types.string)
+        attributes[name] = Def.new(name, type)
         after_initialize { fields[name] = Field.new(self) { self[name] } }
         define_method(name) { self[name] }
       end
@@ -38,10 +38,9 @@ module Lucid
     end
 
     class Def
-      def initialize (name, default: nil, &constructor)
-        @name        = name
-        @default     = default
-        @constructor = constructor
+      def initialize (name, type)
+        @name = Types.symbol[name]
+        @type = type
       end
 
       #
@@ -50,22 +49,18 @@ module Lucid
       # not contain the attribute.
       #
       def build (hash, context: nil)
-        Match.on(@constructor) do
-          type(NilClass) { value_in(hash) }
-          # We might want to run constructor blocks in the context of the encompassing
-          # component. This would allow the constructor to access the component context.
-          # But would require a way to pass that context through to the builder.
-          # Not sure if this is necessary yet.
-          # default { context.instance_exec(value_in(hash), &@constructor) }
-          default { @constructor.call(value_in(hash)) }
-        end
-      end
-
-      def value_in (hash)
-        hash.key?(@name) ? hash[@name] : @default
+        @type[hash.fetch(@name) { Dry::Types::Undefined }]
+        # Match.on(@type.constructor) do
+        #   type(NilClass) { value_in(hash) }
+        #   # We might want to run constructor blocks in the context of the encompassing
+        #   # component. This would allow the constructor to access the component context.
+        #   # But would require a way to pass that context through to the builder.
+        #   # Not sure if this is necessary yet.
+        #   # default { context.instance_exec(value_in(hash), &@constructor) }
+        #   default { @type[value_in(hash)] }
+        # end
       end
     end
-
 
   end
 end

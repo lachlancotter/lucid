@@ -6,19 +6,18 @@ module Lucid
   class Path
     class InvalidComponents < ArgumentError
       def initialize (components = [])
-        super("Path components must be a symbol, string, or an array of strings: #{components}")
+        super("Path components must be a symbol, string, or an array of strings: #{components} (#{components.class})")
       end
     end
 
     def initialize(components = [])
       @components = Match.on(components) do
-        type(Array) do
-          Check[components].every { |e| e.type(Symbol, String) }.value
-        end
+        type(Path) { |other| other.components.dup }
+        type(Array) { Check[components].every { |e| e.type(Symbol, String) }.value }
         type(Symbol) { [components.to_s] }
         type(String) { components.sub(/^\//, "").split("/") }
         type(NilClass) { [] }
-        default { InvalidComponents.new(components) }
+        default { raise InvalidComponents.new(components) }
       end
     end
 

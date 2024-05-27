@@ -16,8 +16,8 @@ module Lucid
             adaptor = RequestAdaptor.new(Rack::Request.new(env))
             reader  = adaptor.state_reader(app_root: "/")
             map     = State::Map.new.tap do |map|
-              map.path(:step, 0)
-              map.path(:category_slug, 1)
+              map.path(:step)
+              map.path(:category_slug)
             end
             expect(reader.read(map)).to eq({ step: "store", category_slug: "guitars-basses" })
           end
@@ -35,8 +35,8 @@ module Lucid
               adaptor = RequestAdaptor.new(Rack::Request.new(env))
               reader  = adaptor.state_reader(app_root: "/")
               map     = State::Map.new.tap do |map|
-                map.path(:step, 0)
-                map.path(:category_slug, 1)
+                map.path(:step)
+                map.path(:category_slug)
               end
               expect(reader.read(map)).to eq({ step: "store" })
             end
@@ -55,8 +55,8 @@ module Lucid
               adaptor = RequestAdaptor.new(Rack::Request.new(env))
               reader  = adaptor.state_reader(app_root: "/")
               map     = State::Map.new.tap do |map|
-                map.path(:step, 0)
-                map.path(:category_slug, 1)
+                map.path(:step)
+                map.path(:category_slug)
               end
               expect(reader.read(map)).to eq({ step: "store", category_slug: "pianos-keyboards" })
             end

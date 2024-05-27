@@ -92,7 +92,7 @@ module Lucid
       it "watches dependent fields" do
         calls = 0
         view  = Class.new(Component::Base) do
-          param :foo, default: ""
+          param :foo, Types.string.default("")
           let(:bar) { |foo| foo.upcase }
           watch(:bar) { calls += 1 }
         end.new

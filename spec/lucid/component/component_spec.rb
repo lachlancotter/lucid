@@ -7,14 +7,14 @@ module Lucid
     #    Templates
     # ===================================================== #
 
-    describe ".template" do
+    describe ".element" do
       context "main template" do
         it "renders the main template" do
           view = Class.new(Component::Base) do
             param :name
-            template { div { text "Hello, #{state.name}" } }
+            element { div { text "Hello, #{state.name}" } }
           end.new(name: "World")
-          expect(view.template.render).to eq("<div>Hello, World</div>")
+          expect(view.render_full).to eq("<div>Hello, World</div>")
         end
       end
     end

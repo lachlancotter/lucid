@@ -18,8 +18,8 @@ module Lucid
       private
 
       module ClassMethods
-        def prop(name, default: nil, &constructor)
-          props_class.attribute(name, default: default, &constructor)
+        def prop(name, type = Types.string)
+          props_class.attribute(name, type)
           after_initialize { fields[name] = Field.new(self) { props[name] } }
         end
 

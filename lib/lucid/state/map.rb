@@ -8,12 +8,13 @@ module Lucid
     class Map
       def initialize
         @rules = []
+        @index = 0
       end
 
       attr_reader :rules
 
-      def path (key, index)
-        rules << Path.new(key, index)
+      def path (key)
+        rules << Path.new(key, @index).tap { @index += 1 }
       end
 
       def param (key)

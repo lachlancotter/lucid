@@ -5,16 +5,16 @@ module Lucid
     describe "#to_s" do
       let(:item_class) do
         Class.new(Component::Base) do
-          prop :foo
+          prop :foo, Types.string
           key { props.foo }
-          template { |foo| p { text "Item #{foo}" } }
+          element { |foo| p { text "Item #{foo}" } }
         end
       end
       let(:base_class) do
         Class.new(Component::Base) do
-          prop :item_class
-          nest(:a) { Class.new(Component::Base) { template { h1 "Component A" } } }
-          nest(:b) { Class.new(Component::Base) { template { h1 "Component B" } } }
+          prop :item_class, Types.Instance(Class)
+          nest(:a) { Class.new(Component::Base) { element { h1 "Component A" } } }
+          nest(:b) { Class.new(Component::Base) { element { h1 "Component B" } } }
           nest(:item_views) { props.item_class.enum([]) { |i| { foo: i } } }
         end
       end
@@ -40,7 +40,7 @@ module Lucid
           it "omits the OOB attribute" do
             expect(subject).to match(/<p>Item One<\/p>/)
             expect(subject).not_to match(/hx-swap-oob="beforeend:#root"/)
-            expect(subject).to match(/id="item_views\[One\]"/)
+            expect(subject).to match(/id="item_views-One"/)
           end
         end
 
@@ -49,7 +49,7 @@ module Lucid
           it "includes the OOB attribute" do
             expect(subject).to match(/<p>Item Two<\/p>/)
             expect(subject).to match(/hx-swap-oob="beforeend:#root"/)
-            expect(subject).to match(/id="item_views\[Two\]"/)
+            expect(subject).to match(/id="item_views-Two"/)
           end
         end
       end
@@ -73,7 +73,7 @@ module Lucid
           subject { view.changes[1] }
           it "includes the OOB attribute" do
             expect(subject).to match(/<h1>Component B<\/h1>/)
-            expect(subject).to match(/hx-swap-oob="innerHTML:#b/)
+            expect(subject).to match(/hx-swap-oob="outerHTML:#b/)
             expect(subject).to match(/id="b"/)
           end
         end
@@ -89,10 +89,10 @@ module Lucid
     describe "#replace" do
       let(:view) do
         Class.new(Component::Base) do
-          template { h1 { text "Hello, World" } }
+          element { h1 { text "Hello, World" } }
           nest(:subviews) do
             Class.new(Component::Base) do
-              template { p { text "Item" } }
+              element { p { text "Item" } }
               key { "foo" }
             end.enum([])
           end
@@ -130,17 +130,17 @@ module Lucid
     describe "#append" do
       let(:view) do
         Class.new(Component::Base) do
-          prop :subview_class
-          template { h1 { text "Hello, World" } }
-          nest :item_views do
-            props.subview_class.enum([]) { |i| { foo: i } }
+          prop :subview_class, Types.Instance(Class)
+          element { h1 { text "Hello, World" } }
+          nest :item_views do |subview_class|
+            subview_class.enum([]) { |i| { foo: i } }
           end
         end.new { { subview_class: subview_class } }
       end
       let(:subview_class) do
         Class.new(Component::Base) do
-          prop :foo
-          template { |foo| p { text "Item #{foo}" } }
+          prop :foo, Types.integer
+          element { |foo| p { text "Item #{foo}" } }
           key { props.foo }
         end
       end
@@ -149,7 +149,7 @@ module Lucid
         view.element.append(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Append)
-        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
       end
 
@@ -157,9 +157,9 @@ module Lucid
         view.element.append(view.item_views.build(0))
         view.element.append(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
-        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
-        expect(view.changes.to_s).to match(/id="item_views\[1\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-1"/)
         expect(view.changes.to_s).to match(/<p>Item 1<\/p>/)
       end
 
@@ -179,16 +179,16 @@ module Lucid
     describe "#prepend" do
       let(:view) do
         Class.new(Component::Base) do
-          prop :subview_class
-          template { h1 { text "Hello, World" } }
+          prop :subview_class, Types.Instance(Class)
+          element { h1 { text "Hello, World" } }
           nest(:item_views) { props.subview_class.enum([]) { |i| { foo: i } } }
         end.new { { subview_class: subview_class } }
       end
       let(:subview_class) do
         Class.new(Component::Base) do
-          prop :foo
+          prop :foo, Types.integer
           key { props.foo }
-          template { |foo| p { text "Item #{foo}" } }
+          element { |foo| p { text "Item #{foo}" } }
         end
       end
 
@@ -196,7 +196,7 @@ module Lucid
         view.element.prepend(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Prepend)
-        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
       end
 
@@ -204,9 +204,9 @@ module Lucid
         view.element.prepend(view.item_views.build(0))
         view.element.prepend(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
-        expect(view.changes.to_s).to match(/id="item_views\[0\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
-        expect(view.changes.to_s).to match(/id="item_views\[1\]"/)
+        expect(view.changes.to_s).to match(/id="item_views-1"/)
         expect(view.changes.to_s).to match(/<p>Item 1<\/p>/)
       end
 
@@ -234,9 +234,7 @@ module Lucid
       it "is true when template state dependencies change" do
         view = Class.new(Component::Base) do
           param :foo
-          template do |foo|
-            h1 { text foo }
-          end
+          element { |foo| h1 { text foo } }
         end.new(foo: "foo")
         view.update(foo: "bar")
         expect(view.changes.any?).to be(true)
@@ -246,9 +244,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo
           let(:bar) { |foo| foo.upcase }
-          template do |bar|
-            h1 { text bar }
-          end
+          element { |bar| h1 { text bar } }
         end.new(foo: "foo")
         view.update(foo: "bar")
         expect(view.changes.any?).to be(true)
@@ -260,7 +256,7 @@ module Lucid
           nest :bar do
             Class.new(Component::Base) {
               use :foo
-              template do |foo|
+              element do |foo|
                 h1 { text foo }
               end
             }
@@ -273,9 +269,7 @@ module Lucid
       it "is false when template dependencies are unchanged" do
         view = Class.new(Component::Base) do
           param :foo
-          template do
-            h1 { "Test" }
-          end
+          element { h1 { "Test" } }
         end.new(foo: "foo")
         view.update(foo: "bar")
         expect(view.element.any?).to be(false)
@@ -290,7 +284,7 @@ module Lucid
       context "when unchanged" do
         it "is empty" do
           view = Class.new(Component::Base) do
-            template do
+            element do
               h1 { text "Hello, World" }
             end
           end.new
@@ -302,9 +296,7 @@ module Lucid
         it "contains the root component render" do
           view = Class.new(Component::Base) do
             param :foo
-            template do |foo|
-              h1 { text foo }
-            end
+            element { |foo| h1 { text foo } }
           end.new
           view.update(foo: "bar")
           expect(view.changes.map(&:component)).to eq([view])
@@ -317,9 +309,7 @@ module Lucid
             nest :bar do
               Class.new(Component::Base) {
                 param :baz
-                template do |baz|
-                  h1 { text baz }
-                end
+                element { |baz| h1 { text baz } }
               }
             end
           end.new
@@ -334,22 +324,18 @@ module Lucid
             nest :a do
               Class.new(Component::Base) {
                 param :foo
-                template do |foo|
-                  h1 { text foo }
-                end
+                element { |foo| h1 { text foo } }
               }
             end
 
             nest :b do
               Class.new(Component::Base) {
                 param :bar
-                template do |bar|
-                  h1 { text bar }
-                end
+                element { |bar| h1 { text bar } }
               }
             end
 
-            template do
+            element do
               h1 { text "Parent" }
               subview :a
               subview :b

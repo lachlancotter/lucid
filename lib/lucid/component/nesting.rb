@@ -41,8 +41,8 @@ module Lucid
       end
 
       def component_name
-        if props.name.match?(/\[\]/)
-          props.name.sub(/\[\]$/, "-#{collection_key}")
+        if props.collection_member
+          "#{props.name}-#{collection_key}"
         else
           props.name
         end
@@ -108,8 +108,9 @@ module Lucid
         # Defines a slot for a nested component provided as a prop.
         #
         def slot (name)
-          prop name
+          prop name, Types.Instance(Class)
           nest(name) { props[name] }
+          watch(name) { nests[name].update_component(nested_state(name)) }
         end
 
         def nests # Hash[Symbol => Nest]

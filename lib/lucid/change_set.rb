@@ -23,7 +23,7 @@ module Lucid
     end
 
     def append (subcomponent, to: "")
-      selector = "#{@component.element_id} #{to}"
+      selector = [@component.element_id, to].reject(&:empty?).join(" ")
       tap { add_change Append.new(subcomponent, to: selector) }
     end
 

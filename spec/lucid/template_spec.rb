@@ -14,14 +14,14 @@ module Lucid
 
     it "renders script elements" do
       view = Class.new(Component::Base) do
-        template do
+        element do
           head {
             script(src: "https://example.com/script.js")
           }
         end
       end.new
       view.element.replace
-      expect(view.render).to match(
+      expect(view.render_full).to match(
          '<head><script src="https://example.com/script.js"></script></head>'
       )
     end

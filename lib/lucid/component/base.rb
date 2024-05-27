@@ -22,22 +22,27 @@ module Lucid
       # Used to encode URLs for the webserver. Useful if you want to
       # nest your application under a subdirectory.
       #
-      prop :app_root, default: "/"
+      prop :app_root, Types.Constructor(Path).default { |path| path["/"]  }
 
       #
       # Access to the Session for the current request.
       #
-      prop :session
+      prop :session, Types.Instance(Session).optional.default(nil)
 
       #
       # This component's parent in the component tree.
       #
-      prop :parent, default: nil
+      prop :parent, Types.Instance(Component::Base).optional.default(nil)
 
       #
       # The name of this component in the parent.
       #
-      prop :name, default: "root"
+      prop :name, Types.symbol.default("root")
+
+      #
+      # Whether this component is a member of a collection.
+      #
+      prop :collection_member, Types.bool.default(false)
 
       def self.build (buffer, &config)
         new(buffer, &config)
@@ -55,9 +60,7 @@ module Lucid
       #
       def update (data)
         @state.update(data)
-        data.keys.each do |key|
-          field(key).invalidate if field?(key)
-        end
+        data.keys.each { |key| field(key).invalidate if field?(key) }
       end
 
       #

@@ -22,9 +22,9 @@ module Lucid
 
       attr_reader :state
 
-      def valid?
-        state.valid?
-      end
+      # def valid?
+      #   state.valid?
+      # end
 
       #
       # Encodes component state as a URL.
@@ -46,38 +46,32 @@ module Lucid
         #
         # Map a path component to a state attribute.
         #
-        def path (*args, default: nil, defaults: [], in: nil, nest: nil)
-          map_attrs(*args, default: default, defaults: defaults) do |map, name, index|
-            map.path(name, index)
-          end
+        def path (name, type = Types.string.default("".freeze), in: nil, nest: nil)
+          map_attrs(name, type) { |map| map.path(name) }
         end
 
         #
         # Map a query parameter to a state attribute.
         #
-        def param (*args, default: nil, defaults: [])
-          map_attrs(*args, default: default, defaults: defaults) do |map, name|
-            map.param(name)
-          end
+        def param (name, type = Types.string.default("".freeze))
+          map_attrs(name, type) { |map| map.param(name) }
         end
 
         #
         # Dynamically define a state attribute.
         #
-        private def map_attrs (*args, default: nil, defaults: [])
-          args.each_with_index do |name, index|
-            state_class.attribute(name, default: defaults[index] || default)
-            after_initialize { fields[name] = Field.new(self) { state[name] } }
-            yield state_map, name, index
-          end
+        private def map_attrs (name, type)
+          state_class.attribute(name, type)
+          after_initialize { fields[name] = Field.new(self) { state[name] } }
+          yield state_map
         end
 
         #
         # Define a schema for the component state.
         #
-        def validate (&block)
-          state_class.validate(&block)
-        end
+        # def validate (&block)
+        #   state_class.validate(&block)
+        # end
 
         def state_class
           @state_class ||= Class.new(State::Base)

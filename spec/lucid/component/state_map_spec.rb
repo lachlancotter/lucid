@@ -10,8 +10,14 @@ module Lucid
         expect(instance.state.foo).to eq("bar")
       end
 
+      it "accepts a type" do
+        component_class = Class.new(Component::Base) { path :count, Types.integer }
+        component       = component_class.new(count: "1")
+        expect(component.state.count).to eq(1)
+      end
+
       it "sets defaults" do
-        component_class = Class.new(Component::Base) { path :count, default: 1 }
+        component_class = Class.new(Component::Base) { path :count, Types.integer.default(1) }
         instance        = component_class.new({})
         expect(instance.state.count).to eq(1)
       end
@@ -25,7 +31,7 @@ module Lucid
       end
 
       it "sets defaults" do
-        component_class = Class.new(Component::Base) { param :count, default: 1 }
+        component_class = Class.new(Component::Base) { param :count, Types.integer.default(1) }
         instance        = component_class.new({})
         expect(instance.state.count).to eq(1)
       end
@@ -50,7 +56,8 @@ module Lucid
       context "multiple params in path" do
         it "includes the params" do
           view = Class.new(Component::Base) do
-            path :foo, :bar, defaults: [1, 2]
+            path :foo, Types.integer.default(1)
+            path :bar, Types.integer.default(2)
           end.new
           expect(view.href.to_s).to eq("/1/2")
         end
@@ -59,7 +66,8 @@ module Lucid
       context "literal in path" do
         it "includes the literal" do
           view = Class.new(Component::Base) do
-            path "resource", :id, default: 1
+            path "resource"
+            path :id, Types.integer.default(1)
           end.new
           expect(view.href.to_s).to eq("/resource/1")
         end
@@ -69,10 +77,10 @@ module Lucid
     context "nested path" do
       it "includes the nested path" do
         top = Class.new(Component::Base) do
-          path :foo, nest: :bar, default: "top"
+          path :foo, Types.string.default("top".freeze), nest: :bar
           nest :bar do
             Class.new(Component::Base) {
-              path :bar, default: "nested"
+              path :bar, Types.string.default("nested".freeze)
             }
           end
         end.new
@@ -83,15 +91,15 @@ module Lucid
     context "multiple nested components" do
       it "includes the nested path" do
         top = Class.new(Component::Base) do
-          path :foo, nest: :bar, defaults: ["top"]
+          path :foo, Types.string.default("top".freeze), nest: :bar
           nest :bar do
             Class.new(Component::Base) {
-              path :bar, default: "nested"
+              path :bar, Types.string.default("nested".freeze)
             }
           end
           nest :baz do
             Class.new(Component::Base) {
-              param :quox, default: "quox"
+              param :quox, Types.string.default("quox")
             }
           end
         end.new
@@ -102,16 +110,16 @@ module Lucid
     context "multiple nested path components" do
       it "nests only one path" do
         top = Class.new(Component::Base) do
-          path :foo, defaults: ["top"]
+          path :foo, Types.string.default("top".freeze)
 
           nest :bar do
             Class.new(Component::Base) {
-              path :bar, default: "nested"
+              path :bar, Types.string.default("nested".freeze)
             }
           end
           nest :baz do
             Class.new(Component::Base) {
-              param :baz, default: "baz"
+              param :baz, Types.string.default("baz".freeze)
             }
           end
         end.new
@@ -120,37 +128,21 @@ module Lucid
     end
 
     describe "validation" do
-      context "no schema" do
-        it "is always valid" do
-          instance = Class.new(Component::Base) do
-            param :foo
-          end.new({})
-          expect(instance).to be_valid
+      context "valid data" do
+        it "constructs the component" do
+          component_class = Class.new(Component::Base) do
+            param :count, Types.integer
+          end
+          expect { component_class.new(count: "1") }.not_to raise_error
         end
       end
 
-      context "valid input" do
-        it "instantiates" do
-          instance = Class.new(Component::Base) do
-            param :count
-            validate do
-              required(:count).filled(:integer)
-            end
-          end.new(count: "1")
-          expect(instance).to be_valid
-        end
-      end
-
-      context "invalid input" do
-        it "raises an error" do
-          expect {
-            Class.new(Component::Base) do
-              param :count
-              validate do
-                required(:count).filled(:integer)
-              end
-            end.new(count: "foo")
-          }.to raise_error(State::Invalid)
+      context "invalid data" do
+        it "raises en error" do
+          component_class = Class.new(Component::Base) do
+            param :count, Types.integer
+          end
+          expect { component_class.new(count: "foo") }.to raise_error(Dry::Types::CoercionError)
         end
       end
     end

@@ -8,7 +8,7 @@ module Lucid
         context "root component" do
           it "applies the destination state with a block" do
             app_class = Class.new(Component::Base) do
-              param :foo, default: ""
+              param :foo
               visit Link, :foo
             end
             app       = app_class.new
@@ -18,7 +18,7 @@ module Lucid
 
           it "applies the destination state with a symbol" do
             app_class = Class.new(Component::Base) do
-              param :foo, default: ""
+              param :foo
               visit Link, :foo
             end
             app       = app_class.new
@@ -28,7 +28,7 @@ module Lucid
 
           it "applies the destination state with a Hash" do
             app_class = Class.new(Component::Base) do
-              param :foo, default: ""
+              param :foo
               visit Link, foo: "bar"
             end
             app       = app_class.new
@@ -52,11 +52,11 @@ module Lucid
         context "nested component" do
           it "applies the nested state" do
             app_class = Class.new(Component::Base) do
-              param :foo, default: ""
+              param :foo
               visit Link, :foo
               nest :bar do
                 Class.new(Component::Base) {
-                  param :baz, default: ""
+                  param :baz
                   visit Link, :baz
                 }
               end
@@ -72,7 +72,7 @@ module Lucid
         context "root component" do
           it "applies the destination state" do
             app_class = Class.new(Component::Base) do
-              param :count, default: 0
+              param :count, Types.integer.default(0)
               visit :set_count, :count
             end
             app       = app_class.new(count: 1)
@@ -86,7 +86,7 @@ module Lucid
             app_class = Class.new(Component::Base) do
               nest :foo do
                 Class.new(Component::Base) {
-                  param :count, default: 0
+                  param :count, Types.integer.default(0)
                   visit :set_count, :count
                 }
               end
@@ -109,7 +109,7 @@ module Lucid
     describe "#href" do
       it "encodes state" do
         app_class = Class.new(Component::Base) do
-          path :id
+          path :id, Types.integer
           visit TestLink, :id
         end
         app       = app_class.new(id: 1)

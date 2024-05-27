@@ -24,12 +24,12 @@ module Lucid
 
         it "configures the nested instance" do
           foo_class = Class.new(Component::Base) do
-            prop :bar
+            prop :bar, Types.integer
           end
           view      = Class.new(Component::Base) do
             param :val
             nest(:foo) { foo_class[bar: 1] }
-          end.new(foo: { bar: "baz" }, val: "a")
+          end.new(foo: { bar: 0 }, val: "a")
 
           expect(view.foo.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
@@ -85,8 +85,8 @@ module Lucid
 
       context "named constructor" do
         class NamedNestedComponent < Component::Base
-          prop :bar
-          prop :index
+          prop :bar, Types.string.default("default".freeze)
+          prop :index, Types.integer
 
           def collection_key
             props.index
@@ -99,7 +99,7 @@ module Lucid
 
         it "nests a child component" do
           view = Class.new(Component::Base) do
-            nest(:foo) { NamedNestedComponent }
+            nest(:foo) { NamedNestedComponent[index: 0] }
           end.new
           expect(view.foo).to be_a(Component::Base)
         end

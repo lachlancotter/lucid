@@ -7,9 +7,7 @@ module Lucid
       context "defaults" do
         it "initializes default attribute values" do
           buffer          = State::Reader.new("/")
-          component_class = Class.new(Component::Base) do
-            param :foo, default: "bar"
-          end
+          component_class = Class.new(Component::Base) { param :foo, Types.string.default("bar") }
           component       = component_class.build(buffer)
           expect(component.state.to_h).to eq(foo: "bar")
         end
@@ -19,7 +17,8 @@ module Lucid
         it "parses the URL" do
           buffer          = State::Reader.new("/foo/bar?baz=qux")
           component_class = Class.new(Component::Base) do
-            path :foo, :bar
+            path :foo
+            path :bar
             param :baz
           end
           component       = component_class.build(buffer)
@@ -49,11 +48,9 @@ module Lucid
     context "invalid" do
       it "raises an error" do
         state_class = Class.new(State::Base) do
-          validate do
-            required(:foo).filled(:string)
-          end
+          attribute :foo, Types.string
         end
-        expect { state_class.new }.to raise_error(State::Invalid)
+        expect { state_class.new }.to raise_error(Dry::Types::CoercionError)
       end
     end
 

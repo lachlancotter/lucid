@@ -7,12 +7,13 @@ module Lucid
       #
       # All components in the tree need these standard props.
       #
-      def default_props (parent, name)
+      def default_props (parent, name, member = false)
         {
-           parent:   parent,
-           app_root: parent.props.app_root,
-           session:  parent.props.session,
-           name:     name
+           parent:            parent,
+           app_root:          parent.props.app_root,
+           session:           parent.props.session,
+           name:              name,
+           collection_member: member
         }
       end
 
@@ -93,13 +94,13 @@ module Lucid
         end
 
         def build_item (parent, name, item, index)
-          @component_class.new({}) { build_props(parent, "#{name}[]", item, index) }
+          @component_class.new({}) { build_props(parent, name, item, index) }
         end
 
         private
 
         def build_props (parent, name, item, index)
-          default_props(parent, name).merge(custom_props(item, index))
+          default_props(parent, name, true).merge(custom_props(item, index))
         end
 
         def custom_props (item, index)
