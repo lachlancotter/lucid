@@ -5,9 +5,8 @@ gem "zeitwerk"
 gem "sinatra"
 gem "docile" # Build DSLs.
 gem "dry-types" # Type checking.
-# gem "dry-configurable" # Configurable objects.
-gem "dry-schema" # Validate messages.
-# gem "immutable-ruby" # Immutable state.
+gem "dry-struct" # Component state and props.
+gem "dry-schema" # Message validation.
 gem "papercraft" # Generate HTML from Ruby.
 gem "htmlbeautifier" # Pretty-print HTML.
 gem "console" # Pretty console logging.

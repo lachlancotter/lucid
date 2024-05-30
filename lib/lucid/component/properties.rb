@@ -1,3 +1,5 @@
+require "dry-struct"
+
 module Lucid
   module Component
     #
@@ -26,7 +28,7 @@ module Lucid
         def props_class
           @props_class ||= Match.on(superclass) do
             responds_to(:props_class) { Class.new(superclass.props_class) }
-            default { Class.new(State::Base) }
+            default { Class.new(Dry::Struct) }
           end
         end
       end

@@ -19,7 +19,7 @@ module Lucid
           view       = view_class.new(foo: { bar: "baz" }, val: "a")
 
           expect(view.foo).to be_a(class_a)
-          expect(view.foo.state).to eq(bar: "baz")
+          expect(view.foo.state.to_h).to eq(bar: "baz")
         end
 
         it "configures the nested instance" do

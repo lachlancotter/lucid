@@ -45,6 +45,11 @@ GEM
       dry-logic (>= 1.4, < 2)
       dry-types (>= 1.7, < 2)
       zeitwerk (~> 2.6)
+    dry-struct (1.6.0)
+      dry-core (~> 1.0, < 2)
+      dry-types (>= 1.7, < 2)
+      ice_nine (~> 0.11)
+      zeitwerk (~> 2.6)
     dry-types (1.7.1)
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.0)
@@ -55,6 +60,7 @@ GEM
     fiber-annotation (0.2.0)
     fiber-local (1.0.0)
     htmlbeautifier (1.4.2)
+    ice_nine (0.11.2)
     kramdown (2.4.0)
       rexml
     kramdown-parser-gfm (1.1.0)
@@ -129,6 +135,7 @@ DEPENDENCIES
   console
   docile
   dry-schema
+  dry-struct
   dry-types
   htmlbeautifier
   papercraft

@@ -59,7 +59,7 @@ module Lucid
       # dependent fields.
       #
       def update (data)
-        @state.update(data)
+        @state = @state.new(data)
         data.keys.each { |key| field(key).invalidate if field?(key) }
       end
 

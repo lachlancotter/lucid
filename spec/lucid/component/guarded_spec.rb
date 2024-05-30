@@ -104,7 +104,7 @@ module Lucid
         context "resolved guard" do
           it "returns Permit" do
             component = Class.new(Base) do
-              param :foo, default: false
+              param :foo, Types.bool.default(false)
               guard { |foo| foo ? Permit : Deny }
               on(Guard::Denied) { update(foo: true) }
             end.new
@@ -117,7 +117,7 @@ module Lucid
         context "unresolved nested guard" do
           it "raises åx patrols exception" do
             component = Class.new(Base) do
-              param :foo, default: false
+              param :foo, Types.bool.default(false)
               on(Guard::Denied) { update(foo: true) }
               nest :bar do
                 Class.new(Base) { guard { Deny } }

@@ -47,7 +47,14 @@ module Lucid
         # Map a path component to a state attribute.
         #
         def path (name, type = Types.string.default("".freeze), in: nil, nest: nil)
-          map_attrs(name, type) { |map| map.path(name) }
+          case name
+          when Symbol
+            map_attrs(name, type) { |map| map.path(name) }
+          when String # Literal
+            state_map.path(name)
+          else
+            raise ArgumentError, "Invalid path argument: #{name}"
+          end
         end
 
         #
@@ -74,7 +81,7 @@ module Lucid
         # end
 
         def state_class
-          @state_class ||= Class.new(State::Base)
+          @state_class ||= Class.new(Dry::Struct)
         end
 
         def state_map
@@ -88,7 +95,7 @@ module Lucid
           Check[reader].type(State::Reader, State::HashReader)
           data = reader.read(state_map)
           state_class.new(data).tap do |state|
-            extra_keys = data.keys - state.keys
+            extra_keys = data.keys - state.to_h.keys
             unless extra_keys.empty?
               puts "WARNING: Extra keys in state: #{extra_keys.inspect}. Ignoring."
             end

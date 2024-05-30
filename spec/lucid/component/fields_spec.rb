@@ -70,7 +70,7 @@ module Lucid
       it "executes the block when the value changes" do
         bar  = nil
         view = Class.new(Component::Base) do
-          param :foo, default: ""
+          param :foo, Types.string.default("")
           watch(:foo) { bar = "foo" }
         end.new
         view.update(foo: "foo")
@@ -80,8 +80,8 @@ module Lucid
       it "accepts multiple values" do
         baz  = 0
         view = Class.new(Component::Base) do
-          param :foo, default: ""
-          param :bar, default: ""
+          param :foo, Types.string.default("")
+          param :bar, Types.string.default("")
           watch(:foo, :bar) { baz += 1 }
         end.new
         view.update(foo: "foo")

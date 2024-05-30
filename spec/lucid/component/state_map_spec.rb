@@ -142,7 +142,9 @@ module Lucid
           component_class = Class.new(Component::Base) do
             param :count, Types.integer
           end
-          expect { component_class.new(count: "foo") }.to raise_error(Dry::Types::CoercionError)
+          expect do
+            component_class.new(count: "foo")
+          end.to raise_error(Dry::Struct::Error)
         end
       end
     end
