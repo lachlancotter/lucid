@@ -156,7 +156,7 @@ module Lucid
       def run_with_context
         with_context { yield }
       rescue Dry::Types::CoercionError => e
-        Logger.error(e)
+        Logger.exception(e)
         @response.send_error(e)
       end
 

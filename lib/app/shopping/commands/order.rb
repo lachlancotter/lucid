@@ -4,7 +4,7 @@ module Shopping
       attribute :cart_id
       attribute :address, default: {}
       validate do
-        required(:cart_id).filled(:integer)
+        required(:cart_id).filled(:string)
         required(:address).hash do
           required(:name).filled(:string)
           required(:street).filled(:string)

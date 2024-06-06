@@ -67,12 +67,16 @@ module Lucid
         end
       end
 
-      def error (error, data = {})
-        puts("  ❌ #{error.message}")
-        # error.backtrace.each do |line|
-        #   puts("        #{line}")
-        # end
-        data.merge(error_data(error)).each do |key, value|
+      def error (message, data = {})
+        puts("  ❌ #{message}")
+        data.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
+      end
+
+      def exception (exception)
+        puts("  ❌ #{exception.message}")
+        error_data(exception).each do |key, value|
           puts("        #{key}: #{value.inspect}")
         end
       end
