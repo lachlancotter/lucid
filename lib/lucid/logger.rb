@@ -68,13 +68,38 @@ module Lucid
       end
 
       def error (error, data = {})
-        puts("  ❌ #{error}")
-        data.each do |key, value|
+        puts("  ❌ #{error.message}")
+        # error.backtrace.each do |line|
+        #   puts("        #{line}")
+        # end
+        data.merge(error_data(error)).each do |key, value|
           puts("        #{key}: #{value.inspect}")
         end
       end
 
       private
+
+      def error_data (error)
+        {
+           class: error.class,
+           at: error.backtrace.find do |line|
+             !line.include?("gems/")
+           end
+        }
+      end
+
+      # def trace (error)
+      #   Tempfile.new(["trace", ".txt"], "/tmp").tap do |tf|
+      #     tf.open
+      #     tf.write(error.message)
+      #     tf.write("\n")
+      #     error.backtrace.each do |line|
+      #       tf.write(line)
+      #       tf.write("\n")
+      #     end
+      #     tf.close
+      #   end
+      # end
 
       def puts(*args)
         if @buffer

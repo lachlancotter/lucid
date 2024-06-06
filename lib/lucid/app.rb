@@ -155,8 +155,8 @@ module Lucid
 
       def run_with_context
         with_context { yield }
-      rescue State::Invalid => e
-        Logger.error(e.message)
+      rescue Dry::Types::CoercionError => e
+        Logger.error(e)
         @response.send_error(e)
       end
 

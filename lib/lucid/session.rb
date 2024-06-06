@@ -7,24 +7,11 @@ module Lucid
   #
   class Session
     include Component::Callbacks
-    include Attributes
     include Fields
-    # include Validated
 
-    #
-    # Indicates that the Session data is invalid.
-    #
-    # class Invalid < StandardError
-    #   def initialize (errors)
-    #     super(errors.inspect)
-    #   end
-    # end
-
-    def initialize (data)
-      @session_hash = data
-      self.class.map_attributes { |attr| attr.build(data) }.tap do |validated_data|
-        @session_hash.merge!(validated_data)
-      end
+    def initialize (session_hash)
+      @session_hash = session_hash
+      @state        = self.class.state_class.new(session_hash.to_h)
       run_callbacks(:after_initialize)
     end
 
@@ -33,18 +20,21 @@ module Lucid
     end
 
     def put (data)
-      @session_hash.to_h.merge(data).tap do |new_data|
-        self.class.map_attributes { |attr| attr.build(new_data) }.tap do |validated_data|
-          @session_hash.merge!(validated_data)
-          data.keys.each { |key| field(key).invalidate if field?(key) }
-        end
-      end
+      @state = @state.new(data) # Validation.
+      @session_hash.merge!(@state.to_h)
+      data.keys.each { |key| field(key).invalidate if field?(key) }
     end
 
-    # def validate! (data)
-    #   return unless self.class.schema
-    #   result = self.class.schema.call(data)
-    #   raise Invalid.new(result.errors.to_h) if result.failure?
-    # end
+    class << self
+      def attribute (name, type = Types.string)
+        state_class.attribute(name, type)
+        after_initialize { fields[name] = Field.new(self) { self[name] } }
+        define_method(name) { self[name] }
+      end
+
+      def state_class
+        @state_class ||= Class.new(Dry::Struct)
+      end
+    end
   end
 end
