@@ -6,10 +6,13 @@ module Shopping
       end
     end
 
+    def self.reset
+      @carts = {}
+    end
+
     def self.get (id = uuid)
       carts[id] ||= Match.on(id) do
         type(String) { Cart.new(id) }
-        type(NilClass) { Cart.new(uuid) }
         default { Cart.new(uuid) }
       end
     end
@@ -57,6 +60,10 @@ module Shopping
 
     def empty
       @items = []
+    end
+
+    def find (product_id:)
+      @items.find { |item| item.product_id == product_id }
     end
 
     def quantity_of (product)

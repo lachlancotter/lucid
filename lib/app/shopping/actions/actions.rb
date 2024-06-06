@@ -13,17 +13,24 @@ module Shopping
 
     perform Cart::AddProduct do |cmd|
       product = Product.find(cmd.product_id)
-      cart    = Cart.get(cmd.cart_id)
+      cart    = @session.cart
       cart.add_product(product)
-      # @session[:cart_id] = cmd.cart_id
-      notify_item_changed(cart, product)
+      Cart::ItemAdded.notify({
+         product_id: product.id,
+         cart_id:    cart.id,
+         quantity:   cart.quantity_of(product)
+      })
     end
 
     perform Cart::RemoveProduct do |cmd|
       product = Product.find(cmd.product_id)
-      cart    = Cart.get(cmd.cart_id)
+      cart    = @session.cart
       cart.remove_product(product)
-      notify_item_changed(cart, product)
+      Cart::ItemRemoved.notify({
+         product_id: product.id,
+         cart_id:    cart.id,
+         quantity:   cart.quantity_of(product)
+      })
     end
 
     perform Cart::Empty do |cmd|
@@ -31,7 +38,7 @@ module Shopping
     end
 
     perform Order::SetShippingAddress do |cmd|
-      cart                  = Cart.get(cmd.cart_id)
+      cart                  = @session.cart
       cart.shipping_address = cmd.address
       cart.save
       Order::ShippingAddressUpdated.notify(cmd.params)
@@ -41,12 +48,5 @@ module Shopping
       Order::Placed.notify(cart_id: cmd.cart_id)
     end
 
-    def notify_item_changed (cart, product)
-      Cart::ItemChanged.notify({
-         product_id: product.id,
-         cart_id:    cart.id,
-         quantity:   cart.quantity_of(product)
-      })
-    end
   end
 end

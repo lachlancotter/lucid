@@ -5,7 +5,8 @@ module Shopping
     #   product_id.type(:integer)
     # end
 
-    path :category_slug, :product_id
+    path :category_slug
+    path :product_id
 
     # path :category_slug, Types::Nominal::String.optional
     # path :product_id, Types::Params::Integer.optional

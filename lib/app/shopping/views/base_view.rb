@@ -5,7 +5,7 @@ module Shopping
     #    State
     # ===================================================== #
 
-    path :page, default: "store"
+    path :page, Types.string.default("store".freeze)
     visit Product::Link, page: "store"
     visit Checkout::Link, page: "checkout"
     visit Admin::Link, page: "admin"
@@ -37,14 +37,14 @@ module Shopping
         head {
           link_stylesheet("/style.css")
           script(HTMX::LIB)
-          # script(
-          #   <<~JS
-          #     document.addEventListener("htmx:afterRequest", function (event) {
-          #       console.log("afterRequest");
-          #       console.log(event.detail.xhr.response);
-          #     });
-          #   JS
-          # )
+          script(
+            <<~JS
+              document.addEventListener("htmx:afterRequest", function (event) {
+                console.log("afterRequest");
+                console.log(event.detail.xhr.response);
+              });
+            JS
+          )
         }
         body(HTMX.boost) {
           fragment :header

@@ -1,7 +1,7 @@
 module Shopping
   class Product
     class ListView < Lucid::Component::Base
-      prop :products
+      prop :products, Types.array
 
       element do |products|
         div(class: "product-list") {

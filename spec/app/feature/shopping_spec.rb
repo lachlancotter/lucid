@@ -3,6 +3,7 @@ module Shopping
   describe "Shopping", type: :feature do
 
     before do
+      Cart.reset
       visit "/"
     end
 

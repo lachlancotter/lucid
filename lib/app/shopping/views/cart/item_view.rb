@@ -1,19 +1,19 @@
 module Shopping
   class Cart
     class ItemView < Lucid::Component::Base
-      prop :cart
-      prop :item
+      prop :cart, Types.Instance(Cart)
+      prop :item, Types.Instance(CartItem)
       key { props.item.product_id }
 
       on(Cart::ItemChanged) do |event|
         element.replace if event[:product_id] == props.item.product_id
       end
 
-      element :tr do |item|
-        td item.product_name
-        td item.quantity
-        td Format.currency(item.price)
-        td {
+      element :div do |item|
+        p item.product_name
+        p item.quantity
+        p Format.currency(item.price)
+        p {
           button_to inc, "+"
           button_to dec, "-"
         }

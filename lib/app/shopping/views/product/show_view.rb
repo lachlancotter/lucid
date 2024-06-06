@@ -1,7 +1,7 @@
 module Shopping
   class Product
     class ShowView < Lucid::Component::Base
-      prop :product
+      prop :product, Types.Instance(Product).optional
       use :cart, from: :session
 
       element do |product, cart|

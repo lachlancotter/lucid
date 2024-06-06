@@ -1,11 +1,11 @@
 module Shopping
   class LoginView < Lucid::Component::Base
-    param :show, default: "false"
-    visit Session::New, show: "true"
-    on(Session::Authenticated) { update(show: "false") }
+    param :show, Types.bool.default(false)
+    visit Session::New, show: true
+    on(Session::Authenticated) { update(show: false) }
 
     element do |show|
-      if on(show)
+      if show
         div(class: "login") {
           div(class: "dialog") {
             h2 "Login"
@@ -17,10 +17,6 @@ module Shopping
           }
         }
       end
-    end
-
-    def on (arg)
-      arg == "true"
     end
   end
 end
