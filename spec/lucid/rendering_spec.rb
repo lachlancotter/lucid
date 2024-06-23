@@ -5,7 +5,7 @@ module Lucid
         it "renders" do
           view = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-          end.new
+          end.new({})
           view.element.replace
           expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
@@ -16,7 +16,7 @@ module Lucid
           it "is omitted" do
             view = Class.new(Component::Base) do
               element { h1 { text "Hello, World" } }
-            end.new
+            end.new({})
             view.element.replace
             expect(view.render_full).to eq("<h1>Hello, World</h1>")
           end
@@ -31,7 +31,7 @@ module Lucid
                 }
               end
               element { subview(:foo) }
-            end.new
+            end.new({})
             view.element.replace
             expect(view.render_full).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
           end
@@ -45,7 +45,7 @@ module Lucid
             element do |name|
               h1 { text "Hello, #{name}" }
             end
-          end.new
+          end.new({})
           expect(view.template.render("World")).to match(/<h1>Hello, World<\/h1>/)
         end
       end
@@ -60,7 +60,7 @@ module Lucid
             def name
               "World"
             end
-          end.new
+          end.new({})
           expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
       end
@@ -75,7 +75,7 @@ module Lucid
             def label
               "World"
             end
-          end.new
+          end.new({})
           expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
         end
       end

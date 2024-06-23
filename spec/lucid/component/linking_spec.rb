@@ -14,7 +14,7 @@ module Lucid
               param :foo
               visit link_class, :foo
             end
-            app        = app_class.new
+            app        = app_class.new({})
             app.visit(link_class.new(foo: "bar"))
             expect(app.deep_state).to eq({ foo: "bar" })
           end
@@ -25,7 +25,7 @@ module Lucid
               param :foo
               visit link_class, :foo
             end
-            app        = app_class.new
+            app        = app_class.new({})
             app.visit(link_class.new(foo: "bar")).to_h
             expect(app.deep_state).to eq({ foo: "bar" })
           end
@@ -35,7 +35,7 @@ module Lucid
               param :foo
               visit Link, foo: "bar"
             end
-            app       = app_class.new
+            app       = app_class.new({})
             app.visit(Link.new)
             expect(app.deep_state).to eq({ foo: "bar" })
           end
@@ -50,7 +50,7 @@ module Lucid
               watch(:foo) { called = true }
               visit link_class, :foo
             end
-            app        = app_class.new
+            app        = app_class.new({})
             app.visit(link_class.new(foo: "bar"))
             expect(called).to be(true)
           end
@@ -74,7 +74,7 @@ module Lucid
                 }
               end
             end
-            app        = app_class.new
+            app        = app_class.new({})
             app.visit(link_class.new(foo: "bar", baz: "qux"))
             expect(app.deep_state).to eq({ foo: "bar", bar: { baz: "qux" } })
           end

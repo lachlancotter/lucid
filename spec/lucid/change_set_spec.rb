@@ -18,7 +18,7 @@ module Lucid
           nest(:item_views) { props.item_class.enum([]) { |i| { foo: i } } }
         end
       end
-      let(:view) { base_class.new { { item_class: item_class } } }
+      let(:view) { base_class.new({}, item_class: item_class) }
 
       context "one change" do
         it "omits the OOB attribute" do
@@ -96,7 +96,7 @@ module Lucid
               key { "foo" }
             end.enum([])
           end
-        end.new
+        end.new({})
       end
 
       it "sets a replace action" do
@@ -135,7 +135,7 @@ module Lucid
           nest :item_views do |subview_class|
             subview_class.enum([]) { |i| { foo: i } }
           end
-        end.new { { subview_class: subview_class } }
+        end.new({}, subview_class: subview_class)
       end
       let(:subview_class) do
         Class.new(Component::Base) do
@@ -182,7 +182,7 @@ module Lucid
           prop :subview_class, Types.Instance(Class)
           element { h1 { text "Hello, World" } }
           nest(:item_views) { props.subview_class.enum([]) { |i| { foo: i } } }
-        end.new { { subview_class: subview_class } }
+        end.new({}, subview_class: subview_class)
       end
       let(:subview_class) do
         Class.new(Component::Base) do
@@ -227,7 +227,7 @@ module Lucid
       it "is false when created" do
         view = Class.new(Component::Base) do
           param :foo
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         expect(view.changes.any?).to be(false)
       end
 
@@ -235,7 +235,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo
           element { |foo| h1 { text foo } }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         view.update(foo: "bar")
         expect(view.changes.any?).to be(true)
       end
@@ -245,7 +245,7 @@ module Lucid
           param :foo
           let(:bar) { |foo| foo.upcase }
           element { |bar| h1 { text bar } }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         view.update(foo: "bar")
         expect(view.changes.any?).to be(true)
       end
@@ -256,12 +256,10 @@ module Lucid
           nest :bar do
             Class.new(Component::Base) {
               use :foo
-              element do |foo|
-                h1 { text foo }
-              end
+              element { |foo| h1 { text foo } }
             }
           end
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         view.update(foo: "bar")
         expect(view.bar.changes.any?).to be(true)
       end
@@ -270,7 +268,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo
           element { h1 { "Test" } }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         view.update(foo: "bar")
         expect(view.element.any?).to be(false)
       end
@@ -287,7 +285,7 @@ module Lucid
             element do
               h1 { text "Hello, World" }
             end
-          end.new
+          end.new({})
           expect(view.changes).to be_empty
         end
       end
@@ -297,7 +295,7 @@ module Lucid
           view = Class.new(Component::Base) do
             param :foo
             element { |foo| h1 { text foo } }
-          end.new
+          end.new({})
           view.update(foo: "bar")
           expect(view.changes.map(&:component)).to eq([view])
         end
@@ -312,7 +310,7 @@ module Lucid
                 element { |baz| h1 { text baz } }
               }
             end
-          end.new
+          end.new({})
           view.bar.update(baz: "qux")
           expect(view.changes.map(&:component)).to eq([view.bar])
         end
@@ -340,7 +338,7 @@ module Lucid
               subview :a
               subview :b
             end
-          end.new
+          end.new({})
           view.a.update(foo: "baz")
           view.b.update(bar: "qux")
           expect(view.changes.map(&:component)).not_to include(view)

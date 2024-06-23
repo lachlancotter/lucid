@@ -4,7 +4,7 @@ module Lucid
   describe Template do
     context "static" do
       it "renders with Papercraft" do
-        view     = Class.new(Component::Base).new
+        view     = Class.new(Component::Base).new({})
         template = Template.new do
           div { text "Hello, World" }
         end.bind(view)
@@ -19,7 +19,7 @@ module Lucid
             script(src: "https://example.com/script.js")
           }
         end
-      end.new
+      end.new({})
       view.element.replace
       expect(view.render_full).to match(
          '<head><script src="https://example.com/script.js"></script></head>'
@@ -40,7 +40,7 @@ module Lucid
       it "renders the state" do
         view = Class.new(Component::Base) do
           param :name
-        end.new(name: "World")
+        end.new({ name: "World" })
 
         template = Template.new do
           div { text "Hello, #{state[:name]}" }

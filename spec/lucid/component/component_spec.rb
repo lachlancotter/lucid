@@ -29,7 +29,7 @@ module Lucid
           def render
             "Hello, World"
           end
-        end.new
+        end.new({})
         expect(view.render).to eq("Hello, World")
       end
     end

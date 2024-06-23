@@ -140,13 +140,11 @@ module Lucid
       private
 
       def build (state)
-        base_view_class.new(state) do
-          {}.tap do |config|
-            config[:app_root] = @config[:app_root]
-            config[:session]  = @config[:session]
-            config[:path]     = Path.new
-          end
-        end
+        base_view_class.new(state, {
+           app_root: app_root,
+           session:  @config[:session],
+           path:     Path.new
+        })
       end
 
       def command_bus

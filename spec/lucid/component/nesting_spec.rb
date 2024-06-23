@@ -16,7 +16,8 @@ module Lucid
               end
             end
           end
-          view       = view_class.new(foo: { bar: "baz" }, val: "a")
+          state      = { foo: { bar: "baz" }, val: "a" }
+          view       = view_class.new(state, prop: "prop")
 
           expect(view.foo).to be_a(class_a)
           expect(view.foo.state.to_h).to eq(bar: "baz")
@@ -62,7 +63,7 @@ module Lucid
               end
             end
           end
-          view        = base_class.new(val: "a")
+          view        = base_class.new({ val: "a" }, ignore: "this")
           nested_view = view.foo
           view.update(val: "b")
           expect(view.foo).to be_a(bar_class)
@@ -76,7 +77,7 @@ module Lucid
             nest :foo do
               foo_class.enum(%w[english spanish]) { |e| { bar: e } }
             end
-          end.new(val: "a")
+          end.new({ val: "a" })
 
           expect(view.foo[0]).to be_a(foo_class)
           expect(view.foo[0].props.bar).to eq("english")
@@ -100,7 +101,7 @@ module Lucid
         it "nests a child component" do
           view = Class.new(Component::Base) do
             nest(:foo) { NamedNestedComponent[index: 0] }
-          end.new
+          end.new({})
           expect(view.foo).to be_a(Component::Base)
         end
 
@@ -111,7 +112,7 @@ module Lucid
                 { bar: e, index: i }
               end
             end
-          end.new { { app_root: "/app/root" } }
+          end.new({}, app_root: "/app/root")
 
           expect(view.foo[0]).to be_a(Component::Base)
           expect(view.foo[0].props.bar).to eq("english")
@@ -137,7 +138,7 @@ module Lucid
         base   = Class.new(Component::Base) do
           slot :nested
           element { div(class: "wrapper") { subview(:nested) } }
-        end.new { { nested: nested } }
+        end.new({}, nested: nested)
         expect(base.render_full).to eq('<div class="wrapper"><div id="nested"><p>Nested content</p></div></div>')
       end
     end

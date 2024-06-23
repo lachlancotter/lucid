@@ -44,13 +44,13 @@ module Lucid
       #
       prop :collection_member, Types.bool.default(false)
 
-      def self.build (buffer, &config)
-        new(buffer, &config)
-      end
+      # def self.build (buffer, &config)
+      #   new(buffer, &config)
+      # end
 
-      def initialize (params = {}, &config)
-        init_state(params)
-        configure(&config)
+      def initialize (state, **props)
+        initialize_state(state)
+        initialize_props(props)
         run_callbacks(:after_initialize)
       end
 

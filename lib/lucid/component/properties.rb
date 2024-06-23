@@ -12,9 +12,8 @@ module Lucid
 
       attr_reader :props
 
-      def configure (&block)
-        props_hash = block_given? ? Check[block.call].hash.value : {}
-        @props = self.class.props_class.new(props_hash)
+      def initialize_props (props_hash)
+        @props = self.class.props_class.new(Check[props_hash].hash.value)
       end
 
       private

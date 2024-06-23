@@ -9,7 +9,7 @@ module Lucid
               use :foo
             }
           end
-        end.new
+        end.new({})
         expect(view.child.foo).to eq("bar")
       end
 
@@ -25,7 +25,7 @@ module Lucid
               end
             }
           end
-        end.new
+        end.new({})
         expect(view.child.grandchild.foo).to eq("bar")
       end
 
@@ -33,7 +33,7 @@ module Lucid
         session_class = Class.new(Lucid::Session) { attribute :foo }
         session       = session_class.new(foo: "bar")
         view_class    = Class.new(Component::Base) { use :foo, from: :session }
-        view          = view_class.new { { session: session } }
+        view          = view_class.new({}, session: session)
         expect(view.foo).to eq("bar")
       end
 
@@ -57,7 +57,7 @@ module Lucid
               use :foo
             }
           end
-        end.new { { foo: "bar" } }
+        end.new({}, foo: "bar")
         expect(view.child.foo).to eq("bar")
       end
 
@@ -74,7 +74,7 @@ module Lucid
               end
             }
           end
-        end.new
+        end.new({})
         expect(view.child.grandchild.foo).to eq("baz")
       end
 
@@ -82,7 +82,7 @@ module Lucid
         view = Class.new(Component::Base) do
           use :foo
         end
-        expect { view.new }.to raise_error(Fields::NoSuchField)
+        expect { view.new({}) }.to raise_error(Fields::NoSuchField)
       end
     end
 

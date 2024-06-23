@@ -33,7 +33,7 @@ module Lucid
         attr_reader :component_class
 
         def build (reader, parent, name)
-          @component_class.new(reader) { build_props(parent, name) }
+          @component_class.new(reader, **build_props(parent, name))
         end
 
         #
@@ -42,7 +42,7 @@ module Lucid
         #
         def update_component (component)
           custom_props.tap do |props|
-            component.configure { component.props.to_h.merge(props) }
+            component.initialize_props(component.props.to_h.merge(props))
             props.keys.each { |key| component.field(key).invalidate if component.field?(key) }
           end
         end
@@ -94,7 +94,7 @@ module Lucid
         end
 
         def build_item (parent, name, item, index)
-          @component_class.new({}) { build_props(parent, name, item, index) }
+          @component_class.new({}, **build_props(parent, name, item, index))
         end
 
         private

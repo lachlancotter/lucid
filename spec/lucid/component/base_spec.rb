@@ -2,12 +2,12 @@ module Lucid
   module Component
     describe Base do
 
-      describe ".build" do
+      describe ".new" do
         context "defaults" do
           it "initializes default attribute values" do
             buffer          = State::Reader.new("/")
             component_class = Class.new(Component::Base) { param :foo, Types.string.default("bar") }
-            component       = component_class.build(buffer)
+            component       = component_class.new(buffer)
             expect(component.state.to_h).to eq(foo: "bar")
           end
         end
@@ -20,7 +20,7 @@ module Lucid
               path :bar
               param :baz
             end
-            component       = component_class.build(buffer)
+            component       = component_class.new(buffer)
             expect(component.state.to_h).to eq(foo: "foo", bar: "bar", baz: "qux")
           end
         end
@@ -36,14 +36,13 @@ module Lucid
                 }
               end
             end
-            component       = component_class.build(buffer)
+            component       = component_class.new(buffer)
             expect(component.state.to_h).to eq(foo: "foo")
             expect(component.deep_state).to eq(foo: "foo", sub: { bar: "bar" })
             expect(component.sub.state.to_h).to eq(bar: "bar")
           end
         end
       end
-
 
       describe "#element_id" do
         it "includes the path" do
@@ -54,7 +53,7 @@ module Lucid
               end
             end
           end
-          view       = view_class.new
+          view       = view_class.new({})
           expect(view.foo.bar.element_id).to eq("foo-bar")
         end
       end

@@ -6,13 +6,13 @@ module Lucid
     describe ".path" do
       it "defines path params" do
         component_class = Class.new(Component::Base) { path :foo }
-        instance        = component_class.new(foo: "bar")
+        instance        = component_class.new({ foo: "bar" })
         expect(instance.state.foo).to eq("bar")
       end
 
       it "accepts a type" do
         component_class = Class.new(Component::Base) { path :count, Types.integer }
-        component       = component_class.new(count: "1")
+        component       = component_class.new({ count: "1" })
         expect(component.state.count).to eq(1)
       end
 
@@ -26,7 +26,7 @@ module Lucid
     describe ".param" do
       it "defines query params" do
         component_class = Class.new(Component::Base) { param :foo }
-        instance        = component_class.new(foo: "bar")
+        instance        = component_class.new({ foo: "bar" })
         expect(instance.state.foo).to eq("bar")
       end
 
@@ -40,7 +40,7 @@ module Lucid
     describe "#href" do
       context "no path" do
         it "is the empty path" do
-          view = Class.new(Component::Base) {}.new
+          view = Class.new(Component::Base) {}.new({})
           expect(view.url.to_s).to eq("/")
         end
       end
@@ -48,7 +48,7 @@ module Lucid
       context "single param in path" do
         it "includes the param" do
           component_class = Class.new(Component::Base) { path :foo }
-          instance        = component_class.new(foo: "bar")
+          instance        = component_class.new({ foo: "bar" })
           expect(instance.url.to_s).to eq("/bar")
         end
       end
@@ -58,7 +58,7 @@ module Lucid
           view = Class.new(Component::Base) do
             path :foo, Types.integer.default(1)
             path :bar, Types.integer.default(2)
-          end.new
+          end.new({})
           expect(view.url.to_s).to eq("/1/2")
         end
       end
@@ -68,7 +68,7 @@ module Lucid
           view = Class.new(Component::Base) do
             path "resource"
             path :id, Types.integer.default(1)
-          end.new
+          end.new({})
           expect(view.url.to_s).to eq("/resource/1")
         end
       end
@@ -83,7 +83,7 @@ module Lucid
               path :bar, Types.string.default("nested".freeze)
             }
           end
-        end.new
+        end.new({})
         expect(top.url.to_s).to eq("/top/nested")
       end
     end
@@ -102,7 +102,7 @@ module Lucid
               param :quox, Types.string.default("quox")
             }
           end
-        end.new
+        end.new({})
         expect(top.url.to_s).to eq("/top/nested?baz[quox]=quox")
       end
     end
@@ -122,7 +122,7 @@ module Lucid
               param :baz, Types.string.default("baz".freeze)
             }
           end
-        end.new
+        end.new({})
         expect(top.url.to_s).to eq("/top/nested?baz[baz]=baz")
       end
     end

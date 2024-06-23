@@ -4,7 +4,7 @@ module Lucid
       it "evaluates the block" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
-        end.new
+        end.new({})
         expect(view.foo).to eq("bar")
       end
 
@@ -12,7 +12,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo
           let(:bar) { |foo| foo.upcase }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         expect(view.bar).to eq("FOO")
       end
 
@@ -21,7 +21,7 @@ module Lucid
           param :foo
           param :baz
           let(:bar) { |foo, baz| foo + baz }
-        end.new(foo: "foo", baz: "baz")
+        end.new({ foo: "foo", baz: "baz" })
         expect(view.bar).to eq("foobaz")
       end
 
@@ -29,7 +29,7 @@ module Lucid
         view = Class.new(Component::Base) do
           prop :foo
           let(:bar) { |foo| foo.upcase }
-        end.new { { foo: "foo" } }
+        end.new({}, foo: "foo")
         expect(view.bar).to eq("FOO")
       end
 
@@ -37,8 +37,8 @@ module Lucid
         view_class = Class.new(Component::Base) do
           let(:foo) { rand }
         end
-        view1      = view_class.new
-        view2      = view_class.new
+        view1      = view_class.new({})
+        view2      = view_class.new({})
         expect(view1.foo).to eq(view1.foo)
         expect(view2.foo).to eq(view2.foo)
         expect(view1.foo).not_to eq(view2.foo)
@@ -48,7 +48,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo
           let(:bar) { |foo| foo.upcase }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         expect(view.bar).to eq("FOO")
         view.update(foo: "baz")
         expect(view.bar).to eq("BAZ")
@@ -59,7 +59,7 @@ module Lucid
           param :foo
           let(:bar) { |foo| foo.upcase }
           let(:baz) { |bar| bar }
-        end.new(foo: "foo")
+        end.new({ foo: "foo" })
         expect(view.baz).to eq("FOO")
         view.update(foo: "baz")
         expect(view.baz).to eq("BAZ")
@@ -72,7 +72,7 @@ module Lucid
         view = Class.new(Component::Base) do
           param :foo, Types.string.default("")
           watch(:foo) { bar = "foo" }
-        end.new
+        end.new({})
         view.update(foo: "foo")
         expect(bar).to eq("foo")
       end
@@ -83,7 +83,7 @@ module Lucid
           param :foo, Types.string.default("")
           param :bar, Types.string.default("")
           watch(:foo, :bar) { baz += 1 }
-        end.new
+        end.new({})
         view.update(foo: "foo")
         view.update(bar: "bar")
         expect(baz).to eq(2)
@@ -95,7 +95,7 @@ module Lucid
           param :foo, Types.string.default("")
           let(:bar) { |foo| foo.upcase }
           watch(:bar) { calls += 1 }
-        end.new
+        end.new({})
         expect(view.state.foo).to eq("")
         expect(view.bar).to eq("")
         view.update(foo: "foo")

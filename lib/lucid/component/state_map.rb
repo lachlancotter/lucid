@@ -8,7 +8,7 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      private def init_state (data)
+      private def initialize_state (data)
         Match.on(data) do
           type(State::Reader) { data }
           type(State::HashReader) { data }

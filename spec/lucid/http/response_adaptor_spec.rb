@@ -18,7 +18,7 @@ module Lucid
             component = Class.new(Component::Base) do
               path "foo"
               element(:html) { body { text "foo" } }
-            end.new
+            end.new({})
             component.element.replace
             adaptor.send_delta(component, htmx: true)
             expect(adaptor.status).to eq(200)

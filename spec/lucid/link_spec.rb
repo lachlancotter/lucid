@@ -22,7 +22,7 @@ module Lucid
           def path
             Path.new("/a/b/c")
           end
-        end.new
+        end.new({})
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
         HttpMessage.with_app_state(component) do
           expect(link.query_params).to include({ "scope" => "/a/b/c" })
