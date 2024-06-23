@@ -1,10 +1,5 @@
 module Shopping
   class StoreView < Lucid::Component::Base
-    # map "/:category_slug/:product_id" do |category_slug, product_id|
-    #   category_slug.type(:string).enum(Category.slugs)
-    #   product_id.type(:integer)
-    # end
-
     path :category_slug, Types.string.optional.default(nil)
     path :product_id, Types.integer.optional.default(nil)
 

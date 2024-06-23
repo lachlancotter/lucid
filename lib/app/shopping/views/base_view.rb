@@ -1,18 +1,11 @@
 module Shopping
   class BaseView < Lucid::Component::Base
-
-    # ===================================================== #
-    #    State
-    # ===================================================== #
-
     path :page, Types.string.default("store".freeze)
+
+    on(Lucid::Guard::Denied) { update(page: "denied") }
     visit Product::Link, page: "store"
     visit Checkout::Link, page: "checkout"
     visit Admin::Link, page: "admin"
-
-    # ===================================================== #
-    #    Nests
-    # ===================================================== #
 
     nest :content do |page|
       Match.on(page) do
@@ -25,8 +18,6 @@ module Shopping
 
     nest(:status_nav) { StatusNav }
     nest(:login) { LoginView }
-
-    on(Lucid::Guard::Denied) { update(page: "denied") }
 
     # ===================================================== #
     #    Template

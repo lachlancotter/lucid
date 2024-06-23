@@ -1,6 +1,7 @@
 module Shopping
   class LoginView < Lucid::Component::Base
     param :show, Types.bool.default(false)
+
     visit Session::New, show: true
     on(Session::Authenticated) { update(show: false) }
     echo(Session::Authenticate, as: :credentials) { { email: "" } }

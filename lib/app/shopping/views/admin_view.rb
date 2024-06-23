@@ -3,9 +3,11 @@ module Shopping
     use :user_email, from: :session
 
     guard do |user_email|
-      Match.on(user_email) do
-        value("test.user@lucid.dev") { Lucid::Permit }
-        default { Lucid::Deny }
+      case user_email
+      when "test.user@lucid.dev"
+        Lucid::Permit
+      else
+        Lucid::Deny
       end
     end
 

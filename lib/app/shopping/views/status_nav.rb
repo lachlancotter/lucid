@@ -1,7 +1,7 @@
 module Shopping
   class StatusNav < Lucid::Component::Base
-    let(:username) { |session| session[:user_email] || "Guest" }
-    on(Session::Authenticated) { element.replace }
+    use :user_email, from: :session
+    let(:username) { |user_email| user_email || "Guest" }
 
     element do |username|
       div(class: "status-nav") {
