@@ -29,7 +29,7 @@ module Lucid
       #
       # Encodes component state as a URL.
       #
-      def href
+      def url
         State::Writer.new(deep_state).tap do |buffer|
           buffer.write_component(self)
         end.to_s
@@ -94,12 +94,15 @@ module Lucid
         def build_state (reader)
           Check[reader].type(State::Reader, State::HashReader)
           data = reader.read(state_map)
-          state_class.new(data).tap do |state|
-            extra_keys = data.keys - state.to_h.keys
-            unless extra_keys.empty?
-              puts "WARNING: Extra keys in state: #{extra_keys.inspect}. Ignoring."
-            end
-          end
+          state_class.new(data)
+        rescue Dry::Struct::Error => e
+          raise Invalid.new(self, data, e.message)
+        end
+      end
+
+      class Invalid < ArgumentError
+        def initialize (component, data, message)
+          super("Invalid state for #{component}: #{data.inspect}. #{message}")
         end
       end
     end

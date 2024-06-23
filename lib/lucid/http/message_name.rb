@@ -37,7 +37,7 @@ module Lucid
         const_get(class_name).tap do |klass|
           raise "Message class #{class_name} not found" unless klass
           raise "Message class #{class_name} is not a link" unless
-             klass.ancestors.include?(Lucid::Message)
+             klass.ancestors.include?(Lucid::HttpMessage)
         end
       end
     end

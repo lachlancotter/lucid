@@ -22,14 +22,14 @@ module Lucid
           if htmx
             send_htmx(component)
           else
-            @response.redirect(component.href, 303)
+            @response.redirect(component.url, 303)
           end
         end
       end
 
       def send_state (component)
         tap do
-          self.location = component.href
+          self.location = component.url
           self.body     = HtmlBeautifier.beautify(component.render_full)
         end
       end
@@ -47,11 +47,11 @@ module Lucid
         component.changes.tap do |changes|
           if changes.empty?
             @response.status                 = 200
-            @response.headers["HX-Push-Url"] = component.href
+            @response.headers["HX-Push-Url"] = component.url
             @response.headers["HX-Reswap"]   = "none"
           else
             @response.status                 = 200
-            @response.headers["HX-Push-Url"] = component.href
+            @response.headers["HX-Push-Url"] = component.url
             @response.headers["HX-Retarget"] = changes.primary_target
             @response.headers["HX-Reswap"]   = changes.primary_swap
             @response.body                   = HtmlBeautifier.beautify(changes.to_s)

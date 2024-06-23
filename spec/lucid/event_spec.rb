@@ -7,7 +7,9 @@ module Lucid
         app         = double("app")
         bus         = EventBus.new(app)
         event_class = Class.new(Event) do
-          attribute :foo
+          validate do
+            required(:foo).filled(:string)
+          end
         end
         expect(bus).to receive(:notify) do |event|
           expect(event).to be_a(event_class)

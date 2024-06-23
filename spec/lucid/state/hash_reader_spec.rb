@@ -1,12 +1,9 @@
-require "lucid/state/map"
-require "lucid/state/reader"
-
 module Lucid
   module State
-    describe Reader do
+    describe HashReader do
       context "empty query" do
         it "returns an empty hash" do
-          reader = Reader.new("/")
+          reader = HashReader.new({})
           map    = Map.build {}
           data   = reader.read(map)
           expect(data).to eq({})
@@ -15,7 +12,7 @@ module Lucid
 
       context "single path component" do
         it "sets the hash key" do
-          reader = Reader.new("/foo")
+          reader = HashReader.new({ foo: "foo" })
           map    = Map.build { path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -24,7 +21,7 @@ module Lucid
 
       context "multiple path components" do
         it "sets the hash keys" do
-          reader = Reader.new("/foo/bar")
+          reader = HashReader.new({ foo: "foo", bar: "bar" })
           map    = Map.build { path :foo, :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "bar")
@@ -33,7 +30,7 @@ module Lucid
 
       context "literal path components" do
         it "skips literals" do
-          reader = Reader.new("/lit/foo")
+          reader = HashReader.new(foo: "foo")
           map    = Map.build { path "lit", :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -42,7 +39,7 @@ module Lucid
 
       context "single query param" do
         it "sets the hash key" do
-          reader = Reader.new("?foo=bar")
+          reader = HashReader.new(foo: "bar")
           map    = Map.build { query :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar")
@@ -51,7 +48,7 @@ module Lucid
 
       context "multiple query params" do
         it "sets the hash keys" do
-          reader = Reader.new("?foo=bar&baz=qux")
+          reader = HashReader.new(foo: "bar", baz: "qux")
           map    = Map.build { query :foo, :baz }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar", baz: "qux")
@@ -60,7 +57,7 @@ module Lucid
 
       context "mixed parameter types" do
         it "reads path and query params" do
-          reader = Reader.new("/foo?bar=baz")
+          reader = HashReader.new(foo: "foo", bar: "baz")
           map    = Map.build { path :foo; query :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "baz")
@@ -69,7 +66,7 @@ module Lucid
 
       context "nested query params" do
         it "builds the nested structure" do
-          reader = Reader.new("?foo[bar]=baz")
+          reader = HashReader.new(foo: { bar: "baz" })
           map    = Map.build { query :foo }
           nested = Map.build { query :bar }
           data   = reader.seek(0, :foo).read(nested)
@@ -79,7 +76,7 @@ module Lucid
 
       context "multiple nested maps" do
         it "builds the nested structure" do
-          reader   = Reader.new("?foo=1&bar[baz]=2&qux[duck]=3")
+          reader   = HashReader.new({ foo: "1", bar: { baz: "2" }, qux: { duck: "3" } })
           bar_map  = Map.build { query :baz }
           qux_map  = Map.build { query :duck }
           top_map  = Map.build { query :foo }
@@ -90,22 +87,9 @@ module Lucid
         end
       end
 
-      context "multiple nested path maps" do
-        it "maps segments from the first nest" do
-          reader  = Reader.new("/foo/bar?n2[quux]=corge")
-          top     = Map.build { path :foo }
-          n1      = Map.build { path :bar }
-          n2      = Map.build { path :quux }
-          n1_data = reader.seek(top.path_count, :bar).read(n1)
-          n2_data = reader.seek(top.path_count, :n2).read(n2.default)
-          expect(n1_data).to eq(bar: "bar")
-          expect(n2_data).to eq(quux: "corge")
-        end
-      end
-
       context "extra keys" do
         it "reads only the declared keys" do
-          reader = Reader.new("?foo=1&bar=2")
+          reader = HashReader.new(foo: "1", bar: "2")
           map    = Map.build { param :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "1")

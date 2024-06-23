@@ -160,18 +160,24 @@ module Lucid
         @response.send_error(e)
       end
 
-      def validate_message! (message)
-        if message.valid?
-          yield message
+      def validate_message! (message_params)
+        if message_params.valid?
+          yield message_params.to_message
         else
-          Validation::Failed.notify(message: message)
-          Logger.error(message, message.errors)
+          Logger.error(
+             message_params.message_type,
+             message_params.errors
+          )
+          Validation::Failed.notify(
+             message_type:   message_params.message_type,
+             message_params: message_params.message_params
+          )
         end
       end
 
       def with_context (&block)
         Event.with_bus(event_bus) do
-          Message.with_context(self) do
+          HttpMessage.with_app_state(self) do
             block.call
           end
         end

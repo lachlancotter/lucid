@@ -5,7 +5,7 @@ module Lucid
         context "without HTMX" do
           it "sends a redirect" do
             adaptor   = ResponseAdaptor.new(Rack::Response.new)
-            component = double(href: "/foo")
+            component = double(url: "/foo")
             adaptor.send_delta(component, htmx: false)
             expect(adaptor.status).to eq(303)
             expect(adaptor.location).to eq("/foo")

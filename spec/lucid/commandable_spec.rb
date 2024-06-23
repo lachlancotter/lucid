@@ -17,9 +17,7 @@ module Lucid
           called = false
           bus = Class.new do
             include Commandable
-            perform Command do |command|
-              called = true
-            end
+            perform(Command) { |cmd| called = true }
           end.new
           bus.dispatch(Command.new)
           expect(called).to be(true)
@@ -31,12 +29,8 @@ module Lucid
           call_count = 0
           bus = Class.new do
             include Commandable
-            perform Command do |command|
-              call_count += 1
-            end
-            perform Command do |command|
-              call_count += 1
-            end
+            perform(Command) { |cmd| call_count += 1 }
+            perform(Command) { |cmd| call_count += 2 }
           end.new
           bus.dispatch(Command.new)
           expect(call_count).to eq(1)

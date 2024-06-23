@@ -6,9 +6,10 @@ module Lucid
     # Build an HTML form to compose a Message.
     #
     class Form
-      def initialize (message, &block)
-        @message = message
-        @block   = block
+      def initialize (message_params, **opts, &block)
+        @message_params = message_params
+        @options        = opts
+        @block          = block
       end
 
       def to_s
@@ -16,48 +17,32 @@ module Lucid
       end
 
       def template
-        Papercraft.html do |message|
-          form action: message.href, method: message.http_method do
-            emit_yield Builder.new(self, message.params, message.errors, Path.new)
+        Papercraft.html do |message_params|
+          form action: message_params.form_action, method: message_params.http_method do
+            emit_yield Builder.new(self, message_params, Path.new)
           end
-        end.apply(@message, &@block)
+        end.apply(@message_params, &@block)
       end
 
       class Builder
         include Rendering
 
-        def initialize (renderer, data, errors, path = Path.new)
-          @renderer = renderer
-          @data     = Check[data].hash.value
-          @errors   = Check[errors].hash.value
-          @path     = path
+        def initialize (renderer, message_params, path = Path.new)
+          @renderer       = renderer
+          @message_params = Types.Instance(MessageParams)[message_params]
+          @path           = Types.Instance(Path)[path]
         end
-
-        attr_reader :data, :errors
 
         def emit (template)
           @renderer.emit(template)
         end
 
-        def struct (name)
+        def scoped (name)
           yield Builder.new(
              @renderer,
-             nested_data(name),
-             nested_errors(name),
+             @message_params,
              @path.concat(name)
           )
-        end
-
-        def nested_data (key)
-          @data.fetch(key, {}).tap do |data|
-            Check[data].hash
-          end
-        end
-
-        def nested_errors (key)
-          @errors.fetch(key, {}).tap do |errors|
-            Check[errors].hash
-          end
         end
 
         def field_id (key)
@@ -75,8 +60,16 @@ module Lucid
         end
 
         def field_value (key)
-          Check[key].type(String, Symbol)
-          @data.fetch(key.to_s, "")
+          @path.concat(key).inject(@message_params.to_h) do |params, entry|
+            params.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
+          end
+        end
+
+        def errors (key)
+          @path.concat(key).inject(@message_params.errors) do |errors, entry|
+            raise KeyError, errors.to_s if errors.is_a?(Array)
+            errors.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
+          end
         end
 
         class << self

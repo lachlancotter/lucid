@@ -41,7 +41,7 @@ module Lucid
       context "no path" do
         it "is the empty path" do
           view = Class.new(Component::Base) {}.new
-          expect(view.href.to_s).to eq("/")
+          expect(view.url.to_s).to eq("/")
         end
       end
 
@@ -49,7 +49,7 @@ module Lucid
         it "includes the param" do
           component_class = Class.new(Component::Base) { path :foo }
           instance        = component_class.new(foo: "bar")
-          expect(instance.href.to_s).to eq("/bar")
+          expect(instance.url.to_s).to eq("/bar")
         end
       end
 
@@ -59,7 +59,7 @@ module Lucid
             path :foo, Types.integer.default(1)
             path :bar, Types.integer.default(2)
           end.new
-          expect(view.href.to_s).to eq("/1/2")
+          expect(view.url.to_s).to eq("/1/2")
         end
       end
 
@@ -69,7 +69,7 @@ module Lucid
             path "resource"
             path :id, Types.integer.default(1)
           end.new
-          expect(view.href.to_s).to eq("/resource/1")
+          expect(view.url.to_s).to eq("/resource/1")
         end
       end
     end
@@ -84,7 +84,7 @@ module Lucid
             }
           end
         end.new
-        expect(top.href.to_s).to eq("/top/nested")
+        expect(top.url.to_s).to eq("/top/nested")
       end
     end
 
@@ -103,7 +103,7 @@ module Lucid
             }
           end
         end.new
-        expect(top.href.to_s).to eq("/top/nested?baz[quox]=quox")
+        expect(top.url.to_s).to eq("/top/nested?baz[quox]=quox")
       end
     end
 
@@ -123,7 +123,7 @@ module Lucid
             }
           end
         end.new
-        expect(top.href.to_s).to eq("/top/nested?baz[baz]=baz")
+        expect(top.url.to_s).to eq("/top/nested?baz[baz]=baz")
       end
     end
 
@@ -144,7 +144,7 @@ module Lucid
           end
           expect do
             component_class.new(count: "foo")
-          end.to raise_error(Dry::Struct::Error)
+          end.to raise_error(Component::StateMap::Invalid)
         end
       end
     end

@@ -4,7 +4,7 @@ module Lucid
       it "includes the link name" do
         component = Class.new(Component::Base).new({})
         link      = Link::Scoped.new(component, :inc, {})
-        Message.with_context(component) do
+        HttpMessage.with_app_state(component) do
           expect(link.query_params).to include("name" => "inc")
         end
       end
@@ -12,7 +12,7 @@ module Lucid
       it "includes the link params" do
         component = Class.new(Component::Base).new({})
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
-        Message.with_context(component) do
+        HttpMessage.with_app_state(component) do
           expect(link.query_params).to include(foo: "bar")
         end
       end
@@ -24,7 +24,7 @@ module Lucid
           end
         end.new
         link      = Link::Scoped.new(component, :inc, { foo: "bar" })
-        Message.with_context(component) do
+        HttpMessage.with_app_state(component) do
           expect(link.query_params).to include({ "scope" => "/a/b/c" })
         end
       end

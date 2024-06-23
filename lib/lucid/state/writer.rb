@@ -57,7 +57,7 @@ module Lucid
       end
 
       def write_message (message)
-        Check[message].type(Message)
+        Check[message].type(HttpMessage)
         @params.base.merge!(message.query_params)
       end
 

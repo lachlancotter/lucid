@@ -3,9 +3,10 @@ require "lucid/html/form"
 module Lucid
   module HTML
     class Button
-      def initialize (command, label)
-        @command = command
+      def initialize (message, label, **opts)
+        @message = message
         @label   = label
+        @options = opts
       end
 
       def to_s
@@ -14,9 +15,19 @@ module Lucid
 
       def template
         button_label = @label
-        Form.new(@command) do |f|
+        message = @message
+        Form.new(form_params) do |f|
           emit f.submit(button_label)
+          message.to_h.each do |key, value|
+            emit f.hidden(key, value: value)
+          end
         end.template
+      end
+
+      private
+
+      def form_params
+        MessageParams.new(@message.class, @message.to_h)
       end
     end
   end

@@ -10,22 +10,27 @@ module Lucid
 
       module ClassMethods
         def echo (message_class, as:, &block)
+          Types.Instance(Class)[message_class]
+          variable = "@#{as}"
+
+          after_initialize do
+            fields[as] = Field.new(self) do
+              if instance_variable_defined?(variable)
+                instance_variable_get(variable)
+              else
+                default_params = instance_exec(&block)
+                MessageParams.new(message_class, default_params)
+              end.tap do |result|
+                Types.Instance(MessageParams)[result]
+              end
+            end
+          end
+
           on Lucid::Validation::Failed do |event|
-            if event.message.is_a?(message_class)
-              instance_variable_set("@invalid_#{as}", event.message)
+            if event.message_type == message_class
+              message_params = MessageParams.new(event.message_type, event.message_params)
+              instance_variable_set(variable, message_params)
             end
-          end
-
-          define_method("#{as}_params") do
-            if instance_variable_get("@invalid_#{as}")
-              instance_variable_get("@invalid_#{as}").params
-            else
-              message_class.new(instance_exec(&block)).params
-            end
-          end
-
-          define_method("#{as}_errors?") do
-            !!instance_variable_get("@invalid_#{as}")
           end
         end
       end

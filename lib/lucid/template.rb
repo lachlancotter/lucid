@@ -92,15 +92,15 @@ module Lucid
       end
 
       def link_to (message, text = nil, **opts, &block)
-        emit get_message(message).link(text)
+        emit normalize_message(message).link(text, **opts, &block)
       end
 
       def button_to (message, text = nil, **opts)
-        emit get_message(message).button(text)
+        emit normalize_message(message).button(text, **opts)
       end
 
-      def form_for (message, **opts, &block)
-        emit get_message(message).form(**opts, &block)
+      def form_for (form_params, **opts, &block)
+        emit form_params.form(**opts, &block)
       end
 
       def fragment (name, *a, **b, &block)
@@ -127,14 +127,14 @@ module Lucid
 
       private
 
-      def get_message (message)
+      def normalize_message (message)
         Match.on(message) do
           type(Message) { message }
-          extends(Message) { |klass| klass.new }
-          type(Symbol) { |name| @renderable.get_link(name, message_params) }
+          extends(HttpMessage) { |klass| klass.new }
+          type(Symbol) { |name| @renderable.link_to(name) }
           default do
             raise ArgumentError,
-               "Message class, instance or symbol expected: #{message.inspect}"
+               "Message type, MessageParms or Symbol expected: #{message.inspect}"
           end
         end
       end

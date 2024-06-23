@@ -15,7 +15,7 @@ module Lucid
         end
         expect {
           session_class.new({})
-        }.to raise_error(Dry::Types::CoercionError)
+        }.to raise_error(Dry::Struct::Error)
       end
     end
 
@@ -31,7 +31,7 @@ module Lucid
       it "raises when invalid" do
         session_class = Class.new(Session) { attribute :foo, Types.integer.default(1) }
         session       = session_class.new(foo: 2)
-        expect { session.put(foo: "") }.to raise_error(Dry::Types::CoercionError)
+        expect { session.put(foo: "") }.to raise_error(Dry::Struct::Error)
       end
     end
 

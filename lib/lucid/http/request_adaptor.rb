@@ -35,7 +35,7 @@ module Lucid
       end
 
       def state_from_message_params
-        State::HashReader.new(message_params["state"] || {})
+        State::HashReader.new(raw_params["state"] || {})
       end
 
       def self.normalize_path (url, app_root)
@@ -62,11 +62,11 @@ module Lucid
       end
 
       def yield_link
-        tap { yield message if has_link? }
+        tap { yield message_params if has_link? }
       end
 
       def yield_command
-        tap { yield message if has_command? }
+        tap { yield message_params if has_command? }
       end
 
       def yield_no_message
@@ -74,7 +74,7 @@ module Lucid
       end
 
       def has_message?
-        Message.present?(@request)
+        HttpMessage.present?(@request)
       end
 
       def has_link?
@@ -85,26 +85,23 @@ module Lucid
         has_message? && message_class.ancestors.include?(Lucid::Command)
       end
 
-      def message
-        if has_message?
-          message_class.new(
-             message_params.reject { |key, _| key == "state" }
-          )
-        else
-          nil
-        end
+      def message_params
+        MessageParams.new(
+           message_class,
+           raw_params.reject { |key, _| key == "state" }
+        ) if has_message?
       end
 
       def message_name
-        Message.decode_name(@request)
+        HttpMessage.decode_name(@request)
       end
 
       def message_class
         MessageName.to_class(message_name)
       end
 
-      def message_params
-        Message.decode_params(@request) || {}
+      def raw_params
+        HttpMessage.decode_params(@request) || {}
       end
     end
   end

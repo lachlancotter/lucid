@@ -1,9 +1,9 @@
 module Lucid
   module Validation
     class Result < Event
-      attribute :message
       validate do
-        required(:message)
+        required(:message_type).filled(Types.Instance(Class))
+        required(:message_params).filled(Types.hash)
       end
     end
 

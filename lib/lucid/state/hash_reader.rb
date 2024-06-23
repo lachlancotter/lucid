@@ -5,16 +5,16 @@ module Lucid
     #
     class HashReader
       def initialize (hash)
-        Check[hash].hash
-        @hash = hash.map { |k, v| [k.to_sym, v] }.to_h
+        @hash = Check[hash].value.map do |k, v|
+          [k.to_sym, v]
+        end.to_h
       end
 
-      # def [] (key)
-      #   @hash[key]
-      # end
-
       def read (map)
-        @hash || {}
+        Check[map].type(State::Map)
+        @hash.select do |k, _|
+          map.rules.any? { |rule| rule.key == k }
+        end
       end
 
       def seek (index, key)

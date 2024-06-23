@@ -32,7 +32,7 @@ module Lucid
       #
       def perform (command_class, &block)
         @command_handlers                ||= {}
-        @command_handlers[command_class] = block
+        @command_handlers[command_class] ||= block
       end
 
       def command_handlers

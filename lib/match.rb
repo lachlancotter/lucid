@@ -43,7 +43,7 @@ class Match
   end
 
   def extends (klass, &block)
-    throw :match, block if @values.first.ancestors.include?(klass)
+    throw :match, block if @values.first.is_a?(Class) && @values.first.ancestors.include?(klass)
   end
 
   def default (&block)

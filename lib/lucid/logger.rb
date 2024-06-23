@@ -31,6 +31,9 @@ module Lucid
 
       def request (request)
         puts("#{request.request_method}: #{request.fullpath}")
+        # request.params.each do |key, value|
+        #   puts("        #{key}: #{value.inspect}")
+        # end
         request.env.each do |key, value|
           if key.start_with?("HTTP_HX") #|| key.start_with?("HTTP_COOKIE")
             puts("        #{key}: #{value.inspect}")
@@ -47,63 +50,49 @@ module Lucid
       end
 
       def link (link)
-        puts("  🔗 #{link.class.name}:")
-        link.params.each do |key, value|
-          puts("        #{key}: #{value.inspect}")
-        end
+        puts("  🔗 #{link.class.name}")
+        log_data(link.to_h)
       end
 
       def command (command)
-        puts("  🛠️ #{command.class.name}:")
-        command.params.each do |key, value|
-          puts("        #{key}: #{value.inspect}")
-        end
+        puts("  🛠️ #{command.class.name}")
+        log_data(command.to_h)
       end
 
       def event (event)
-        puts("  🔔 #{event.class.name}:")
-        event.params.each do |key, value|
-          puts("        #{key}: #{value.inspect}")
-        end
+        puts("  🔔 #{event.class.name}")
+        log_data(event.to_h)
+      end
+
+      def debug (message, data = {})
+        puts("  🐞 #{message}")
+        log_data(data)
+      end
+
+      def warning (message, data = {})
+        puts("  ⚠️ #{message}")
+        log_data(data)
       end
 
       def error (message, data = {})
         puts("  ❌ #{message}")
-        data.each do |key, value|
-          puts("        #{key}: #{value.inspect}")
-        end
+        log_data(data)
       end
 
       def exception (exception)
-        puts("  ❌ #{exception.message}")
-        error_data(exception).each do |key, value|
-          puts("        #{key}: #{value.inspect}")
-        end
+        puts("  ❌ #{exception.class.name}: #{exception.message}")
+        exception.backtrace.
+           reject { |line| line.include?("gems/") }.
+           each { |line| puts("    #{line}") }
       end
 
       private
 
-      def error_data (error)
-        {
-           class: error.class,
-           at: error.backtrace.find do |line|
-             !line.include?("gems/")
-           end
-        }
+      def log_data (data)
+        data.each do |key, value|
+          puts("        #{key}: #{value.inspect}")
+        end
       end
-
-      # def trace (error)
-      #   Tempfile.new(["trace", ".txt"], "/tmp").tap do |tf|
-      #     tf.open
-      #     tf.write(error.message)
-      #     tf.write("\n")
-      #     error.backtrace.each do |line|
-      #       tf.write(line)
-      #       tf.write("\n")
-      #     end
-      #     tf.close
-      #   end
-      # end
 
       def puts(*args)
         if @buffer
