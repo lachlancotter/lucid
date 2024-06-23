@@ -5,16 +5,14 @@ module Shopping
     end
 
     class List < Link
-      attribute :category_slug
       validate do
-        required(:category_slug)
+        required(:category_slug).filled(:string)
       end
     end
 
     class Show < Link
-      attribute :product_id
       validate do
-        required(:product_id)
+        required(:product_id).filled(:integer)
       end
     end
   end

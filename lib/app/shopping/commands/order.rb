@@ -1,8 +1,6 @@
 module Shopping
   module Order
     class SetShippingAddress < Lucid::Command
-      attribute :cart_id
-      attribute :address, default: {}
       validate do
         required(:cart_id).filled(:string)
         required(:address).hash do
@@ -16,7 +14,6 @@ module Shopping
     end
 
     class Place < Lucid::Command
-      attribute :cart_id
       validate do
         required(:cart_id).filled(:integer)
       end

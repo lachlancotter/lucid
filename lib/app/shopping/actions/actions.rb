@@ -41,7 +41,7 @@ module Shopping
       cart                  = @session.cart
       cart.shipping_address = cmd.address
       cart.save
-      Order::ShippingAddressUpdated.notify(cmd.params)
+      Order::ShippingAddressUpdated.notify(cmd.to_h)
     end
 
     perform Order::Place do |cmd|

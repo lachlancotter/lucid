@@ -2,47 +2,54 @@ module Shopping
   class CheckoutView < Lucid::Component::Base
     use :cart, from: :session
     nest(:cart_view) { Cart::BaseView }
-    echo(Order::SetShippingAddress, as: :address) { { cart_id: cart.id } }
+    echo Order::SetShippingAddress, as: :shipping_address do
+      {
+         cart_id: cart.id,
+         address: {
+            name:   "",
+            street: "",
+            city:   "",
+            state:  "",
+            zip:    ""
+         }
+      }
+    end
 
     # ===================================================== #
     #   Template
     # ===================================================== #
 
-    element do
+    element do |shipping_address|
       if cart.shipping_address.nil?
-        fragment :form
+        fragment(:form, shipping_address)
       else
-        fragment :complete
+        fragment(:complete)
       end
     end
 
-    template :form do
+    template :form do |shipping_address|
       div(class: "checkout") {
         h2 "Checkout"
-        subview :cart_view
-        form_for Order::SetShippingAddress[address_params] do |f|
-          f.hidden(:cart_id)
-          f.struct(:address) { |a|
+        subview(:cart_view)
+        form_for(shipping_address) { |f|
+          emit f.hidden(:cart_id)
+          f.scoped(:address) { |a|
             fragment(:form_field, a, :name)
             fragment(:form_field, a, :street)
             fragment(:form_field, a, :city)
             fragment(:form_field, a, :state)
             fragment(:form_field, a, :zip)
           }
-          f.submit!("Continue")
-        end
+          emit f.submit("Continue")
+        }
       }
     end
 
     template :form_field do |form, field|
-      p(class: address_errors? && form.errors[field] ? "error" : nil) {
-        form.label!(field, field.capitalize)
-        form.text!(field)
-        if address_errors? && form.errors[field]
-          form.errors[field].each do |error|
-            span(class: "error") { text error }
-          end
-        end
+      p(class: form.errors(field).any? ? "error" : nil) {
+        emit form.label(field, field.capitalize)
+        emit form.text(field)
+        form.errors(field).each { |error| span(error, class: "error") }
       }
     end
 

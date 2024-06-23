@@ -5,31 +5,8 @@ module Shopping
     #   product_id.type(:integer)
     # end
 
-    path :category_slug
-    path :product_id
-
-    # path :category_slug, Types::Nominal::String.optional
-    # path :product_id, Types::Params::Integer.optional
-    #
-    # path :category_slug, type(:string).optional
-    # path :product_id, type(:integer).optional
-    #
-    # path :category_slug, type(String).optional
-    # path :product_id, type(Integer).optional
-
-    # path(:category_slug).maybe(:string).enum(Category.slugs)
-    # path(:product_id).maybe(:integer)
-
-
-    #
-    # validate do |category_slug, product_id|
-    #
-    # end
-
-    # validate do
-    #   optional(:product_id).maybe(:integer)
-    #   optional(:category_slug).maybe(:string)
-    # end
+    path :category_slug, Types.string.optional.default(nil)
+    path :product_id, Types.integer.optional.default(nil)
 
     visit Product::List, :category_slug
     visit Product::Show, :product_id
