@@ -25,19 +25,15 @@ module Shopping
     def app (session)
       Lucid::App.new(
          {}.tap do |config|
-           config[:base_view_class]   = BaseView
-           config[:command_bus_class] = Actions
-           config[:session]           = ShoppingSession.new(session)
-           config[:app_root]          = "/"
+           config[:base_view_class] = BaseView
+           config[:handler]         = Actions
+           config[:context]         = {
+              session: Session.new(session)
+           }
+           config[:session]         = Session.new(session)
+           config[:app_root]        = "/"
          end
       )
     end
-
-    class ShoppingSession < Lucid::Session
-      attribute :cart_id, Types.string.default { SecureRandom.uuid }
-      attribute :user_email, Types.string.optional.default(nil)
-      let(:cart) { |cart_id| Cart.get(cart_id) }
-    end
-
   end
 end

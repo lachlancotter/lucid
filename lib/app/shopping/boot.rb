@@ -42,14 +42,14 @@ end
   end
 end
 
-%w[models events commands links views].each do |dir|
+%w[models events commands links actions views].each do |dir|
   path = "./lib/app/shopping/#{dir}"
   Dir["#{path}/*.rb"].each do |f|
     puts f
     require f
   end
 end
-
+require "./lib/app/shopping/actions"
 require "./lib/app/shopping/app"
 # Shopping::App
 
