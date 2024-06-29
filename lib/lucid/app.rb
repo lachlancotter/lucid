@@ -80,7 +80,7 @@ module Lucid
             base_view # Build the tree before dispatching the command.
             validate_message!(command) do |valid_command|
               Logger.command(valid_command)
-              command_bus.dispatch(valid_command)
+              command_handler.dispatch(valid_command, @config[:context])
             end
             base_view.check_guards do
               @response.send_delta(base_view, htmx: @request.htmx?)
@@ -147,8 +147,8 @@ module Lucid
         })
       end
 
-      def command_bus
-        @command_bus ||= command_bus_class.new(@config[:session])
+      def command_handler
+        @config[:handler]
       end
 
       def run_with_context

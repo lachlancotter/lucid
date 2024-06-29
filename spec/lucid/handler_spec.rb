@@ -52,6 +52,14 @@ module Lucid
       end
 
       context "delegated handlers" do
+        it "instantiates the delegate" do
+          handler_class  = nil
+          delegate_class = Class.new(Handler) { perform(Command) { handler_class = self.class } }
+          handler        = Class.new(Handler) { recruit delegate_class }
+          handler.dispatch(Command.new)
+          expect(handler_class).to eq(delegate_class)
+        end
+
         it "calls the delegates" do
           called   = false
           delegate = Class.new(Handler) { perform(Command) { |cmd| called = true } }

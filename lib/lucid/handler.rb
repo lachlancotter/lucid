@@ -17,8 +17,8 @@ module Lucid
     # the required dependencies.
     #
     class MissingDependency < ArgumentError
-      def initialize (name)
-        super("Missing dependency: #{name}")
+      def initialize (handler, name)
+        super("Missing dependency `#{name}` for #{handler.class}")
       end
     end
 
@@ -34,7 +34,11 @@ module Lucid
 
     def resolve_dependencies (context)
       self.class.props_class.schema.keys.inject({}) do |hash, key|
-        hash.merge(key.name => context.fetch(key.name) { raise MissingDependency.new(key.name) })
+        hash.merge(
+           key.name => context.fetch(key.name) do
+             raise MissingDependency.new(self, key.name)
+           end
+        )
       end
     end
 
@@ -77,19 +81,24 @@ module Lucid
       end
 
       def dispatch (command, context = {})
-        handler = find_handler(command.class)
+        handler, proc = find_handler(command.class)
         raise NoHandlerError.new(command) unless handler
-        new(handler, context).call(command)
+        handler.new(proc, context).call(command)
       end
 
+      #
+      # Returns an array containing the matching Handler class and block
+      # for the given command class.
+      #
       def find_handler (command_class)
-        handlers.fetch(command_class) do
+        handler = handlers[command_class]
+        if handler
+          [self, handler]
+        else
           delegate = recruits.find { |r| r.performs?(command_class) }
           delegate.find_handler(command_class) if delegate
         end
       end
-
-      private
 
       def handlers
         @handlers ||= {}
