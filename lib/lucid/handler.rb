@@ -26,7 +26,7 @@ module Lucid
     # Instantiate a Handler with a context object. The contact should provide
     # access to the dependencies required by the handler.
     #
-    def initialize (handler, context = {})
+    def initialize (context = {}, &handler)
       @handler = handler
       @context = context
       initialize_props(resolve_dependencies(context))
@@ -81,9 +81,9 @@ module Lucid
       end
 
       def dispatch (command, context = {})
-        handler, proc = find_handler(command.class)
-        raise NoHandlerError.new(command) unless handler
-        handler.new(proc, context).call(command)
+        klass, block = find_handler(command.class)
+        raise NoHandlerError.new(command) unless klass
+        klass.new(context, &block).call(command)
       end
 
       #
@@ -95,8 +95,10 @@ module Lucid
         if handler
           [self, handler]
         else
-          delegate = recruits.find { |r| r.performs?(command_class) }
-          delegate.find_handler(command_class) if delegate
+          # Return the result of the first block that is truthy.
+          recruits.lazy.map do |delegate|
+            delegate.find_handler(command_class)
+          end.find(&:itself)
         end
       end
 
