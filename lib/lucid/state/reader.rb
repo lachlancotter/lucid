@@ -1,5 +1,3 @@
-require "lucid/state/cursor"
-
 module Lucid
   module State
     #

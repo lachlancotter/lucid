@@ -1,5 +1,3 @@
-require "lucid/state/stack"
-
 module Lucid
   module State
     #

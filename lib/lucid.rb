@@ -1,6 +1,18 @@
+require "zeitwerk"
 require "pathname"
+require "awesome_print"
 
 module Lucid
+  unless defined?(LOADER)
+    LOADER = Zeitwerk::Loader.new
+    LOADER.push_dir(__dir__)
+    LOADER.inflector.inflect('htmx' => 'HTMX')
+    LOADER.inflector.inflect('http' => 'HTTP')
+    LOADER.inflector.inflect('html' => 'HTML')
+    LOADER.enable_reloading
+    LOADER.setup
+  end
+
   #
   # Path to the project root directory.
   #

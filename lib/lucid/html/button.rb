@@ -1,5 +1,3 @@
-require "lucid/html/form"
-
 module Lucid
   module HTML
     class Button

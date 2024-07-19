@@ -1,5 +1,3 @@
-require "lucid/rendering"
-
 module Lucid
   module HTML
     #

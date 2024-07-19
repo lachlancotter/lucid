@@ -1,0 +1,55 @@
+module MusicStore
+  describe "Checkout", type: :feature do
+
+    before do
+      visit "/"
+      click_link "Guitars & Basses"
+      click_link "Gibson Les Paul"
+      click_button "Add to Cart"
+      click_link "Open Cart"
+      within(".cart") { click_link "Checkout" }
+    end
+
+    scenario "review order" do
+      within ".checkout" do
+        expect(page).to have_content("Checkout")
+        expect(page).to have_content("Gibson Les Paul")
+        expect(page).to have_content("1")
+        expect(page).to have_content("$2,499")
+      end
+    end
+
+    scenario "enter shipping address" do
+      within ".checkout" do
+        fill_in "Name", with: "John Doe"
+        fill_in "Street", with: "123 Main Street"
+        fill_in "City", with: "Anytown"
+        fill_in "State", with: "CA"
+        fill_in "Zip", with: "90210"
+        click_button "Continue"
+      end
+      within ".checkout" do
+        expect(page).to have_content("John Doe")
+        expect(page).to have_content("123 Main Street")
+        expect(page).to have_content("Anytown, CA 90210")
+      end
+    end
+
+    # scenario "invalid shipping address" do
+    #   click_link "Guitars & Basses"
+    #   click_link "Gibson Les Paul"
+    #   click_button "Add to Cart"
+    #   click_link "Open Cart"
+    #   within ".cart" do
+    #     click_link "Checkout"
+    #   end
+    #   within ".checkout" do
+    #     fill_in "Name", with: "Invalid Test"
+    #     fill_in "Street", with: ""
+    #     click_button "Continue"
+    #     expect(page).to have_content("must be filled")
+    #   end
+    # end
+
+  end
+end

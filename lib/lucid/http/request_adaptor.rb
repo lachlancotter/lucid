@@ -1,5 +1,3 @@
-require "lucid/http/message_name"
-
 module Lucid
   module HTTP
     #

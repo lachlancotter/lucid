@@ -37,7 +37,7 @@ module Lucid
       #
       # The name of this component in the parent.
       #
-      prop :name, Types.symbol.default("root")
+      prop :name, Types.symbol.default("root".freeze)
 
       #
       # Whether this component is a member of a collection.
