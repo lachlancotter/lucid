@@ -54,7 +54,7 @@ module Lucid
       def configure (zeitwerk_loader)
         super
         core_layout.configure(zeitwerk_loader)
-        feature_files.each { |f| require feature_file(f) }
+        messages_files.each { |f| require feature_file(f) }
         feature_layouts.each { |l| l.configure(zeitwerk_loader) }
       end
 
@@ -92,10 +92,8 @@ module Lucid
         end
       end
 
-      def feature_files
-        Dir.children(features_path).select do |entry|
-          File.file?("#{features_path}/#{entry}") && entry =~ /\.rb/
-        end
+      def messages_files
+        feature_directories.map { |d| "#{d}/messages/messages.rb" }
       end
     end
 
