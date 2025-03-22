@@ -23,11 +23,13 @@ module Lucid
         )
       end
 
-      def write_component (component)
+      def write_component (component, on_route:)
         Check[component].type(Component::Base)
         tap do
-          write_state(component.class.state_map)
-          write_nests(component.nests)
+          state_map = component.class.state_map
+          state_map = state_map.off_route unless on_route
+          write_state(state_map)
+          write_nests(component.nests, on_route: on_route)
         end
       end
 
@@ -37,11 +39,13 @@ module Lucid
         end
       end
 
-      def write_nests (nests)
+      def write_nests (nests, on_route:)
         nests.each do |(name, nest)|
           # TODO handle state for collections
           unless nest.enum?
-            with_scope(name) { write_component(nest.component) }
+            with_scope(name) do
+              write_component(nest.component, on_route: nest.on_route? && on_route)
+            end
           end
         end
       end

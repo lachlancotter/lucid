@@ -196,6 +196,10 @@ module Lucid
               end
             end
           end
+          
+          def on_route?
+            @parent.routes_to?(self)
+          end
 
           def enum?
             @collection.is_a?(Collection)

@@ -20,14 +20,20 @@ module Lucid
         rules << Param.new(key)
       end
 
+      def path? (key)
+        rules.any? { |rule| rule.is_a?(Path) && rule.key == key }
+      end
+
       def path_count
         @rules.count { |rule| rule.is_a?(Path) }
       end
 
       #
-      # Map all Path rules to Params.
+      # If a Map has been defined with path mapping rules, but is used
+      # in a component which is not on the route, then the path rules
+      # should be treated as query parameters instead.
       #
-      def default
+      def off_route
         Map.new.tap do |map|
           @rules.each do |rule|
             if rule.is_a?(Path)
@@ -58,6 +64,10 @@ module Lucid
         def inspect
           "<#{self.class.name.split('::').last} #{key}>"
         end
+
+        def fetch_from (state)
+          state.fetch(@key) { raise MissingValue.new(@key) }
+        end
       end
 
       #
@@ -70,7 +80,7 @@ module Lucid
         end
 
         def encode (state, buffer)
-          value = @key.is_a?(Symbol) ? state[@key] : @key.to_s
+          value = @key.is_a?(Symbol) ? fetch_from(state) : @key
           buffer.write_path_segment(value)
         end
 
@@ -88,13 +98,19 @@ module Lucid
       #
       class Param < Rule
         def encode (state, buffer)
-          buffer.write_param(@key, state[@key])
+          buffer.write_param(@key, fetch_from(state))
         end
 
         def decode (reader, state)
           reader.read_param(@key).tap do |param|
             state[@key] = param unless param.nil?
           end
+        end
+      end
+
+      class MissingValue < StandardError
+        def initialize(key)
+          super("missing value for key: #{key}")
         end
       end
 

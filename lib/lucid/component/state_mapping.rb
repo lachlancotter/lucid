@@ -3,7 +3,7 @@ module Lucid
     #
     # Mapping between component state and URL.
     #
-    module StateMap
+    module StateMapping
       def self.included (base)
         base.extend(ClassMethods)
       end
@@ -31,8 +31,12 @@ module Lucid
       #
       def url
         State::Writer.new(deep_state).tap do |buffer|
-          buffer.write_component(self)
+          buffer.write_component(self, on_route: true)
         end.to_s
+      end
+      
+      def routes_to? (nest)
+        nest.name == self.class.instance_variable_get(:@nested_route_component)
       end
 
       #
@@ -44,41 +48,26 @@ module Lucid
 
       module ClassMethods
         #
-        # Map a path component to a state attribute.
-        #
-        def path (name, type = Types.string.default("".freeze), in: nil, nest: nil)
-          case name
-          when Symbol
-            map_attrs(name, type) { |map| map.path(name) }
-          when String # Literal
-            state_map.path(name)
-          else
-            raise ArgumentError, "Invalid path argument: #{name}"
+        # Define the path mapping for the component state.
+        # E.g. route "/:id/:name/literal"
+        # 
+        def route (pattern, nest: nil)
+          segments = pattern.sub(/\A\/+/, '').sub(/\/+\z/, '').split("/")
+          segments.each do |s|
+            map_key = s.match(/^:(\w+)$/) ? $1.to_sym : s
+            state_map.path(map_key)
           end
+          @nested_route_component = nest
         end
 
         #
         # Map a query parameter to a state attribute.
         #
         def param (name, type = Types.string.default("".freeze))
-          map_attrs(name, type) { |map| map.param(name) }
-        end
-
-        #
-        # Dynamically define a state attribute.
-        #
-        private def map_attrs (name, type)
           state_class.attribute(name, type)
           after_initialize { fields[name] = Field.new(self) { state[name] } }
-          yield state_map
+          state_map.param(name) unless state_map.path?(name)
         end
-
-        #
-        # Define a schema for the component state.
-        #
-        # def validate (&block)
-        #   state_class.validate(&block)
-        # end
 
         def state_class
           @state_class ||= Class.new(Dry::Struct)

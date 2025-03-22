@@ -6,7 +6,7 @@ module Lucid
     class Base
 
       include Callbacks
-      include StateMap
+      include StateMapping
       include Properties
       include Nesting
       include Fields

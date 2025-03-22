@@ -107,7 +107,7 @@ module Lucid
           foo_map = Map.build { path :bar }
           qux_map = Map.build { path :kiln }
           writer.with_scope(:foo) { writer.write_state foo_map }
-          writer.with_scope(:qux) { writer.write_state qux_map.default }
+          writer.with_scope(:qux) { writer.write_state qux_map.off_route }
           expect(writer.to_s).to eq("/baz?qux[kiln]=corge")
         end
       end
