@@ -1,16 +1,61 @@
 module Lucid
   describe Rendering do
-    describe "render" do
-      describe "template" do
-        it "renders" do
-          view = Class.new(Component::Base) do
-            element { h1 { text "Hello, World" } }
-          end.new({})
-          view.element.replace
-          expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
+    describe "#template" do
+      context "no template defined" do
+        it "returns an empty template" do
+          view = Class.new(Component::Base).new({})
+          expect(view.template.render).to eq("Base")
         end
       end
 
+      context "base template defined" do
+        it "returns the base template" do
+          view = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+          end.new({})
+          expect(view.template.render).to match(/<h1>Hello, World<\/h1>/)
+        end
+      end
+      
+      context "named template" do
+        it "returns the named template" do
+          view = Class.new(Component::Base) do
+            template(:foo) { h1 { text "Foo Template" } }
+          end.new({})
+          expect(view.template(:foo).render).to match(/<h1>Foo Template<\/h1>/)
+        end
+      end
+
+      context "undefined template" do
+        it "raises an exception" do
+          view = Class.new(Component::Base).new({})
+          expect { view.template(:foo) }.to raise_error(Templating::TemplateNotFound)
+        end
+      end
+
+      context "guard failed" do
+        it "returns the denied template" do
+          view = Class.new(Component::Base) do
+            guard { Deny }
+            element { h1 { text "Exposed!" } }
+          end.new({})
+          expect(view.template.render).to eq("Denied")
+        end
+      end
+    end
+    
+
+    describe "#render_full" do
+      it "renders" do
+        view = Class.new(Component::Base) do
+          element { h1 { text "Hello, World" } }
+        end.new({})
+        view.delta.replace
+        expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
+      end
+    end 
+
+    describe "render" do
       describe "element ID" do
         context "root component" do
           it "is omitted" do

@@ -1,45 +1,45 @@
 module Lucid
   module Component
-    describe Guarded, skip: true do
+    describe Guarded do
 
       context "no guard" do
         it "allows the component to render" do
-          component = Class.new(Base).new
+          component = Class.new(Base).new({})
           expect(component.denied?).to be_falsey
           expect(component.permitted?).to be_truthy
-          expect { component.render }.not_to raise_error
+          expect { component.render_full }.not_to raise_error
         end
       end
 
       context "invalid result" do
         it "raises an exception on render" do
-          component = Class.new(Base) { guard { "foo" } }.new
-          expect { component.render }.to raise_error(Guard::Invalid)
+          component = Class.new(Base) { guard { "foo" } }.new({})
+          expect { component.render_full }.to raise_error(Guard::Invalid)
         end
       end
 
       context "guard exception" do
         it "raises an exception on render" do
-          component = Class.new(Base) { guard { raise "foo" } }.new
-          expect { component.render }.to raise_error(RuntimeError)
+          component = Class.new(Base) { guard { raise "foo" } }.new({})
+          expect { component.render_full }.to raise_error(RuntimeError)
         end
       end
 
       context "permit" do
         it "allows the component to render" do
-          component = Class.new(Base) { guard { Permit } }.new
+          component = Class.new(Base) { guard { Permit } }.new({})
           expect(component.denied?).to be_falsey
           expect(component.permitted?).to be_truthy
-          expect(component.render).to be_a(Rendering::Render)
+          expect(component.render_full).to be_a(String)
         end
       end
 
       context "deny" do
         it "raises an exception on render" do
-          component = Class.new(Base) { guard { Deny } }.new
+          component = Class.new(Base) { guard { Deny } }.new({})
           expect(component.denied?).to be_truthy
           expect(component.permitted?).to be_falsey
-          expect { component.render }.to raise_error(Guard::Violation)
+          expect { component.render_full }.to raise_error(Guard::Violation)
         end
       end
 
@@ -56,21 +56,21 @@ module Lucid
       describe "#if_denied" do
         context "no guards" do
           it "does not call the block" do
-            component = Class.new(Base).new
+            component = Class.new(Base).new({})
             expect { |b| component.if_denied(&b) }.not_to yield_control
           end
         end
 
         context "when permitted" do
           it "does not call the block" do
-            component = Class.new(Base) { guard { Permit } }.new
+            component = Class.new(Base) { guard { Permit } }.new({})
             expect { |b| component.if_denied(&b) }.not_to yield_control
           end
         end
         
         context "when denied" do
           it "yields the result to the block" do
-            component = Class.new(Base) { guard { Deny } }.new
+            component = Class.new(Base) { guard { Deny } }.new({})
             expect { |b| component.if_denied(&b) }.to yield_with_args(Guard::Deny)
           end
         end
@@ -79,25 +79,25 @@ module Lucid
           it "yields the denied result to the block" do
             component = Class.new(Base) do
               nest(:foo) { Class.new(Base) { guard { Deny } } }
-            end.new
+            end.new({})
             expect { |b| component.foo.if_denied(&b) }.to yield_with_args(Guard::Deny)
             expect { |b| component.if_denied(&b) }.to yield_with_args(Guard::Deny)
           end
         end
       end
 
-      describe "#patrol" do
+      describe "#check_guards" do
         context "no guards" do
           it "returns Permit" do
-            component = Class.new(Base).new
-            expect(component.patrol).to eq(Permit)
+            component = Class.new(Base).new({})
+            expect(component.check_guards).to eq(Permit)
           end
         end
 
         context "unresolved guard" do
           it "raises max patrols exception" do
-            component = Class.new(Base) { guard { Deny } }.new
-            expect { component.patrol }.to raise_error(Guarded::MaxPatrolsExceeded)
+            component = Class.new(Base) { guard { Deny } }.new({})
+            expect { component.check_guards }.to raise_error(Guarded::MaxPatrolsExceeded)
           end
         end
 
@@ -109,13 +109,13 @@ module Lucid
               on(Guard::Denied) { update(foo: true) }
             end.new
             expect do
-              expect(component.patrol).to eq(Permit)
+              expect(component.check_guards).to eq(Permit)
             end.not_to raise_error
           end
         end
 
         context "unresolved nested guard" do
-          it "raises åx patrols exception" do
+          it "raises åx check_guardss exception" do
             component = Class.new(Base) do
               param :foo, Types.bool.default(false)
               on(Guard::Denied) { update(foo: true) }
@@ -123,7 +123,7 @@ module Lucid
                 Class.new(Base) { guard { Deny } }
               end
             end.new
-            expect { component.patrol }.to raise_error(Guarded::MaxPatrolsExceeded)
+            expect { component.check_guards }.to raise_error(Guarded::MaxPatrolsExceeded)
           end
         end
       end

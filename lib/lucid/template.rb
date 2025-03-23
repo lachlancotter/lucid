@@ -115,8 +115,9 @@ module Lucid
         emit ChangeSet::Replace.new(component).call
       end
 
-      # TODO maybe we should explicitly expose methods to the template
-      #   instead of using method_missing?
+      # TODO maybe we should explicitly expose methods to the template 
+      #   instead of using method_missing? This makes the interface muddy
+      #   and may have performance implications for Papercraft.
       def method_missing(sym, *args, **opts, &block)
         if @renderable.has_helper?(sym)
           @renderable.send(sym, *args, **opts, &block)

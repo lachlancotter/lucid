@@ -46,7 +46,7 @@ module Lucid
               validate { required(:foo).filled(:string) }
             end
             app_class  = Class.new(Component::Base) do
-              path :foo
+              param :foo
               watch(:foo) { called = true }
               visit link_class, :foo
             end

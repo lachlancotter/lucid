@@ -23,7 +23,7 @@ module Lucid
       end
 
       class Builder
-        include Rendering
+        include Templating
 
         def initialize (renderer, message_params, path = Path.new)
           @renderer       = renderer

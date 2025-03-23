@@ -1,15 +1,16 @@
 module Lucid
   module Rendering
-    BASE_TEMPLATE = :__base__
+    BASE_TEMPLATE   = :__base__
+    DENIED_TEMPLATE = :__denied__
 
     def self.included (base)
+      base.template(BASE_TEMPLATE) { text "Base" }
+      base.template(DENIED_TEMPLATE) { text "Denied" }
       base.extend(ClassMethods)
-      if base.respond_to?(:after_initialize)
-        base.after_initialize { @element = ChangeSet.new(self) }
-      end
+      base.after_initialize { @delta = ChangeSet.new(self) }
     end
 
-    attr_reader :element
+    attr_reader :delta
 
     def render_full
       ChangeSet::Replace.new(self).call
@@ -25,24 +26,16 @@ module Lucid
       end
     end
 
-    class TemplateNotFound < ArgumentError
-      def initialize (name, context)
-        super(<<~MSG)
-          Could not find template `#{name}` in #{context.class} at #{context.path}.
-          Available templates: #{context.class.templates.keys}
-        MSG
-      end
-    end
-
     #
     # Access a template/partial to be rendered. Defaults
     # to the main template if no name is provided.
     #
     def template (name = BASE_TEMPLATE)
-      Check[name].type(Symbol, String)
-      self.class.templates.fetch(name) do
-        raise TemplateNotFound.new(name, self)
-      end.bind(self)
+      if denied?
+        self.class.template(DENIED_TEMPLATE).bind(self)
+      else
+        self.class.template(name).bind(self)
+      end
     end
 
     def tag
@@ -58,22 +51,9 @@ module Lucid
       # Define the base template for this component.
       #
       def element (tag = :div, &block)
-        templates[BASE_TEMPLATE] = Template.new(&block)
+        template(BASE_TEMPLATE, &block)
         @tag = tag
-        watch(*block.parameters.map(&:last)) do
-          element.replace
-        end
-      end
-
-      #
-      # Define a template fragment that can be used in other templates.
-      #
-      def template (name, &block)
-        templates[name] = Template.new(&block)
-      end
-
-      def templates
-        @templates ||= {}
+        watch(*block.parameters.map(&:last)) { delta.replace }
       end
     end
   end

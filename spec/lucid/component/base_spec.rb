@@ -6,7 +6,7 @@ module Lucid
         context "defaults" do
           it "initializes default attribute values" do
             buffer          = State::Reader.new("/")
-            component_class = Class.new(Component::Base) { param :foo, Types.string.default("bar") }
+            component_class = Class.new(Component::Base) { param :foo, Types.string.default("bar".freeze) }
             component       = component_class.new(buffer)
             expect(component.state.to_h).to eq(foo: "bar")
           end
@@ -16,8 +16,9 @@ module Lucid
           it "parses the URL" do
             buffer          = State::Reader.new("/foo/bar?baz=qux")
             component_class = Class.new(Component::Base) do
-              path :foo
-              path :bar
+              route "/:foo/:bar"
+              param :foo
+              param :bar
               param :baz
             end
             component       = component_class.new(buffer)
@@ -29,10 +30,12 @@ module Lucid
           it "parses the URL" do
             buffer          = State::Reader.new("/foo/bar")
             component_class = Class.new(Component::Base) do
-              path :foo
+              route "/:foo", nest: :sub
+              param :foo, Types.string
               nest :sub do
                 Class.new(Component::Base) {
-                  path :bar
+                  route "/:bar"
+                  param :bar
                 }
               end
             end

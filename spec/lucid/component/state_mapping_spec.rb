@@ -3,7 +3,7 @@ require "lucid/component/state_mapping"
 module Lucid
   describe Component::StateMapping do
 
-    describe ".route" do
+    describe ".url" do
       context "no path" do
         it "is the empty path" do
           view = Class.new(Component::Base) {}.new({})

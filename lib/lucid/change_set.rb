@@ -15,7 +15,7 @@ module Lucid
     def_delegators :@component, :element_id
 
     def replace?
-      any? { |c| c.is_a?(Replace) }
+      any? { |change| change.is_a?(Replace) }
     end
 
     def replace
@@ -127,7 +127,7 @@ module Lucid
     class Replace < Change
       def initialize (component)
         super(component)
-        @template = @component.template(Rendering::BASE_TEMPLATE)
+        @template = @component.template
       end
 
       def swap

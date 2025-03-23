@@ -14,6 +14,7 @@ module Lucid
       include Linking
       include Responding
       include Echoing
+      include Templating
       include Rendering
       include Guarded
 
