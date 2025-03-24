@@ -1,0 +1,101 @@
+module Lucid
+  describe CommandDispatch do
+    describe "construction" do
+      context "valid dependencies" do
+        it "injects dependencies" do
+          handler_class = Class.new(Handler) { prop :foo, Types.string }
+          handler       = handler_class.new(foo: "bar") {}
+          expect(handler.foo).to eq("bar")
+        end
+      end
+
+      context "invalid dependencies" do
+        it "raises an exception" do
+          handler_class = Class.new(Handler) { prop :foo, Types.string }
+          expect { handler_class.new({}) }.to raise_error(Handler::MissingDependency)
+        end
+      end
+    end
+  end
+
+  describe "handler registration" do
+    context "one handler" do
+      it "registers the handler" do
+        message_class = Class.new(Command)
+        expect {
+          handler_class = Class.new(Handler) do
+            perform(message_class) { |message| }
+          end
+          expect(handler_class.performs?(message_class)).to be_truthy
+        }.not_to raise_error
+      end
+    end
+
+    context "ambiguous dispatch" do
+      it "raises an exception" do
+        message_class = Class.new(Command)
+        expect {
+          handler_class = Class.new(Handler) do
+            perform(message_class) { |message| }
+            perform(message_class) { |message| }
+          end
+        }.to raise_error(CommandDispatch::AmbiguousDispatch)
+      end
+    end
+
+    context "ambiguous nested dispatch" do
+      it "raises an exception" do
+        message_class = Class.new(Command)
+        expect {
+          nested_handler_class = Class.new(Handler) do
+            perform(message_class) { |message| }
+          end
+          handler_class        = Class.new(Handler) do
+            perform(message_class) { |message| }
+            recruit(nested_handler_class)
+          end
+        }.to raise_error(CommandDispatch::AmbiguousDispatch)
+      end
+    end
+  end
+
+  context "handler lookup" do
+    context "no handler" do
+      it "raises an exception" do
+        message_class = Class.new(Command)
+        handler_class = Class.new(Handler)
+        expect {
+          handler_class.find_handler(message_class)
+        }.to raise_error(CommandDispatch::NoHandler)
+      end
+    end
+
+    context "direct handler" do
+      it "returns the handler" do
+        message_class = Class.new(Command)
+        handler_class = Class.new(Handler) do
+          perform(message_class) { |message| }
+        end
+        result        = handler_class.find_handler(message_class)
+        expect(result[0]).to eq(handler_class)
+        expect(result[1]).to eq(handler_class.handlers[message_class])
+      end
+    end
+
+    context "nested handler" do
+      it "returns the nested handler" do
+        message_class        = Class.new(Command)
+        nested_handler_class = Class.new(Handler) do
+          perform(message_class) { |message| }
+        end
+        handler_class        = Class.new(Handler) do
+          recruit(nested_handler_class)
+        end
+        result               = handler_class.find_handler(message_class)
+        expect(result[0]).to eq(nested_handler_class)
+        expect(result[1]).to eq(nested_handler_class.handlers[message_class])
+      end
+    end
+  end
+
+end

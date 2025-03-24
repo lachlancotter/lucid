@@ -4,8 +4,8 @@ require "dry-schema"
 module Lucid
   class Message
     class Invalid < ArgumentError
-      def initialize (errors)
-        super(errors.to_h)
+      def initialize (message_class, errors)
+        super("#{message_class}: #{errors.to_h}")
       end
     end
 
@@ -28,7 +28,7 @@ module Lucid
 
     def initialize (params = {})
       self.class.schema.call(params).tap do |result|
-        raise Invalid.new(result.errors) unless result.success?
+        raise Invalid.new(self.class, result.errors) unless result.success?
         @params = result.to_h
       end
     end
