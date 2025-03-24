@@ -16,7 +16,7 @@ module Lucid
           it "sends the updated components" do
             adaptor = ResponseAdaptor.new(Rack::Response.new)
             component = Class.new(Component::Base) do
-              path "foo"
+              route "foo"
               element(:html) { body { text "foo" } }
             end.new({})
             component.element.replace
