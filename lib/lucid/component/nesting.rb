@@ -214,7 +214,7 @@ module Lucid
               factory.update_component(@component)
             else
               install(reader)
-              @component.element.replace
+              @component.delta.replace
             end
           end
 

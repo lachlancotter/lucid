@@ -7,7 +7,8 @@ module Lucid
       def self.included (base)
         base.extend(ClassMethods)
       end
-
+      
+      attr_reader :state
       private def initialize_state (data)
         Match.on(data) do
           type(State::Reader) { data }
@@ -19,9 +20,7 @@ module Lucid
           @state  = self.class.build_state(params)
         end
       end
-
-      attr_reader :state
-
+      
       # def valid?
       #   state.valid?
       # end

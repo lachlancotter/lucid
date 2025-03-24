@@ -97,7 +97,7 @@ module Lucid
           n1      = Map.build { path :bar }
           n2      = Map.build { path :quux }
           n1_data = reader.seek(top.path_count, :bar).read(n1)
-          n2_data = reader.seek(top.path_count, :n2).read(n2.default)
+          n2_data = reader.seek(top.path_count, :n2).read(n2.off_route)
           expect(n1_data).to eq(bar: "bar")
           expect(n2_data).to eq(quux: "corge")
         end
