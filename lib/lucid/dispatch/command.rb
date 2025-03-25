@@ -1,7 +1,7 @@
 module Lucid
-  class Command < HttpMessage
+  class Command < HTTP::Message
     def self.http_method
-      HttpMessage::POST
+      HTTP::Message::POST
     end
   end
 end

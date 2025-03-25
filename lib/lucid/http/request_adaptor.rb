@@ -74,7 +74,7 @@ module Lucid
       end
 
       def has_message?
-        HttpMessage.present?(@request)
+        Message.present?(@request)
       end
 
       def has_link?
@@ -93,7 +93,7 @@ module Lucid
       end
 
       def message_name
-        HttpMessage.decode_name(@request)
+        Message.decode_name(@request)
       end
 
       def message_class
@@ -101,7 +101,7 @@ module Lucid
       end
 
       def raw_params
-        HttpMessage.decode_params(@request) || {}
+        Message.decode_params(@request) || {}
       end
     end
   end

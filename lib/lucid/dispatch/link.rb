@@ -3,10 +3,10 @@ module Lucid
   # Represents a state in the information space that a user
   # can visit.
   #
-  class Link < HttpMessage
+  class Link < HTTP::Message
 
     def self.http_method
-      HttpMessage::GET
+      HTTP::Message::GET
     end
 
     def key

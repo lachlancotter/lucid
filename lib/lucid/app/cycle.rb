@@ -34,7 +34,7 @@ module Lucid
           validate_message!(command) do |valid_command|
             Logger.command(valid_command)
             puts valid_command.class
-            command_handler.dispatch(valid_command, handler_context)
+            message_bus.dispatch(valid_command, handler_context)
           end
           # base_view.check_guards do
           @response.send_delta(base_view, htmx: @request.htmx?)
@@ -97,7 +97,7 @@ module Lucid
       })
     end
 
-    def command_handler
+    def message_bus
       @config[:handler]
     end
     
@@ -128,7 +128,7 @@ module Lucid
     end
 
     def with_context (&block)
-      HttpMessage.with_app_state(self) do
+      HTTP::Message.with_app_state(self) do
         block.call
       end
     end
