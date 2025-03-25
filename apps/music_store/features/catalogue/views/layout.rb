@@ -1,9 +1,10 @@
 module MusicStore
   module Catalogue
     class Layout < Lucid::Component::Base
-      path :category_slug, Types.string.optional.default(nil)
-      path :product_id, Types.integer.optional.default(nil)
-
+      route "/:category_slug/:product_id"
+      param :category_slug, Types.string.optional.default(nil)
+      param :product_id, Types.integer.optional.default(nil)
+      
       visit ListProducts, :category_slug
       visit ShowProduct, :product_id
 
@@ -11,7 +12,7 @@ module MusicStore
       #    Data
       # ===================================================== #
 
-      let(:product) { |product_id| Product.find(product_id.to_i) rescue nil }
+      let(:product) { |product_id| Product.find(product_id) rescue nil }
       let(:category) { |category_slug| Category.find_by_slug(category_slug) }
       let(:products) { |category| Product.in_category(category) rescue [] }
 

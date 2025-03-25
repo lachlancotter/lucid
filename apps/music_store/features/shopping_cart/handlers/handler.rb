@@ -4,29 +4,31 @@ module MusicStore
       prop :session, Types.Instance(MusicStore::Session)
 
       perform Empty do |cmd|
-        Emptied.notify(cart_id: cmd.cart_id)
+        cart = session.cart
+        cart.empty
+        publish Emptied.new(cart_id: cmd.cart_id)
       end
 
       perform AddProduct do |cmd|
         product = Product.find(cmd.product_id)
         cart    = session.cart
         cart.add_product(product)
-        ItemAdded.notify({
-           product_id: product.id,
-           cart_id:    cart.id,
-           quantity:   cart.quantity_of(product)
-        })
+        publish ItemAdded.new(event_data(product, cart))
       end
 
       perform RemoveProduct do |cmd|
         product = Product.find(cmd.product_id)
         cart    = session.cart
         cart.remove_product(product)
-        ItemRemoved.notify({
+        publish ItemRemoved.new(event_data(product, cart))
+      end
+      
+      def event_data (product, cart)
+        {
            product_id: product.id,
            cart_id:    cart.id,
            quantity:   cart.quantity_of(product)
-        })
+        }
       end
     end
   end

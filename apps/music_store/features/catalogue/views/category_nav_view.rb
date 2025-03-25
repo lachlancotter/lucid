@@ -4,9 +4,7 @@ module MusicStore
       element do
         ul {
           Category.all.each do |cat|
-            li {
-              link_to product_list(cat), cat.name
-            }
+            li { link_to product_list(cat), cat.name }
           end
         }
       end

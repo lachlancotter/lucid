@@ -1,6 +1,7 @@
 module MusicStore
   class Layout < Lucid::Component::Base
-    path :page, Types.string.default("store".freeze)
+    route "/:page", nest: :content
+    param :page, Types.string.default("store".freeze)
 
     visit Catalogue::Link, page: "store"
     visit Checkout::Link, page: "checkout"

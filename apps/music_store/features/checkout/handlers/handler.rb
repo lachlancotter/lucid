@@ -7,11 +7,13 @@ module MusicStore
         cart                  = session.cart
         cart.shipping_address = cmd.address
         cart.save
-        ShippingAddressUpdated.notify(cmd.to_h)
+        # noinspection RubyArgCount
+        publish ShippingAddressUpdated.new(cmd.to_h)
       end
 
       perform PlaceOrder do |cmd|
-        OrderPlaced.notify(cart_id: cmd.cart_id)
+        # noinspection RubyArgCount
+        publish OrderPlaced.new(cart_id: cmd.cart_id)
       end
     end
   end
