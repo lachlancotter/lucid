@@ -69,17 +69,27 @@ module Lucid
             errors.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
           end
         end
+        
+        def has_helper? (name)
+          respond_to?(name)
+        end
 
         class << self
           def template (name, &block)
+            if block_given?
+              define_method(name) do |*args|
+                template(name).render(*args)
+              end
+              define_method("#{name}!") do |*args|
+                emit template(name).render(*args)
+              end
+            end
             super(name, &block)
-            define_method(name) do |*args|
-              template(name).render(*args)
-            end
-            define_method("#{name}!") do |*args|
-              emit template(name).render(*args)
-            end
           end
+        end
+
+        def template (name)
+          self.class.template(name).bind(self)
         end
 
         template :hidden do |key, options = {}|

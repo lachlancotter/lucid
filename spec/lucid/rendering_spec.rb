@@ -32,16 +32,6 @@ module Lucid
           expect { view.template(:foo) }.to raise_error(Templating::TemplateNotFound)
         end
       end
-
-      context "guard failed" do
-        it "returns the denied template" do
-          view = Class.new(Component::Base) do
-            guard { Deny }
-            element { h1 { text "Exposed!" } }
-          end.new({})
-          expect(view.template.render).to eq("Denied")
-        end
-      end
     end
     
 
@@ -62,7 +52,7 @@ module Lucid
             view = Class.new(Component::Base) do
               element { h1 { text "Hello, World" } }
             end.new({})
-            view.element.replace
+            view.delta.replace
             expect(view.render_full).to eq("<h1>Hello, World</h1>")
           end
         end
@@ -77,7 +67,7 @@ module Lucid
               end
               element { subview(:foo) }
             end.new({})
-            view.element.replace
+            view.delta.replace
             expect(view.render_full).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
           end
         end

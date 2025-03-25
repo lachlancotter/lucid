@@ -1,11 +1,9 @@
 module Lucid
   module Rendering
     BASE_TEMPLATE   = :__base__
-    DENIED_TEMPLATE = :__denied__
 
     def self.included (base)
       base.template(BASE_TEMPLATE) { text "Base" }
-      base.template(DENIED_TEMPLATE) { text "Denied" }
       base.extend(ClassMethods)
       base.after_initialize { @delta = ChangeSet.new(self) }
     end
@@ -25,17 +23,9 @@ module Lucid
         branches.append_component(self)
       end
     end
-
-    #
-    # Access a template/partial to be rendered. Defaults
-    # to the main template if no name is provided.
-    #
+    
     def template (name = BASE_TEMPLATE)
-      if denied?
-        self.class.template(DENIED_TEMPLATE).bind(self)
-      else
-        self.class.template(name).bind(self)
-      end
+      self.class.template(name).bind(self)
     end
 
     def tag

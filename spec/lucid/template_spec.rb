@@ -20,7 +20,7 @@ module Lucid
           }
         end
       end.new({})
-      view.element.replace
+      view.delta.replace
       expect(view.render_full).to match(
          '<head><script src="https://example.com/script.js"></script></head>'
       )
