@@ -37,19 +37,19 @@ module Lucid
     #
     def performs? (command_class)
       handlers.key?(command_class) ||
-         recruits.any? { |r| r.performs?(command_class) }
+         recruited_dispatchers.any? { |r| r.performs?(command_class) }
     end
 
     #
     # Extend the Handler with the handlers of the given delegate class.
     #
-    def recruit (delegate_class)
+    def recruit_dispatcher (delegate_class)
       handlers.keys.each do |command_class|
         if delegate_class.performs?(command_class)
           raise AmbiguousDispatch.new(command_class)
         end
       end
-      recruits << delegate_class
+      recruited_dispatchers << delegate_class
     end
 
     #
@@ -76,7 +76,7 @@ module Lucid
         handler
       else
         # Return the result of the first block that is truthy.
-        recruits.lazy.map do |delegate|
+        recruited_dispatchers.lazy.map do |delegate|
           delegate.find_handler(command_class, &block)
         end.find(&:itself)
       end
@@ -86,8 +86,8 @@ module Lucid
       @handlers ||= {}
     end
 
-    def recruits
-      @recruits ||= []
+    def recruited_dispatchers
+      @recruited_dispatchers ||= []
     end
 
   end

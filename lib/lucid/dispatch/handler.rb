@@ -72,6 +72,11 @@ module Lucid
         props_class.attribute(name, type)
         define_method(name) { props[name] }
       end
+      
+      def recruit (message_class)
+        recruit_dispatcher message_class
+        recruit_broadcaster message_class
+      end
 
       #
       # Builds a hash of dependencies for the handler from the provided

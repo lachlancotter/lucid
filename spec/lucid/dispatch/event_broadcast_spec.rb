@@ -1,6 +1,6 @@
 module Lucid
   describe EventBroadcast do
-
+    
     describe "subscriber registration" do
       context "one subscriber" do
         it "registers the subscriber" do
@@ -28,12 +28,10 @@ module Lucid
       context "nested subscribers" do
         it "registers the subscribers" do
           event_class   = Class.new(Event)
-          nested_class  = Class.new do
-            extend EventBroadcast
+          nested_class  = Class.new(Handler) do
             subscribe(event_class) { |message| }
           end
-          handler_class = Class.new do
-            extend EventBroadcast
+          handler_class = Class.new(Handler) do
             recruit(nested_class)
           end
           expect(handler_class.subscribes?(event_class)).to be_truthy

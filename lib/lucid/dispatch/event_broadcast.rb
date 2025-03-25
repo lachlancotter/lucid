@@ -28,18 +28,18 @@ module Lucid
 
     def subscribes? (event_class)
       subscribers.key?(event_class) ||
-         recruits.any? { |r| r.subscribes?(event_class) }
+         recruited_broadcasters.any? { |r| r.subscribes?(event_class) }
     end
 
     def subscribers_for (event_class)
       (subscribers[event_class] || []).concat(
-         recruits.flat_map { |r| r.subscribers_for(event_class) }
+         recruited_broadcasters.flat_map { |r| r.subscribers_for(event_class) }
       )
     end
 
     def each_subscriber (event_class, &block)
       (subscribers[event_class] || []).each { |handler| yield self, handler }
-      recruits.each { |recruit| recruit.each_subscriber(event_class, &block) }
+      recruited_broadcasters.each { |recruit| recruit.each_subscriber(event_class, &block) }
     end
 
     def publish (event, context)
@@ -52,16 +52,16 @@ module Lucid
     #
     # Extend the Handler with the handlers of the given delegate class.
     #
-    def recruit (delegate_class)
-      recruits << delegate_class
+    def recruit_broadcaster (delegate_class)
+      recruited_broadcasters << delegate_class
+    end
+
+    def recruited_broadcasters
+      @recruited_broadcasters ||= []
     end
 
     def subscribers
       @subscribers ||= {}
-    end
-
-    def recruits
-      @recruits ||= []
     end
 
   end
