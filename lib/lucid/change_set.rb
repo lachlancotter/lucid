@@ -67,8 +67,8 @@ module Lucid
 
       def append_component (component)
         Check[component].type(Component::Base)
-        append_change_set(component.element)
-        append_children(component) unless component.element.replace?
+        append_change_set(component.delta)
+        append_children(component) unless component.delta.replace?
       end
 
       def append_change_set (change_set)

@@ -22,7 +22,7 @@ module Lucid
 
       context "one change" do
         it "omits the OOB attribute" do
-          view.a.element.replace
+          view.a.delta.replace
           expect(view.a.changes.to_s).to match(/<h1>Component A<\/h1>/)
           expect(view.a.changes.to_s).to match(/id="a"/)
           expect(view.a.changes.to_s).not_to match(/hx-swap-oob/)
@@ -31,8 +31,8 @@ module Lucid
 
       context "multiple changes" do
         before do
-          view.element.append(view.item_views.build("One"))
-          view.element.append(view.item_views.build("Two"))
+          view.delta.append(view.item_views.build("One"))
+          view.delta.append(view.item_views.build("Two"))
         end
 
         describe "first change" do
@@ -56,8 +56,8 @@ module Lucid
 
       context "nested changes" do
         before do
-          view.a.element.replace
-          view.b.element.replace
+          view.a.delta.replace
+          view.b.delta.replace
         end
 
         describe "first change" do
@@ -100,7 +100,7 @@ module Lucid
       end
 
       it "sets a replace action" do
-        view.element.replace
+        view.delta.replace
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -108,15 +108,15 @@ module Lucid
 
       it "replaces any other changes" do
         view.subviews.append({})
-        view.element.replace
+        view.delta.replace
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
       end
 
       it "is idempotent" do
-        view.element.replace
-        view.element.replace
+        view.delta.replace
+        view.delta.replace
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -146,7 +146,7 @@ module Lucid
       end
 
       it "adds an append action" do
-        view.element.append(view.item_views.build(0))
+        view.delta.append(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Append)
         expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -154,8 +154,8 @@ module Lucid
       end
 
       it "is cumulative" do
-        view.element.append(view.item_views.build(0))
-        view.element.append(view.item_views.build(1))
+        view.delta.append(view.item_views.build(0))
+        view.delta.append(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
         expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -164,8 +164,8 @@ module Lucid
       end
 
       it "defers to a replace action" do
-        view.element.replace
-        view.element.append(view.item_views.build(0))
+        view.delta.replace
+        view.delta.append(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -193,7 +193,7 @@ module Lucid
       end
 
       it "adds an prepend action" do
-        view.element.prepend(view.item_views.build(0))
+        view.delta.prepend(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Prepend)
         expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -201,8 +201,8 @@ module Lucid
       end
 
       it "is cumulative" do
-        view.element.prepend(view.item_views.build(0))
-        view.element.prepend(view.item_views.build(1))
+        view.delta.prepend(view.item_views.build(0))
+        view.delta.prepend(view.item_views.build(1))
         expect(view.changes.count).to eq(2)
         expect(view.changes.to_s).to match(/id="item_views-0"/)
         expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -211,8 +211,8 @@ module Lucid
       end
 
       it "defers to a replace action" do
-        view.element.replace
-        view.element.prepend(view.item_views.build(0))
+        view.delta.replace
+        view.delta.prepend(view.item_views.build(0))
         expect(view.changes.count).to eq(1)
         expect(view.changes.first).to be_a(ChangeSet::Replace)
         expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -270,7 +270,7 @@ module Lucid
           element { h1 { "Test" } }
         end.new({ foo: "foo" })
         view.update(foo: "bar")
-        expect(view.element.any?).to be(false)
+        expect(view.delta.any?).to be(false)
       end
     end
 
