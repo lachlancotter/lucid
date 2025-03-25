@@ -53,25 +53,33 @@ module Lucid
     end
 
     #
-    # Returns an array containing the matching Handler class and block
-    # for the given command class.
-    #
-    def find_handler (command_class)
-      handler = handlers[command_class]
-      if handler
-        [self, handler]
-      else
-        find_nested_handler(command_class)
-      end.tap do |result|
-        raise NoHandler.new(command_class) unless result
+    # Call the handler for the given message type.
+    # 
+    def dispatch (message, context)
+      find_handler!(message.class) do |klass, handler_block|
+        klass.new(context, &handler_block).call(message)
       end
     end
 
-    def find_nested_handler (command_class)
-      # Return the result of the first block that is truthy.
-      recruits.lazy.map do |delegate|
-        delegate.find_handler(command_class)
-      end.find(&:itself)
+    def find_handler! (command_class, &block)
+      find_handler(command_class, &block) or raise NoHandler.new(command_class)
+    end
+
+    #
+    # Returns an array containing the matching Handler class and block
+    # for the given command class.
+    #
+    def find_handler (command_class, &block)
+      handler = handlers[command_class]
+      if handler
+        yield self, handler
+        handler
+      else
+        # Return the result of the first block that is truthy.
+        recruits.lazy.map do |delegate|
+          delegate.find_handler(command_class, &block)
+        end.find(&:itself)
+      end
     end
 
     def handlers

@@ -73,27 +73,73 @@ module Lucid
     context "direct handler" do
       it "returns the handler" do
         message_class = Class.new(Command)
-        handler_class = Class.new(Handler) do
-          perform(message_class) { |message| }
+        handler_class = Class.new(Handler) { perform(message_class) {} }
+        called        = false
+        handler_class.find_handler(message_class) do |klass, block|
+          called = true
+          expect(klass).to eq(handler_class)
+          expect(block).to eq(handler_class.handlers[message_class])
         end
-        result        = handler_class.find_handler(message_class)
-        expect(result[0]).to eq(handler_class)
-        expect(result[1]).to eq(handler_class.handlers[message_class])
+        expect(called).to be_truthy
       end
     end
 
     context "nested handler" do
       it "returns the nested handler" do
         message_class        = Class.new(Command)
+        nested_handler_class = Class.new(Handler) { perform(message_class) {} }
+        handler_class        = Class.new(Handler) { recruit(nested_handler_class) }
+        called               = false
+        handler_class.find_handler(message_class) do |klass, handler|
+          called = true
+          expect(klass).to eq(nested_handler_class)
+          expect(handler).to eq(nested_handler_class.handlers[message_class])
+        end
+        expect(called).to be_truthy
+      end
+    end
+  end
+
+  describe ".dispatch" do
+    context "registered message" do
+      it "calls the message handler" do
+        dispatched_message = nil
+        message_class = Class.new(Command)
+        handler_class = Class.new(Handler) do
+          perform(message_class) do |message|
+            dispatched_message = message
+          end
+        end
+        context = {}
+        handler_class.dispatch(message_class.new, context)
+        expect(dispatched_message).to be_instance_of(message_class)
+      end
+    end
+
+    context "registered in nested handler" do
+      it "calls the message handler" do
+        dispatched_message = nil
+        called_handler = nil
+        message_class = Class.new(Command)
         nested_handler_class = Class.new(Handler) do
-          perform(message_class) { |message| }
+          perform(message_class) do |message|
+            dispatched_message = message
+            called_handler = self
+          end
         end
-        handler_class        = Class.new(Handler) do
-          recruit(nested_handler_class)
-        end
-        result               = handler_class.find_handler(message_class)
-        expect(result[0]).to eq(nested_handler_class)
-        expect(result[1]).to eq(nested_handler_class.handlers[message_class])
+        handler_class = Class.new(Handler) { recruit(nested_handler_class) }
+        context = {}
+        handler_class.dispatch(message_class.new, context)
+        expect(dispatched_message).to be_instance_of(message_class)
+        expect(called_handler).to be_instance_of(nested_handler_class)
+      end
+    end
+
+    context "unregistered message" do
+      it "raises an exception" do
+        message_class = Class.new(Command)
+        handler_class = Class.new(Handler)
+        expect { handler_class.dispatch(message_class.new) }.to raise_error(CommandDispatch::NoHandler)
       end
     end
   end
