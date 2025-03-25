@@ -14,10 +14,12 @@ module Lucid
         block_result = nil
         Console.logger.info(request) do |buffer|
           @buffer = buffer
-          request(request)
-          # session(session_data)
-          block_result = block.call
-          response(response)
+          begin
+            request(request)
+            # session(session_data)
+            block_result = block.call
+            response(response)
+          end
         end
         block_result
       end

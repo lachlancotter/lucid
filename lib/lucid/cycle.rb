@@ -15,14 +15,14 @@ module Lucid
           validate_message!(link) do |valid_link|
             Logger.link(valid_link)
             base_view.visit(valid_link)
-            base_view.check_guards do
-              @response.send_delta(base_view, htmx: @request.htmx?)
-            end
+            # base_view.check_guards do
+            @response.send_delta(base_view, htmx: @request.htmx?)
+            # end
           end
         end.yield_no_message do
-          base_view.check_guards do
-            @response.send_state(base_view)
-          end
+          # base_view.check_guards do
+          @response.send_state(base_view)
+          # end
         end
       end
     end
@@ -33,11 +33,12 @@ module Lucid
           base_view # Build the tree before dispatching the command.
           validate_message!(command) do |valid_command|
             Logger.command(valid_command)
-            command_handler.dispatch(valid_command, @config[:context])
+            puts valid_command.class
+            command_handler.dispatch(valid_command, handler_context)
           end
-          base_view.check_guards do
-            @response.send_delta(base_view, htmx: @request.htmx?)
-          end
+          # base_view.check_guards do
+          @response.send_delta(base_view, htmx: @request.htmx?)
+          # end
         end
       end
     end
@@ -60,10 +61,6 @@ module Lucid
 
     def base_view_class
       @config[:base_view_class]
-    end
-
-    def command_bus_class
-      @config[:command_bus_class]
     end
 
     def href
@@ -103,6 +100,10 @@ module Lucid
     def command_handler
       @config[:handler]
     end
+    
+    def handler_context
+      @config[:context].merge(bus: @config[:handler])
+    end
 
     def run_with_context
       with_context { yield }
@@ -127,15 +128,9 @@ module Lucid
     end
 
     def with_context (&block)
-      Event.with_bus(event_bus) do
-        HttpMessage.with_app_state(self) do
-          block.call
-        end
+      HttpMessage.with_app_state(self) do
+        block.call
       end
-    end
-
-    def event_bus
-      EventBus.new(self)
     end
   end
 end

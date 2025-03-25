@@ -1,3 +1,5 @@
+require "dry/types"
+
 module Types
   include Dry.Types()
   %i[string integer float bool date time datetime array hash symbol].each do |name|

@@ -22,7 +22,7 @@ module Lucid
     describe "mutation" do
       it "updates the original hash" do
         hash          = {}
-        session_class = Class.new(Session) { attribute :foo, Types.string.default("") }
+        session_class = Class.new(Session) { attribute :foo, Types.string.default("".freeze) }
         session       = session_class.new(hash)
         session.put(foo: "bar")
         expect(hash[:foo]).to eq("bar")

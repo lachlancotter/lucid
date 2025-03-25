@@ -1,3 +1,5 @@
+require "dry/struct"
+
 module Lucid
   #
   # Base class for Session objects. A Session stores and updates data to be
