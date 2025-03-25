@@ -7,14 +7,11 @@ module MusicStore
     visit Checkout::Link, page: "checkout"
     visit Admin::Link, page: "admin"
 
-    on(Lucid::Guard::Denied) { update(page: "denied") }
-
     nest :content do |page|
       Match.on(page) do
         value("store") { Catalogue::Layout }
         value("checkout") { Checkout::Layout }
         value("admin") { Admin::Layout }
-        value("denied") { Admin::NotAuthorizedView }
       end
     end
 

@@ -8,7 +8,7 @@ module MusicStore
         div(class: "status-nav") {
           text username
           br
-          link_to New, "Login"
+          link_to ShowLogin, "Login"
           link_to Admin::Link, "Admin"
         }
       end

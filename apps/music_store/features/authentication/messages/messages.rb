@@ -5,7 +5,7 @@ module MusicStore
     #    Links
     # ===================================================== #
 
-    class New < Lucid::Link
+    class ShowLogin < Lucid::Link
 
     end
 

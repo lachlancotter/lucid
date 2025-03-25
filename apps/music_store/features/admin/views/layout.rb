@@ -18,6 +18,13 @@ module MusicStore
           p "You are logged in as #{user_email}"
         end
       end
+      
+      template :__denied__ do
+        div(class: "denied") do
+          h1 "Access Denied"
+          p "You are not authorized to view this page."
+        end
+      end
     end
   end
 end

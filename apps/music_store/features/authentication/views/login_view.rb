@@ -3,7 +3,7 @@ module MusicStore
     class LoginView < Lucid::Component::Base
       param :show, Types.bool.default(false)
 
-      visit New, show: true
+      visit ShowLogin, show: true
       on(Authenticated) { update(show: false) }
       echo(Authenticate, as: :credentials) { { email: "" } }
 

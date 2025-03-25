@@ -5,7 +5,7 @@ module MusicStore
 
       perform Authenticate do |cmd|
         session.put(user_email: cmd.email)
-        Authenticated.notify(email: cmd.email)
+        publish Authenticated.new(email: cmd.email)
       end
     end
   end
