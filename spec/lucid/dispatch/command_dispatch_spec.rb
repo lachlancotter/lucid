@@ -65,7 +65,7 @@ module Lucid
         message_class = Class.new(Command)
         handler_class = Class.new(Handler)
         expect {
-          handler_class.find_handler(message_class)
+          handler_class.find_handler!(message_class)
         }.to raise_error(CommandDispatch::NoHandler)
       end
     end
@@ -75,7 +75,7 @@ module Lucid
         message_class = Class.new(Command)
         handler_class = Class.new(Handler) { perform(message_class) {} }
         called        = false
-        handler_class.find_handler(message_class) do |klass, block|
+        handler_class.find_handler!(message_class) do |klass, block|
           called = true
           expect(klass).to eq(handler_class)
           expect(block).to eq(handler_class.handlers[message_class])
@@ -90,7 +90,7 @@ module Lucid
         nested_handler_class = Class.new(Handler) { perform(message_class) {} }
         handler_class        = Class.new(Handler) { recruit(nested_handler_class) }
         called               = false
-        handler_class.find_handler(message_class) do |klass, handler|
+        handler_class.find_handler!(message_class) do |klass, handler|
           called = true
           expect(klass).to eq(nested_handler_class)
           expect(handler).to eq(nested_handler_class.handlers[message_class])
@@ -139,7 +139,10 @@ module Lucid
       it "raises an exception" do
         message_class = Class.new(Command)
         handler_class = Class.new(Handler)
-        expect { handler_class.dispatch(message_class.new) }.to raise_error(CommandDispatch::NoHandler)
+        context = {}
+        expect do
+          handler_class.dispatch(message_class.new, context)
+        end.to raise_error(CommandDispatch::NoHandler)
       end
     end
   end

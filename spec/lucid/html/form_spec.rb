@@ -5,7 +5,7 @@ module Lucid
       describe "#field_name" do
         context "top level" do
           it "is the name of the field" do
-            message_type = Class.new(HttpMessage)
+            message_type = Class.new(HTTP::Message)
             params       = MessageParams.new(message_type, { foo: "bar" })
             builder      = Form::Builder.new(nil, params)
             expect(builder.field_name(:foo)).to eq("foo")
@@ -14,7 +14,7 @@ module Lucid
 
         context "nested field" do
           it "includes the nested key" do
-            message_type = Class.new(HttpMessage)
+            message_type = Class.new(HTTP::Message)
             params       = MessageParams.new(message_type, { foo: { bar: "baz" } })
             builder      = Form::Builder.new(nil, params, Path.new(:foo))
             expect(builder.field_name(:bar)).to eq("foo[bar]")
@@ -23,7 +23,7 @@ module Lucid
 
         context "deeply nested field" do
           it "includes the nested keys" do
-            message_type = Class.new(HttpMessage)
+            message_type = Class.new(HTTP::Message)
             params       = MessageParams.new(message_type, { foo: { bar: { baz: "quox" } } })
             builder      = Form::Builder.new(nil, params, Path.new("foo/bar"))
             expect(builder.field_name(:baz)).to eq("foo[bar][baz]")
@@ -33,7 +33,7 @@ module Lucid
 
       describe "#errors" do
         let(:message_class) do
-          Class.new(HttpMessage) do
+          Class.new(HTTP::Message) do
             validate do
               required(:foo).filled(:integer)
               required(:bar).hash do

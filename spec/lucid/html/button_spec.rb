@@ -19,7 +19,7 @@ module Lucid
           end
         end.new
         button  = Button.new(message, "Submit")
-        HttpMessage.with_app_state(app) do
+        HTTP::Message.with_app_state(app) do
           expect(button.to_s).to include("state[baz]=qux")
         end
       end

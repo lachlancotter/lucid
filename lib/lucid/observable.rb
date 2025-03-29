@@ -4,7 +4,7 @@ module Lucid
   #
   module Observable
     def attach (observer, &block)
-      @observers ||= {}
+      @observers           ||= {}
       @observers[observer] = block
     end
 

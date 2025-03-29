@@ -14,7 +14,7 @@ module Lucid
       include Linking
       include Responding
       include Echoing
-      include Templating
+      include HTML::Templating
       include Rendering
       include Guarded
 
@@ -28,7 +28,7 @@ module Lucid
       #
       # Access to the Session for the current request.
       #
-      prop :session, Types.Instance(Session).optional.default(nil)
+      prop :session, Types.Instance(App::Session).optional.default(nil)
 
       #
       # This component's parent in the component tree.

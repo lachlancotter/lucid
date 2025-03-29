@@ -30,7 +30,7 @@ module Lucid
         context "undefined template" do
           it "raises an exception" do
             view = Class.new(Component::Base).new({})
-            expect { view.template(:foo) }.to raise_error(Templating::TemplateNotFound)
+            expect { view.template(:foo) }.to raise_error(HTML::Templating::TemplateNotFound)
           end
         end
       end

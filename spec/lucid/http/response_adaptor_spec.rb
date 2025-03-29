@@ -19,7 +19,7 @@ module Lucid
               route "foo"
               element(:html) { body { text "foo" } }
             end.new({})
-            component.element.replace
+            component.delta.replace
             adaptor.send_delta(component, htmx: true)
             expect(adaptor.status).to eq(200)
             expect(adaptor.headers["HX-Push-Url"]).to eq("/foo")

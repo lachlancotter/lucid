@@ -8,13 +8,13 @@ module Lucid
       end
 
       it "accepts a default value" do
-        view_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar") }
+        view_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar".freeze) }
         view       = view_class.new({})
         expect(view.props.foo).to eq("bar")
       end
 
       it "overrides the default" do
-        view_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar") }
+        view_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar".freeze) }
         view = view_class.new({}, foo: "baz")
         expect(view.props.foo).to eq("baz")
       end
@@ -29,15 +29,15 @@ module Lucid
 
       describe "inheritance" do
         it "inherits defaults from parent class" do
-          super_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar") }
+          super_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar".freeze) }
           sub_class   = Class.new(super_class)
           view        = sub_class.new({})
           expect(view.props.foo).to eq("bar")
         end
 
         it "declares new values in subclasses" do
-          super_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar") }
-          sub_class   = Class.new(super_class) { prop :baz, Types.string.default("qux") }
+          super_class = Class.new(Component::Base) { prop :foo, Types.string.default("bar".freeze) }
+          sub_class   = Class.new(super_class) { prop :baz, Types.string.default("qux".freeze) }
           view        = sub_class.new({})
           expect(view.props.foo).to eq("bar")
           expect(view.props.baz).to eq("qux")
