@@ -7,20 +7,20 @@ module Lucid
       def self.included (base)
         base.extend(ClassMethods)
       end
-      
+
       attr_reader :state
       private def initialize_state (data)
-        Match.on(data) do
-          type(State::Reader) { data }
-          type(State::HashReader) { data }
-          type(Hash) { State::HashReader.new(data) }
-          default { raise ArgumentError, "Invalid state: #{data}" }
+        case data
+        when State::Reader then data
+        when State::HashReader then data
+        when Hash then State::HashReader.new(data)
+        else raise ArgumentError, "Invalid state: #{data}"
         end.tap do |params|
           @params = params
           @state  = self.class.build_state(params)
         end
       end
-      
+
       # def valid?
       #   state.valid?
       # end
@@ -33,7 +33,7 @@ module Lucid
           buffer.write_component(self, on_route: true)
         end.to_s
       end
-      
+
       def routes_to? (nest)
         nest.name == self.class.instance_variable_get(:@nested_route_component)
       end

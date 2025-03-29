@@ -8,10 +8,11 @@ module MusicStore
     visit Admin::Link, page: "admin"
 
     nest :content do |page|
-      Match.on(page) do
-        value("store") { Catalogue::Layout }
-        value("checkout") { Checkout::Layout }
-        value("admin") { Admin::Layout }
+      case page
+      when "store" then Catalogue::Layout
+      when "checkout" then Checkout::Layout
+      when "admin" then Admin::Layout
+      else raise "Unknown page: #{page}"
       end
     end
 

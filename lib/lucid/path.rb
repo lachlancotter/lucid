@@ -11,13 +11,13 @@ module Lucid
     end
 
     def initialize(components = [])
-      @components = Match.on(components) do
-        type(Path) { |other| other.components.dup }
-        type(Array) { Check[components].every { |e| e.type(Symbol, String) }.value }
-        type(Symbol) { [components.to_s] }
-        type(String) { components.sub(/^\//, "").split("/") }
-        type(NilClass) { [] }
-        default { raise InvalidComponents.new(components) }
+      @components = case components
+      when Path then components.components.dup
+      when Array then components
+      when Symbol then [components.to_s]
+      when String then components.sub(/^\//, "").split("/")
+      when NilClass then []
+      else raise InvalidComponents.new(components)
       end
     end
 

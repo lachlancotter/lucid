@@ -63,7 +63,7 @@ module Lucid
         @state = @state.new(data)
         data.keys.each { |key| field(key).invalidate if field?(key) }
       rescue Dry::Struct::Error => e
-        raise StateMap::Invalid.new(self, data, e.message)
+        raise State::Map::Invalid.new(self, data, e.message)
       end
 
       #

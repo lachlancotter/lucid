@@ -78,9 +78,10 @@ module Lucid
 
         def append_children (component)
           component.subcomponents.each do |(name, sub)|
-            Match.on(sub) do
-              type(Component::Base) { |sub| append_component(sub) }
-              type(Enumerable) { |enum| append_collection(enum) }
+            case sub
+            when Component::Base then append_component(sub)
+            when Component::Nesting::Collection then append_collection(sub)
+            else raise ArgumentError, "Unsupported subcomponent type: #{sub.class}"
             end
           end
         end

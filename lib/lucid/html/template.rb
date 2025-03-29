@@ -109,11 +109,9 @@ module Lucid
         end
 
         def subview (name_or_component)
-          component = Match.on(name_or_component) do
-            type(Symbol) { |name| @renderable.send(name) }
-            type(Component::Base) { |component| component }
-          end
-          emit Component::ChangeSet::Replace.new(component).call
+          emit Component::ChangeSet::Replace.new(
+             normalize_subview name_or_component
+          ).call
         end
 
         # TODO maybe we should explicitly expose methods to the template 
@@ -129,15 +127,21 @@ module Lucid
 
         private
 
+        def normalize_subview (name_or_component)
+          case name_or_component
+          when Symbol then @renderable.send(name_or_component)
+          when Component::Base then name_or_component
+          else raise ArgumentError, "Invalid subview type: #{name_or_component.class}"
+          end
+        end
+
         def normalize_message (message)
-          Match.on(message) do
-            type(Message) { message }
-            extends(HttpMessage) { |klass| klass.new }
-            type(Symbol) { |name| @renderable.link_to(name) }
-            default do
-              raise ArgumentError,
-                 "Message type, MessageParms or Symbol expected: #{message.inspect}"
-            end
+          case message
+          when Message then message
+          when Symbol then @renderable.link_to(message)
+          when -> (k) { k <= HTTP::Message } then message.new
+          else raise ArgumentError,
+             "Message type, MessageParms or Symbol expected: #{message.inspect}"
           end
         end
       end

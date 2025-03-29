@@ -114,40 +114,15 @@ module Lucid
         end
       end
 
-      #
-      # Pass control to a nested map.
-      #
-      # class Nest < Rule
-      #   def initialize (key, nested)
-      #     raise "no map provided" unless nested
-      #     super(key)
-      #     @nested = nested
-      #   end
-      #
-      #   def encode (state, buffer)
-      #     buffer.push_scope(@key)
-      #     @nested.encode(state[@key], buffer)
-      #     buffer.pop_scope
-      #   end
-      #
-      #   def decode (reader, state)
-      #     reader.with_scope(@key) do |scoped_reader|
-      #       state[@key] = {} unless state.key?(@key)
-      #       @nested.decode(scoped_reader, state[@key])
-      #     end
-      #   end
-      # end
-
-      def self.build (opts = {}, &block)
-        Docile.dsl_eval(Builder.new(opts), &block).build
+      def self.build (&block)
+        Docile.dsl_eval(Builder.new, &block).build
       end
 
       #
       # DSL for building a Route::Map.
       #
       class Builder
-        def initialize(nests)
-          @nests      = nests
+        def initialize
           @rules      = []
           @path_index = 0
         end
@@ -168,10 +143,6 @@ module Lucid
         def query (*keys)
           param(*keys)
         end
-
-        # def nest (key)
-        #   @rules << Nest.new(key, @nests[key])
-        # end
 
         def build
           Map.new.tap do |map|

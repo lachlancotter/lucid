@@ -11,9 +11,9 @@ module MusicStore
     end
 
     def self.get (id = uuid)
-      carts[id] ||= Match.on(id) do
-        type(String) { Cart.new(id) }
-        default { Cart.new(uuid) }
+      carts[id] ||= case id
+      when String then Cart.new(id)
+      else Cart.new(uuid)
       end
     end
 

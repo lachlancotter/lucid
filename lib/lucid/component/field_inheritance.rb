@@ -23,9 +23,10 @@ module Lucid
         #
         def use (name, from: nil)
           after_initialize do
-            fields[name] = Match.on(from) do
-              value(nil) { field_in_ancestor(name) }
-              value(:session) { props.session.field(name) }
+            fields[name] = case from
+            when NilClass then field_in_ancestor(name)
+            when :session then props.session.field(name)
+            else raise ArgumentError, "Invalid field source: #{from}"
             end
           end
           define_method(name) { fields[name].value }

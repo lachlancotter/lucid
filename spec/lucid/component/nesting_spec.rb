@@ -10,9 +10,9 @@ module Lucid
           view_class = Class.new(Component::Base) do
             param :val
             nest :foo do |val|
-              Match.on(val) do
-                value("a") { class_a }
-                value("b") { class_b }
+              case val
+              when "a" then class_a
+              when "b" then class_b
               end
             end
           end
@@ -57,9 +57,9 @@ module Lucid
           base_class  = Class.new(Component::Base) do
             param :val
             nest(:foo) do |val|
-              Match.on(val) do
-                value("a") { foo_class }
-                value("b") { bar_class }
+              case val
+              when "a" then foo_class
+              when "b" then bar_class
               end
             end
           end

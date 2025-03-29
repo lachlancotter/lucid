@@ -196,7 +196,7 @@ module Lucid
               end
             end
           end
-          
+
           def on_route?
             @parent.routes_to?(self)
           end
@@ -221,12 +221,11 @@ module Lucid
           def update_collection (reader) end
 
           def factory
-            object = @parent.instance_exec(*factory_args, &block)
-            Match.on(object) do
-              type(Factory) { object }
-              extends(Component::Base) { Factory::Singleton.new(object) { {} } }
-            end.tap do |result|
-              Check[result].type(Factory)
+            block_result = @parent.instance_exec(*factory_args, &block)
+            case block_result
+            when Factory then block_result
+            when -> (k) { k <= Component::Base } then Factory::Singleton.new(block_result) { {} }
+            else raise ArgumentError, "Invalid factory: #{block_result.class}"
             end
           end
 

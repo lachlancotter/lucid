@@ -13,10 +13,10 @@ module Lucid
       end
 
       def state_reader (app_root: "/")
-        Match.on(has_message?, htmx?) do
-          value(true, true) { state_from_hx_current_url(app_root) }
-          value(true, false) { state_from_message_params }
-          default { state_from_fullpath(app_root) }
+        case [has_message?, htmx?]
+        when [true, true] then state_from_hx_current_url(app_root)
+        when [true, false] then state_from_message_params
+        else state_from_fullpath(app_root)
         end.tap do |result|
           Check[result].type(State::Reader, State::HashReader)
         end
@@ -39,17 +39,18 @@ module Lucid
       end
 
       def self.normalize_path (url, app_root)
-        Match.on(url) do
-          value("") { "/" }
-          value("/") { "/" }
-          type(String) do
-            uri     = URI.parse(url)
-            pattern = app_root.sub(/\/$/, "")
-            uri.path.sub(pattern, "").tap do |path|
-              query = uri.query || ""
-              path << "?" + query if query != ""
-            end
+        case url
+        when "" then "/"
+        when "/" then "/"
+        when String
+          uri     = URI.parse(url)
+          pattern = app_root.sub(/\/$/, "")
+          uri.path.sub(pattern, "").tap do |path|
+            query = uri.query || ""
+            path << "?" + query if query != ""
           end
+        else
+          raise ArgumentError, "Invalid URL: #{url.inspect}"
         end
       end
 

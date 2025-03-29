@@ -26,9 +26,10 @@ module Lucid
         end
 
         def props_class
-          @props_class ||= Match.on(superclass) do
-            responds_to(:props_class) { Class.new(superclass.props_class) }
-            default { Class.new(Dry::Struct) }
+          @props_class ||= if superclass.respond_to?(:props_class)
+            Class.new(superclass.props_class)
+          else
+            Class.new(Dry::Struct)
           end
         end
       end
