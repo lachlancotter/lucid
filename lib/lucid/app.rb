@@ -35,10 +35,10 @@ module Lucid
          HTTP::ResponseAdaptor.new(response),
          {
             component: settings.component,
-            handler:         settings.handler,
-            app_root:        settings.app_root,
-            session:         settings.session.new(session),
-            context:         {
+            handler:   settings.handler,
+            app_root:  settings.app_root,
+            session:   settings.session.new(session),
+            context:   {
                session: settings.session.new(session),
             }
          }

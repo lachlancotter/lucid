@@ -25,7 +25,7 @@ module Lucid
       private
 
       def form_params
-        MessageParams.new(@message.class, @message.to_h)
+        FormModel.new(@message.class, @message.to_h)
       end
     end
   end

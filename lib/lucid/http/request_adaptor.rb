@@ -87,7 +87,7 @@ module Lucid
       end
 
       def message_params
-        HTML::MessageParams.new(
+        HTML::FormModel.new(
            message_class,
            raw_params.reject { |key, _| key == "state" }
         ) if has_message?

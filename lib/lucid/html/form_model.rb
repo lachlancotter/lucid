@@ -4,22 +4,13 @@ module Lucid
     # A container for message parameters that can be used to generate
     # hypermedia controls and access validation errors.
     #
-    class MessageParams
+    class FormModel
+      attr_reader :message_type, :message_params
+
       def initialize (message_type, message_params)
         @message_type   = Types.Instance(Class)[message_type]
-        @message_params =
-           case message_params
-           when Hash
-             message_params
-           when MessageParams
-             message_params.to_h
-           else
-             raise ArgumentError,
-                "Invalid message parameters: #{message_params.inspect}"
-           end
+        @message_params = validate_params(message_params)
       end
-
-      attr_reader :message_type, :message_params
 
       def valid?
         result.success?
@@ -54,6 +45,16 @@ module Lucid
 
       def http_method
         @message_type.http_method
+      end
+
+      private
+
+      def validate_params (params)
+        case params
+        when Hash then params
+        when FormModel then params.to_h
+        else raise ArgumentError, "Invalid message parameters: #{params.inspect}"
+        end
       end
     end
   end

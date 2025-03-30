@@ -27,7 +27,7 @@ module Lucid
 
         def initialize (renderer, message_params, path = Path.new)
           @renderer       = renderer
-          @message_params = Types.Instance(MessageParams)[message_params]
+          @message_params = Types.Instance(FormModel)[message_params]
           @path           = Types.Instance(Path)[path]
         end
 
