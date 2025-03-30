@@ -60,8 +60,8 @@ module Lucid
         @config[:app_root]
       end
 
-      def base_view_class
-        @config[:base_view_class]
+      def component
+        @config[:component]
       end
 
       def href
@@ -91,7 +91,7 @@ module Lucid
       private
 
       def build (state)
-        base_view_class.new(state, {
+        component.new(state, {
            app_root: app_root,
            session:  @config[:session],
            path:     Path.new

@@ -34,7 +34,7 @@ module Lucid
          HTTP::RequestAdaptor.new(request),
          HTTP::ResponseAdaptor.new(response),
          {
-            base_view_class: settings.base_view_class,
+            component: settings.component,
             handler:         settings.handler,
             app_root:        settings.app_root,
             session:         settings.session.new(session),

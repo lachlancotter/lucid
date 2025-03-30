@@ -7,7 +7,7 @@ module Satori
 
     def self.config (session)
       {
-         base_view_class: Booking::CalendarLayout,
+         component: Booking::CalendarLayout,
          handler:         Handler,
          context:         {
             session: Lucid::Session.new(session)

@@ -5,7 +5,7 @@ module Lucid
       describe ".url" do
         let(:response) { double("response") }
         let(:base) { Class.new(Component::Base) { param :baz } }
-        let(:config) { { app_root: "/", base_view_class: base } }
+        let(:config) { { app_root: "/", component: base } }
 
         context "GET request" do
           let(:message_class) do
@@ -114,7 +114,7 @@ module Lucid
       #       }
       #       request  = RequestAdaptor.new(Rack::Request.new(env))
       #       response = double("response")
-      #       config   = { app_root: "/", base_view_class: base }
+      #       config   = { app_root: "/", component: base }
       #       cycle    = App::Cycle.new(request, response, config)
       #       HTTP::Message.with_app_state(cycle) do
       #         expect(message.query_params).to eq({ foo: "bar", state: { baz: "qux" } })
@@ -134,7 +134,7 @@ module Lucid
       #       }
       #       request  = RequestAdaptor.new(Rack::Request.new(env))
       #       response = double("response")
-      #       config   = { app_root: "/", base_view_class: base }
+      #       config   = { app_root: "/", component: base }
       #       cycle    = App::Cycle.new(request, response, config)
       #       HTTP::Message.with_app_state(cycle) do
       #         expect(message.query_params).to eq({ foo: "bar" })
