@@ -5,11 +5,11 @@ module Lucid
   # Values from the message are matched against corresponding values in the
   # given context (typically a component).
   #
-  class MessageFilter
+  class Constraint
     def initialize (message_class, *keys, **maps)
-      @message_class = message_class
-      @keys          = keys
-      @maps          = maps
+      @message_class = Types.subclass(Message)[message_class]
+      @keys          = Types.array[keys]
+      @maps          = Types.hash[maps]
     end
 
     def match? (message, context = {})

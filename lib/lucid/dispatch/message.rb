@@ -24,6 +24,10 @@ module Lucid
       def valid? (data)
         schema.call(data).success?
       end
+      
+      def [] (*keys, **maps)
+        Constraint.new(self, *keys, **maps)  
+      end
     end
 
     def initialize (params = {})

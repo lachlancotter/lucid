@@ -7,32 +7,21 @@ module Lucid
       def self.included (base)
         base.extend(ClassMethods)
       end
-
+      
       def notify (event)
-        handler = self.class.event_handler(event.class)
-        instance_exec(event, &handler) if handler.is_a?(Proc)
+        self.class.responders.notify(event, self)
         each_subcomponent { |sub| sub.notify(event) }
       end
 
       private
 
       module ClassMethods
-        #
-        # Defines a handler function that will respond to
-        # notifications with the given class. Block is passed
-        # the event instance, and the current view state.
-        #
-        def on (event_class, &block)
-          @event_handlers              ||= {}
-          @event_handlers[event_class] = block
-          # << EventHandler.new(event_class, &block)
+        def on (event_type, *keys, **maps, &block)
+          responders.register(event_type, *keys, **maps, &block)
         end
 
-        def event_handler (event_class)
-          (@event_handlers || {}).fetch(event_class) do
-            return nil unless event_class <= Event
-            event_handler(event_class.superclass)
-          end
+        def responders
+          @responders ||= Responders.new
         end
       end
     end

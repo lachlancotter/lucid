@@ -1,34 +1,52 @@
 module Lucid
   describe Component::Responding do
-    describe ".event_handler" do
-      context "no handler" do
-        it "returns nil" do
-          event_class     = Class.new(Event)
-          component_class = Class.new(Component::Base) {}
-          expect(component_class.event_handler(event_class)).to be_nil
-        end
-      end
-
-      context "class handler" do
-        it "returns the handler" do
+    describe ".on" do
+      context "event class" do
+        it "calls the block when an event matches" do
+          result          = nil
           event_class     = Class.new(Event)
           component_class = Class.new(Component::Base) do
-            on(event_class) {}
+            on(event_class) do |event|
+              result = self
+            end
           end
-          expect(component_class.event_handler(event_class)).to be_a(Proc)
+          component       = component_class.new({})
+          event           = event_class.new
+          component.notify(event)
+          expect(result).to be(component)
         end
       end
 
-      context "superclass handler" do
-        it "returns the handler" do
-          event_superclass = Class.new(Event)
-          event_class      = Class.new(event_superclass)
-          component_class  = Class.new(Component::Base) do
-            on(event_superclass) {}
+      context "event filter" do
+        it "calls the block when the constraints are met" do
+          result          = nil
+          event_class     = Class.new(Event)
+          component_class = Class.new(Component::Base) do
+            on(event_class[foo: "bar"]) do |event|
+              result = event
+            end
           end
-          expect(component_class.event_handler(event_class)).to be_a(Proc)
+          component       = component_class.new({})
+          event           = event_class.new(foo: "bar")
+          component.notify(event)
+          expect(result).to be(event)
+        end
+
+        it "doesn't call the block when the constraint is not met" do
+          result          = nil
+          event_class     = Class.new(Event)
+          component_class = Class.new(Component::Base) do
+            on(event_class[foo: "bar"]) do |event|
+              result = event
+            end
+          end
+          component       = component_class.new({})
+          event           = event_class.new(foo: "baz")
+          component.notify(event)
+          expect(result).to be_nil
         end
       end
+      
     end
   end
 end
