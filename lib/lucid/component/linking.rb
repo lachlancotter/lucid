@@ -17,12 +17,12 @@ module Lucid
       #
       def visit (link)
         Check[link].type(Link)
-        visitations[link.key].call(self, link) if visitations.key?(link.key)
+        visitors[link.key].call(self, link) if visitors.key?(link.key)
         each_subcomponent { |sub| sub.visit(link) }
       end
 
-      def visitations
-        @visits ||= {}
+      def visitors
+        @visitors ||= {}
       end
 
       def self.included (base)
@@ -40,9 +40,9 @@ module Lucid
         #
         # link_key may be a Symbol or a Link subclass.
         #
-        def visit (link_key, *attrs, **map, &block)
+        def to (link_key, *attrs, **map, &block)
           after_initialize do
-            visitations[link_key] = Visit.new(*attrs, **map, &block)
+            visitors[link_key] = Visit.new(*attrs, **map, &block)
           end
         end
       end

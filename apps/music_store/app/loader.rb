@@ -1,4 +1,5 @@
 require "zeitwerk"
+require_relative "../../../lib/lucid"
 
 module MusicStore
   unless defined?(LOADER)

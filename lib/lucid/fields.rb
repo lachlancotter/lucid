@@ -5,8 +5,8 @@ module Lucid
     end
 
     class NoSuchField < ArgumentError
-      def initialize (name, path)
-        super("No such field: #{name} in #{path}")
+      def initialize (name, context)
+        super("No such field: #{name} in #{context}")
       end
     end
 
@@ -15,7 +15,7 @@ module Lucid
     end
 
     def field (name)
-      raise NoSuchField.new(name, props.path) unless field?(name)
+      raise NoSuchField.new(name, self) unless field?(name)
       fields[name]
     end
 

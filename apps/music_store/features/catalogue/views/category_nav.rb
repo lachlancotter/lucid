@@ -1,6 +1,6 @@
 module MusicStore
   module Catalogue
-    class CategoryNavView < Lucid::Component::Base
+    class CategoryNav < Lucid::Component::Base
       element do
         ul {
           Category.all.each do |cat|

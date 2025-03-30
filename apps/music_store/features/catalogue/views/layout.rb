@@ -5,8 +5,8 @@ module MusicStore
       param :category_slug, Types.string.optional.default(nil)
       param :product_id, Types.integer.optional.default(nil)
       
-      visit ListProducts, :category_slug
-      visit ShowProduct, :product_id
+      to ListProducts, :category_slug
+      to ShowProduct, :product_id
 
       # ===================================================== #
       #    Data
@@ -20,9 +20,9 @@ module MusicStore
       #    Subviews
       # ===================================================== #
 
-      nest(:nav) { CategoryNavView }
-      nest(:product_list) { |products| ProductListView[products: products] }
-      nest(:product_details) { |product| ProductView[product: product] }
+      nest(:nav) { CategoryNav }
+      nest(:product_list) { |products| ProductListing[products: products] }
+      nest(:product_details) { |product| ProductDetails[product: product] }
       nest(:cart_view) { ShoppingCart::CartView }
 
       # ===================================================== #

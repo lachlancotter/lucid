@@ -1,6 +1,6 @@
 module MusicStore
   module Catalogue
-    class ProductListView < Lucid::Component::Base
+    class ProductListing < Lucid::Component::Base
       prop :products, Types.array
 
       element do |products|

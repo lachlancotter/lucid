@@ -31,14 +31,14 @@ module Lucid
     end
 
     def require_file (filename)
-      puts "Require file: #{config_file(filename)}"
+      # puts "Require file: #{config_file(filename)}"
       if File.file?(config_file(filename))
         require config_file(filename)
       end
     end
 
     def autoload_directory (directory, zeitwerk_loader)
-      puts "Autoload from: #{full_directory_path(directory)}: #{@namespace}"
+      # puts "Autoload from: #{full_directory_path(directory)}: #{@namespace}"
       if File.directory?(full_directory_path(directory))
         zeitwerk_loader.push_dir(full_directory_path(directory), namespace: @namespace)
       end

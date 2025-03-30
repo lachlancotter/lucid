@@ -1,38 +1,49 @@
+require "sinatra"
+
 module Lucid
   #
   # Top-level interface for dispatching HTTP requests.
   #
-  class App
-    def initialize (config)
-      @config = config
-    end
+  class App < Sinatra::Base
+    enable :sessions
 
-    def query (request, response)
-      Logger.cycle(request, response, @config[:session]) do
+    get "/?*" do
+      # LOADER.reload
+      Logger.cycle(request, response, session) do
         cycle(request, response).query
       end
     end
 
-    def command (request, response)
-      Logger.cycle(request, response, @config[:session]) do
+    post "/?*" do
+      # LOADER.reload
+      Logger.cycle(request, response, session) do
         cycle(request, response).command
-      end
-    end
-
-    def validate (request)
-      log(request, "Starting validation") do
-
       end
     end
 
     private
 
+    # def validate (request)
+    #   log(request, "Starting validation") do
+    #
+    #   end
+    # end
+
     def cycle (request, response)
-      @cycle ||= Cycle.new(
+      Cycle.new(
          HTTP::RequestAdaptor.new(request),
          HTTP::ResponseAdaptor.new(response),
-         @config
+         {
+            base_view_class: settings.base_view_class,
+            handler:         settings.handler,
+            app_root:        settings.app_root,
+            session:         settings.session.new(session),
+            context:         {
+               session: settings.session.new(session),
+            }
+         }
       )
     end
+
   end
 end

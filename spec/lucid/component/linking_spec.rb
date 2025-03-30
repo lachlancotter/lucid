@@ -2,7 +2,7 @@ require "lucid/component/linking"
 
 module Lucid
   describe Component::Linking do
-    describe "#visit" do
+    describe "#to" do
 
       context "global link" do
         context "root component" do
@@ -12,7 +12,7 @@ module Lucid
             end
             app_class  = Class.new(Component::Base) do
               param :foo
-              visit link_class, :foo
+              to link_class, :foo
             end
             app        = app_class.new({})
             app.visit(link_class.new(foo: "bar"))
@@ -23,7 +23,7 @@ module Lucid
             link_class = Class.new(Link) { validate { required(:foo).filled(:string) } }
             app_class  = Class.new(Component::Base) do
               param :foo
-              visit link_class, :foo
+              to link_class, :foo
             end
             app        = app_class.new({})
             app.visit(link_class.new(foo: "bar")).to_h
@@ -33,7 +33,7 @@ module Lucid
           it "applies the destination state with a Hash" do
             app_class = Class.new(Component::Base) do
               param :foo
-              visit Link, foo: "bar"
+              to Link, foo: "bar"
             end
             app       = app_class.new({})
             app.visit(Link.new)
@@ -48,7 +48,7 @@ module Lucid
             app_class  = Class.new(Component::Base) do
               param :foo
               watch(:foo) { called = true }
-              visit link_class, :foo
+              to link_class, :foo
             end
             app        = app_class.new({})
             app.visit(link_class.new(foo: "bar"))
@@ -66,11 +66,11 @@ module Lucid
             end
             app_class  = Class.new(Component::Base) do
               param :foo
-              visit link_class, :foo
+              to link_class, :foo
               nest :bar do
                 Class.new(Component::Base) {
                   param :baz
-                  visit link_class, :baz
+                  to link_class, :baz
                 }
               end
             end

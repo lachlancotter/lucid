@@ -19,16 +19,16 @@ module Lucid
                 instance_variable_get(variable)
               else
                 default_params = instance_exec(&block)
-                MessageParams.new(message_class, default_params)
+                HTML::MessageParams.new(message_class, default_params)
               end.tap do |result|
-                Types.Instance(MessageParams)[result]
+                Types.Instance(HTML::MessageParams)[result]
               end
             end
           end
 
           on Lucid::Validation::Failed do |event|
             if event.message_type == message_class
-              message_params = MessageParams.new(event.message_type, event.message_params)
+              message_params = HTML::MessageParams.new(event.message_type, event.message_params)
               instance_variable_set(variable, message_params)
             end
           end

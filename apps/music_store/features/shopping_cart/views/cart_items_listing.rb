@@ -1,6 +1,6 @@
 module MusicStore
   module ShoppingCart
-    class CartItemsListView < Lucid::Component::Base
+    class CartItemsListing < Lucid::Component::Base
       prop :cart, Types.Instance(Cart)
 
       nest(:total_view) { |cart| CartTotalView[cart: cart] }

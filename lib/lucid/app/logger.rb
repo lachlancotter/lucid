@@ -1,7 +1,7 @@
 require "console"
 
 module Lucid
-  module App
+  class App
     #
     # Print pretty logs of the request cycle to the console.
     #

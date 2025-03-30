@@ -2,12 +2,12 @@ module MusicStore
   module ShoppingCart
     class CartView < Lucid::Component::Base
       param :open, Types.bool.default(false)
-      visit Open, open: true
-      visit Close, open: false
+      to Open, open: true
+      to Close, open: false
 
       use :cart, from: :session
       let(:item_count) { |cart| cart.item_count }
-      nest(:contents) { CartItemsListView[cart: cart] }
+      nest(:contents) { CartItemsListing[cart: cart] }
       on(ItemAdded) { invalidate(:item_count) }
 
       element do |item_count, open|

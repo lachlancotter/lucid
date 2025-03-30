@@ -1,6 +1,6 @@
 module MusicStore
   module Catalogue
-    class ProductView < Lucid::Component::Base
+    class ProductDetails < Lucid::Component::Base
       prop :product, Types.Instance(Product).optional
       use :cart, from: :session
 

@@ -1,3 +1,2 @@
 require "awesome_print"
-require "app/loader"
-require "server"
+require_relative "./app/loader"

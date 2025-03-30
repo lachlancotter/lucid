@@ -29,7 +29,7 @@ module Lucid
       end
 
       class << self
-        def attribute (name, type = Types.string)
+        def key (name, type = Types.string)
           state_class.attribute(name, type)
           after_initialize { fields[name] = Field.new(self) { self[name] } }
           define_method(name) { self[name] }

@@ -3,9 +3,9 @@ module MusicStore
     route "/:page", nest: :content
     param :page, Types.string.default("store".freeze)
 
-    visit Catalogue::Link, page: "store"
-    visit Checkout::Link, page: "checkout"
-    visit Admin::Link, page: "admin"
+    to Catalogue::Link, page: "store"
+    to Checkout::Link, page: "checkout"
+    to Admin::Link, page: "admin"
 
     nest :content do |page|
       case page
