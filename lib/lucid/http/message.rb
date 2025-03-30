@@ -134,13 +134,6 @@ module Lucid
         end
 
         #
-        # Syntax sugar for construction.
-        #
-        def [] (params)
-          new(params)
-        end
-
-        #
         # Stores the current application context for the duration of the block.
         # This enables messages to be encoded with the current application state.
         #

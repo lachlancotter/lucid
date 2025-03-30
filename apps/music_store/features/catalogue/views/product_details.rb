@@ -18,7 +18,7 @@ module MusicStore
       end
 
       def add_product (product, cart)
-        ShoppingCart::AddProduct[product_id: product.id, cart_id: cart.id]
+        ShoppingCart::AddProduct.new(product_id: product.id, cart_id: cart.id)
       end
     end
   end

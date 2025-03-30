@@ -20,17 +20,17 @@ module MusicStore
       end
 
       def inc
-        AddProduct[
+        AddProduct.new(
            product_id: props.item.product_id,
            cart_id:    props.cart.id
-        ]
+        )
       end
 
       def dec
-        RemoveProduct[
+        RemoveProduct.new(
            product_id: props.item.product_id,
            cart_id:    props.cart.id
-        ]
+        )
       end
     end
   end

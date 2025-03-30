@@ -10,7 +10,7 @@ module MusicStore
       end
 
       def product_list (category)
-        ListProducts[category_slug: category.slug]
+        ListProducts.new(category_slug: category.slug)
       end
     end
   end

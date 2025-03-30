@@ -16,7 +16,7 @@ module MusicStore
       end
 
       def show_product(product)
-        ShowProduct[product_id: product.id]
+        ShowProduct.new(product_id: product.id)
       end
     end
   end
