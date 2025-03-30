@@ -1,6 +1,6 @@
 module MusicStore
   module Authentication
-    class LoginView < Lucid::Component::Base
+    class LoginPanel < Lucid::Component::Base
       param :show, Types.bool.default(false)
 
       to ShowLogin, show: true

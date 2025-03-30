@@ -17,7 +17,7 @@ module MusicStore
     end
 
     nest(:status_nav) { Authentication::StatusNav }
-    nest(:login) { Authentication::LoginView }
+    nest(:login) { Authentication::LoginPanel }
 
     # ===================================================== #
     #    Template
