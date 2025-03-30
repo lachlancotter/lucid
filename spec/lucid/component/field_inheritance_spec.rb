@@ -30,7 +30,7 @@ module Lucid
       end
 
       it "inherits values from the session" do
-        session_class = Class.new(App::Session) { attribute :foo }
+        session_class = Class.new(App::Session) { key :foo }
         session       = session_class.new(foo: "bar")
         view_class    = Class.new(Component::Base) { use :foo, from: :session }
         view          = view_class.new({}, session: session)
