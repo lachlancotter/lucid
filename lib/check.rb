@@ -34,13 +34,13 @@ class Check
     unless (defined?(RSpec::Mocks::Double) &&
        @value.is_a?(RSpec::Mocks::Double)) ||
        types.any? { |type| @value.is_a?(type) }
-      raise Failure.new(self, "should have type #{types.join(' or ')}")
+      raise Failed.new(self, "should have type #{types.join(' or ')}")
     end; self
   end
 
   def extends (*modules)
     unless modules.all? { |mod| @value.ancestors.include?(mod) }
-      raise Failure.new(self, "should extend #{modules.join(' and ')}")
+      raise Failed.new(self, "should extend #{modules.join(' and ')}")
     end; self
   end
 
@@ -49,26 +49,26 @@ class Check
   def responds_to (*methods)
     methods.each do |method|
       unless @value.respond_to?(method)
-        raise Failure.new(self, "should respond to #{method}")
+        raise Failed.new(self, "should respond to #{method}")
       end
     end; self
   end
 
   def not_nil
     if @value.nil?
-      raise Failure.new(self, "should not be nil")
+      raise Failed.new(self, "should not be nil")
     end; self
   end
 
   def not_blank
     if @value.nil? || @value.empty?
-      raise Failure.new(self, "should not be blank")
+      raise Failed.new(self, "should not be blank")
     end; self
   end
 
   def has_key (key)
     unless @value.key?(key)
-      raise Failure.new(self, "should have key #{key}")
+      raise Failed.new(self, "should have key #{key}")
     end; self
   end
 
@@ -85,13 +85,13 @@ class Check
   end
 
   def gt (other, message = "should be greater than #{other}")
-    raise Failure.new(self, message) unless @value > other; self
+    raise Failed.new(self, message) unless @value > other; self
   end
 
   def includes (hash)
     hash.each do |key, value|
       unless @value.key?(key) && @value[key] == value
-        raise Failure.new(self, "should include #{key} => #{value}")
+        raise Failed.new(self, "should include #{key} => #{value}")
       end
     end
   end
@@ -115,7 +115,7 @@ class Check
   #
   # Raised on error conditions.
   #
-  class Failure < StandardError
+  class Failed < StandardError
     def initialize (check, message)
       @check   = check
       @message = message
@@ -123,13 +123,11 @@ class Check
 
     def message
       <<~MESSAGE
-         Check failed in ##{listing.method_name}: 
-          value: #{@check.value}
-          class: #{@check.value.class}
-          message: #{@message}
-          at: #{@check.location}
-          caller: #{@check.caller_location}
-        ----------------------------------------
+      in `#{listing.method_name}`: 
+         #{@check.value.class}[`#{@check.value}`] #{@message}
+         at: #{@check.location}
+         caller: #{@check.caller_location}
+      ----------------------------------------
         #{listing.snippet}
       MESSAGE
     end
@@ -166,8 +164,8 @@ class Check
       return '' unless File.exist?(@file)
       lines = File.readlines(@file)
 
-      start_line = [@line - context - 1, 0].max
-      end_line   = [@line + context - 1, lines.size - 1].min
+      start_line = [@line - context, 0].max
+      end_line   = [@line + context, lines.size - 1].min
 
       source_code = ''
       (start_line..end_line).each do |i|

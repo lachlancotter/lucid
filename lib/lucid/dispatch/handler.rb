@@ -5,6 +5,7 @@ module Lucid
   # to the class object. If a matching handler is found, the Handler class is
   # instantiated with that handler block and the message is passed to it.
   # 
+  # noinspection RubyResolve
   class Handler
     include Component::Callbacks
     include Injection::Consumer
@@ -16,14 +17,14 @@ module Lucid
     # handlers to dispatch commands and publish events for other handlers.
     # 
     use :message_bus, Types.subclass(Handler)
-    
+
     #
     # Handlers have access to the session object, which is a wrapper around
     # the Rack session. This allows handlers to store and retrieve data
     # from the session.
     # 
     use :session, Types.instance(App::Session)
-    
+
     #
     # Instantiate a Handler with a container object and code block.
     # The block will be called with the message as an argument.
