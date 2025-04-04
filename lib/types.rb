@@ -7,7 +7,7 @@ module Types
     define_singleton_method(name) { Params.const_get(name.capitalize) }
   end
   
-  def instance (type)
+  def self.instance (type)
     Instance(type)
   end
 

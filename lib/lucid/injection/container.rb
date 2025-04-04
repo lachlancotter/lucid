@@ -13,12 +13,12 @@ module Lucid
       # Raised on attempt to access a provider that does not exist in the container.
       # 
       class NoSuchProvider < ArgumentError
-        def initialize (key)
-          super("No such provider registered: #{key}")
+        def initialize (key, container)
+          super("No provider named `#{key}` is registered for container class #{container}.")
         end
 
         def self.check (key, container)
-          raise new(key) unless container.key?(key)
+          raise new(key, container) unless container.key?(key)
         end
       end
 
@@ -39,7 +39,7 @@ module Lucid
       # 
       def [](key)
         @memoized.fetch(key) do
-          @memoized[key] = self.class.resolve(key, self)
+          @memoized[key] = instance_exec &(self.class.resolve(key))
         end
       end
 
@@ -62,14 +62,20 @@ module Lucid
         #
         # Run a provider block in the context of the given container instance.
         # 
-        def resolve (key, instance)
-          NoSuchProvider.check(key, self)
-          block = providers[key]
-          instance.instance_exec(&block)
+        def resolve (key)
+          providers.fetch(key) do
+            if superclass.respond_to?(:resolve)
+              superclass&.resolve(key)
+            else
+              raise NoSuchProvider.new(key, self)
+            end
+          end
         end
 
         def key? (key)
-          providers.key?(key)
+          return true if providers.key?(key)
+          return superclass&.key?(key) if superclass.respond_to?(:key?)
+          false
         end
 
         private

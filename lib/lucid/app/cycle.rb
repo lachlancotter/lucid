@@ -84,11 +84,11 @@ module Lucid
       private
 
       def build (state)
-        @component_class.new(state, {
+        @component_class.new(state,
            app_root: @app_root,
            session:  @container[:session],
            path:     Path.new
-        })
+        )
       end
 
       def run_with_context

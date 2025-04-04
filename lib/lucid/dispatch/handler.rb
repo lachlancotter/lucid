@@ -22,7 +22,7 @@ module Lucid
     # the Rack session. This allows handlers to store and retrieve data
     # from the session.
     # 
-    use :session, Types.Instance(App::Session)
+    use :session, Types.instance(App::Session)
     
     #
     # Instantiate a Handler with a container object and code block.

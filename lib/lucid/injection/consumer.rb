@@ -68,9 +68,13 @@ module Lucid
         # We build a Dry::Struct to use as a schema for the required dependencies.
         # This is just a convenient way of mapping names to types. We don't actually
         # instantiate the struct.
-        # 
+        #
         def deps_class
-          @deps_class ||= Class.new(Dry::Struct)
+          @deps_class ||= if superclass.respond_to?(:deps_class)
+            Class.new(superclass.deps_class)
+          else
+            Class.new(Dry::Struct)
+          end
         end
       end
 
