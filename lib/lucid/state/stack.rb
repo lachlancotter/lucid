@@ -20,11 +20,11 @@ module Lucid
       def push_scope (key)
         Types.symbol[key]
         @scope.last[key] = {} unless @scope.last.key?(key)
-        @scope.push(@scope.last[key]).tap { Check[@scope.last].hash }
+        @scope.push(@scope.last[key]).tap { Types.hash[@scope.last] }
       end
 
       def pop_scope
-        Check[@scope.length].gt(1, "underflow")
+        Underflow.check(@scope)
         @scope.pop
         # If no params were added to the scope, remove it.
         @scope.last.delete_if { |k, v| v.is_a?(Hash) && v.empty? }
@@ -34,6 +34,16 @@ module Lucid
         push_scope(key)
         yield
         pop_scope
+      end
+      
+      class Underflow < StandardError
+        def initialize
+          super("Attempt to pop the last scope from the stack. Probably a bug.")
+        end
+        
+        def self.check (scope)
+          raise new if scope.length == 1
+        end
       end
     end
   end

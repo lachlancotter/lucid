@@ -7,7 +7,7 @@ module Lucid
         let(:component_class) { Class.new(Component::Base) { param :baz } }
         let(:handler_class) { Class.new(Handler) }
 
-        def build_cycle (request, response)
+        def build_cycle (request)
           App::Cycle.new(request, response,
              component_class: component_class,
              handler_class:   handler_class,
@@ -38,7 +38,7 @@ module Lucid
                     "QUERY_STRING"   => "baz=qux",
                  })
               )
-              cycle   = build_cycle(request, response)
+              cycle   = build_cycle(request)
               HTTP::Message.with_app_state(cycle) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state[baz]=qux")
               end
@@ -55,7 +55,7 @@ module Lucid
                     "HTTP_HX_REQUEST" => "true"
                  })
               )
-              cycle   = build_cycle(request, response)
+              cycle   = build_cycle(request)
               HTTP::Message.with_app_state(cycle) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar")
               end
@@ -85,7 +85,7 @@ module Lucid
                     "QUERY_STRING"   => "baz=qux",
                  })
               )
-              cycle   = build_cycle(request, response)
+              cycle   = build_cycle(request)
               HTTP::Message.with_app_state(cycle) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?state[baz]=qux")
               end
@@ -102,7 +102,7 @@ module Lucid
                     "HTTP_HX_REQUEST" => "true"
                  })
               )
-              cycle   = build_cycle(request, response)
+              cycle   = build_cycle(request)
               HTTP::Message.with_app_state(cycle) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message")
               end
@@ -124,7 +124,7 @@ module Lucid
       #       request  = RequestAdaptor.new(Rack::Request.new(env))
       #       response = double("response")
       #       config   = { app_root: "/", component: base }
-      #       cycle    = build_cycle(request, response)
+      #       cycle    = build_cycle(request)
       #       HTTP::Message.with_app_state(cycle) do
       #         expect(message.query_params).to eq({ foo: "bar", state: { baz: "qux" } })
       #       end
@@ -144,7 +144,7 @@ module Lucid
       #       request  = RequestAdaptor.new(Rack::Request.new(env))
       #       response = double("response")
       #       config   = { app_root: "/", component: base }
-      #       cycle    = build_cycle(request, response)
+      #       cycle    = build_cycle(request)
       #       HTTP::Message.with_app_state(cycle) do
       #         expect(message.query_params).to eq({ foo: "bar" })
       #       end
