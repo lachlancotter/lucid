@@ -7,7 +7,7 @@ module Lucid
   # 
   class Handler
     include Component::Callbacks
-    include Component::Properties
+    include Injection::Consumer
     extend CommandDispatch
     extend EventBroadcast
 
@@ -15,19 +15,24 @@ module Lucid
     # The message bus is shared among all handlers. This provides a means for
     # handlers to dispatch commands and publish events for other handlers.
     # 
-    prop :bus, Types.Instance(Class).optional
+    use :message_bus, Types.subclass(Handler)
+    
+    #
+    # Handlers have access to the session object, which is a wrapper around
+    # the Rack session. This allows handlers to store and retrieve data
+    # from the session.
+    # 
+    use :session, Types.Instance(App::Session)
     
     #
     # Instantiate a Handler with a container object and code block.
     # The block will be called with the message as an argument.
     # The container provides the dependencies required by the handler.
     #
-    def initialize (container = {}, &handler)
+    def initialize (container, &handler)
       @handler   = handler
       @container = container
-      initialize_props(
-         self.class.resolve_dependencies(container)
-      )
+      super(container)
     end
 
     #
@@ -41,60 +46,24 @@ module Lucid
     # Publish new events for other handlers and components to consume.
     # 
     def publish (event)
-      bus.publish(event, @container)
+      message_bus.publish(event, @container)
     end
 
     #
     # Dispatch new commands to other handlers.
     # 
     def dispatch (command)
-      bus.dispatch(command, @container)
-    end
-
-    #
-    # Raised when attempting to construct a Handler instance without
-    # the required dependencies.
-    #
-    class MissingDependency < ArgumentError
-      def initialize (handler, name)
-        super("Missing dependency `#{name}` for #{handler.class}")
-      end
+      message_bus.dispatch(command, @container)
     end
 
     #
     # DSL methods.
     #
     class << self
-      #
-      # Declare a dependency for the handler.
-      #
-      def prop (name, type = Types.string)
-        props_class.attribute(name, type)
-        define_method(name) { props[name] }
-      end
-      
       def recruit (message_class)
         recruit_dispatcher message_class
         recruit_broadcaster message_class
       end
-
-      #
-      # Builds a hash of dependencies for the handler from the provided
-      # container object. This enables us to accept containers with missing
-      # dependency keys, provided those dependencies are optional.
-      # 
-      def resolve_dependencies (container)
-        {}.tap do |hash|
-          props_class.schema.keys.each do |key|
-            hash[key.name] = container.fetch(key.name) do
-              unless key.optional?
-                raise MissingDependency.new(self, key.name)
-              end
-            end
-          end
-        end
-      end
-      
     end
   end
 end

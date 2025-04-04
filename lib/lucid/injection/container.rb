@@ -1,5 +1,3 @@
-require "dry-container"
-
 module Lucid
   module Injection
     #
@@ -31,11 +29,8 @@ module Lucid
       #
       # A new Container is created for each request.
       # 
-      def initialize (config, rack_session)
-        super()
-        @config       = config
-        @rack_session = rack_session
-        @memoized     = {}
+      def initialize
+        @memoized = {}
       end
 
       #

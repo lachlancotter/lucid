@@ -3,13 +3,13 @@ module Lucid
     #
     # Register event handlers that respond to notifications.
     #
-    module Responding
+    module Eventing
       def self.included (base)
         base.extend(ClassMethods)
       end
       
       def notify (event)
-        self.class.responders.notify(event, self)
+        self.class.event_handlers.notify(event, self)
         each_subcomponent { |sub| sub.notify(event) }
       end
 
@@ -17,11 +17,11 @@ module Lucid
 
       module ClassMethods
         def on (event_type, *keys, **maps, &block)
-          responders.register(event_type, *keys, **maps, &block)
+          event_handlers.register(event_type, *keys, **maps, &block)
         end
 
-        def responders
-          @responders ||= Responders.new
+        def event_handlers
+          @responders ||= EventHandlers.new
         end
       end
     end

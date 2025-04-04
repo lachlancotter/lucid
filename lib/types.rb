@@ -6,6 +6,10 @@ module Types
   %i[string integer float bool date time datetime array hash symbol].each do |name|
     define_singleton_method(name) { Params.const_get(name.capitalize) }
   end
+  
+  def instance (type)
+    Instance(type)
+  end
 
   def self.subclass(type)
     Types::Class.constrained(lt: type)

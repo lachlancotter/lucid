@@ -3,20 +3,20 @@ module Lucid
     #
     # Register and call event handlers for a component class.
     # 
-    class Responders
+    class EventHandlers
       def initialize
-        @responders = []
+        @handlers = []
       end
 
       def register (message_type, *keys, **maps, &block)
-        @responders << Constrained.new(
+        @handlers << Constrained.new(
            normalize_constraint(message_type, *keys, **maps), &block
         )
       end
 
       def notify (message, context = {})
-        @responders.each do |responder|
-          responder.call(message, context)
+        @handlers.each do |handler|
+          handler.call(message, context)
         end
       end
 

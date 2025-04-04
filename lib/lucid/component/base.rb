@@ -12,7 +12,7 @@ module Lucid
       include Fields
       include FieldInheritance
       include Linking
-      include Responding
+      include Eventing
       include Echoing
       include HTML::Templating
       include Rendering

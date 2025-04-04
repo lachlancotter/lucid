@@ -4,10 +4,13 @@ module Lucid
     # Manages a request/response cycle.
     #
     class Cycle
-      def initialize (request, response, config)
-        @request  = request
-        @response = response
-        @config   = config
+      def initialize (request, response, component_class:, handler_class:, container:, app_root:)
+        @request         = request
+        @response        = response
+        @component_class = component_class
+        @handler_class   = handler_class
+        @container       = container
+        @app_root        = app_root
       end
 
       def query
@@ -35,7 +38,7 @@ module Lucid
             validate_message!(command) do |valid_command|
               Logger.command(valid_command)
               puts valid_command.class
-              message_bus.dispatch(valid_command, handler_context)
+              @handler_class.dispatch(valid_command, @container)
             end
             # base_view.check_guards do
             @response.send_delta(base_view, htmx: @request.htmx?)
@@ -50,18 +53,8 @@ module Lucid
 
       def base_view
         @base_view ||= build(
-           @request.state_reader(
-              app_root: app_root
-           )
+           @request.state_reader(app_root: @app_root)
         )
-      end
-
-      def app_root
-        @config[:app_root]
-      end
-
-      def component
-        @config[:component]
       end
 
       def href
@@ -91,19 +84,11 @@ module Lucid
       private
 
       def build (state)
-        component.new(state, {
-           app_root: app_root,
-           session:  @config[:session],
+        @component_class.new(state, {
+           app_root: @app_root,
+           session:  @container[:session],
            path:     Path.new
         })
-      end
-
-      def message_bus
-        @config[:handler]
-      end
-
-      def handler_context
-        @config[:context].merge(bus: @config[:handler])
       end
 
       def run_with_context

@@ -22,7 +22,7 @@ module Lucid
         def prop(name, type = Types.string)
           props_class.attribute(name, type)
           after_initialize { fields[name] = Field.new(self) { props[name] } }
-          define_method(name) { props[name] }
+          define_method(name) { fields[name] }
         end
 
         def props_class
