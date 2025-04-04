@@ -9,21 +9,6 @@ module Lucid
       end
 
       attr_reader :state
-      private def initialize_state (data)
-        case data
-        when State::Reader then data
-        when State::HashReader then data
-        when Hash then State::HashReader.new(data)
-        else raise ArgumentError, "Invalid state: #{data}"
-        end.tap do |params|
-          @params = params
-          @state  = self.class.build_state(params)
-        end
-      end
-
-      # def valid?
-      #   state.valid?
-      # end
 
       #
       # Encodes component state as a URL.
@@ -32,6 +17,26 @@ module Lucid
         State::Writer.new(deep_state).tap do |buffer|
           buffer.write_component(self, on_route: true)
         end.to_s
+      end
+
+      #
+      # The state for this and all nested components.
+      #
+      def deep_state
+        subcomponents.inject(state.to_h) do |hash, (name, sub)|
+          case sub
+          when Component::Base
+            hash.merge(name => sub.deep_state)
+          when Collection
+            hash.merge(
+               name => sub.map do |e|
+                 { e.collection_key => e.deep_state }
+               end
+            )
+          else
+            raise "Unexpected subcomponent type: #{sub.class}"
+          end
+        end
       end
 
       def routes_to? (nest)
@@ -45,6 +50,34 @@ module Lucid
         message_params.merge(state: deep_state)
       end
 
+      private
+
+      def initialize_state (reader_data)
+        validate_reader!(reader_data).tap do |reader|
+          @state_reader = reader
+          @state        = self.class.build_state(reader)
+        end
+      end
+
+      #
+      # Read state for a nested component.
+      #
+      def nested_state (key)
+        Types.reader[@state_reader.seek(self.class.state_map.path_count, key)]
+      end
+
+      def validate_reader! (value)
+        case value
+        when State::Reader then value
+        when State::HashReader then value
+        when Hash then State::HashReader.new(value)
+        else raise ArgumentError, "Invalid state: #{value}"
+        end
+      end
+
+      #
+      # DSL methods.
+      # 
       module ClassMethods
         #
         # Define the path mapping for the component state.
@@ -77,10 +110,9 @@ module Lucid
         end
 
         #
-        # Instantiate a state object from the given data.
-        #
+        # Build an instance of the state class from the reader.
+        # 
         def build_state (reader)
-          Check[reader].type(State::Reader, State::HashReader)
           data = reader.read(state_map)
           state_class.new(data)
         rescue Dry::Struct::Error => e

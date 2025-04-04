@@ -32,6 +32,16 @@ module Lucid
         end
       end
 
+      context "optional dependency not provided" do
+        it "instantiates the consumer" do
+          consumer_superclass = Class.new(ConsumerBase) { use :foo, Types.string.optional }
+          consumer_class      = Class.new(consumer_superclass) { }
+          container_class     = Class.new(Container) {  }
+          container           = container_class.new
+          expect { consumer_class.new(container) }.not_to raise_error
+        end
+      end
+
       context "no such provider" do
         it "raises an error" do
           consumer_class  = Class.new(ConsumerBase) { use :foo, Types.string }

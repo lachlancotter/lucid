@@ -25,12 +25,13 @@ module Lucid
       def validate_dependencies (container)
         container.tap do
           deps_schema.keys.each do |key|
-            MissingDependency.check(key.name, self, container)
+            MissingDependency.check(key, self, container)
           end
         end
       end
 
       private
+
       def deps_schema
         self.class.send(:deps_class).schema
       end
@@ -45,7 +46,9 @@ module Lucid
         end
 
         def self.check (key, consumer, container)
-          raise new(container, consumer, key) unless container.key?(key)
+          unless container.key?(key.name) || key.optional?
+            raise new(container, consumer, key.name)
+          end
         end
       end
 
@@ -56,10 +59,14 @@ module Lucid
         # 
         def use (name, type)
           deps_class.attribute(name, type)
+          key = deps_class.schema.key(name)
           define_method(name) do
-            @container[name].tap do |dep|
+            if @container.key?(name)
               # Validate that the resolved dependency is of the correct type.
-              deps_schema.key(name).type[dep]
+              @container[name].tap { |dep| key.type[dep] }
+            else
+              # Raise an error unless the dependency is optional.
+              MissingDependency.check(key, self, @container)
             end
           end
         end

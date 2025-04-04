@@ -6,7 +6,7 @@ module Lucid
     #
     class Stack
       def initialize (top = {})
-        @scope = [Check[top].hash.value]
+        @scope = [Types.hash[top]]
       end
 
       def top
@@ -18,7 +18,7 @@ module Lucid
       end
 
       def push_scope (key)
-        Check[key].symbol.value
+        Types.symbol[key]
         @scope.last[key] = {} unless @scope.last.key?(key)
         @scope.push(@scope.last[key]).tap { Check[@scope.last].hash }
       end

@@ -1,5 +1,5 @@
 module Lucid
-  describe Component::Responding do
+  describe Component::Eventing do
     describe ".on" do
       context "event class" do
         it "calls the block when an event matches" do

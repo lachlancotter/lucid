@@ -51,36 +51,7 @@ module Lucid
       def collection_key
         raise "You must define a collection_key method to use collections."
       end
-
-      #
-      # The state for this and all nested components.
-      #
-      def deep_state
-        subcomponents.inject(state.to_h) do |hash, (name, sub)|
-          case sub
-          when Component::Base
-            hash.merge(name => sub.deep_state)
-          when Collection
-            hash.merge(
-               name => sub.map do |e|
-                 { e.collection_key => e.deep_state }
-               end
-            )
-          else
-            raise "Unexpected subcomponent type: #{sub.class}"
-          end
-        end
-      end
-
-      #
-      # Read state for a nested component.
-      #
-      private def nested_state (key)
-        @params.seek(self.class.state_map.path_count, key).tap do |result|
-          Check[result].type(State::HashReader, State::Reader)
-        end
-      end
-
+      
       module ClassMethods
         # DSL method to define a nested component.
         def nest (name, &block)
@@ -129,10 +100,8 @@ module Lucid
       #
       class Collection < SimpleDelegator
         def initialize (nest_binding, collection)
-          Check[nest_binding].type(Nest::Binding)
-          Check[collection].type(Enumerable)
-          @nest_binding = nest_binding
-          super(collection)
+          @nest_binding = Types.instance(Nest::Binding)[nest_binding]
+          super(Types.instance(Enumerable)[collection])
         end
 
         def build (model)

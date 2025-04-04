@@ -44,12 +44,12 @@ module Lucid
         end
 
         def field_id (key)
-          Check[key].type(String, Symbol)
+          Types.union(String, Symbol)[key]
           @path.concat(key).join("_")
         end
 
         def field_name (key)
-          Check[key].type(String, Symbol)
+          Types.union(String, Symbol)[key]
           if @path.depth == 0
             key.to_s
           else

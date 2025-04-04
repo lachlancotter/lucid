@@ -8,8 +8,7 @@ module Lucid
       # URL param includes a path and query string.
       #
       def initialize (url, cursor = Cursor.new)
-        Check[url].string.not_blank
-        @url    = url
+        @url    = Types.string.constrained(min_size: 1)[url]
         @cursor = cursor
       end
 
@@ -17,7 +16,7 @@ module Lucid
       # Read a hash of values from the URL based on the mapping rules.
       #
       def read (map)
-        Check[map].type(State::Map)
+        Types.instance(State::Map)[map]
         {}.tap { |state| map.decode(self, state) }
       end
 
@@ -33,8 +32,7 @@ module Lucid
       end
 
       def read_param (key)
-        Check[key].symbol
-        @cursor.param(query_params, key)
+        @cursor.param(query_params, Types.symbol[key])
       end
 
       def with_scope (key)
@@ -52,9 +50,7 @@ module Lucid
       end
 
       def path
-        @url.split("?").first.tap do |result|
-          Check[result].string
-        end
+        Types.string[@url.split("?").first]
       end
 
       def query_string
@@ -64,8 +60,7 @@ module Lucid
       private
 
       def parse_path (path)
-        Check[path].string
-        path.sub(/^\//, "").split("/")
+        Types.string[path].sub(/^\//, "").split("/")
       end
 
       def parse_query (query_string)

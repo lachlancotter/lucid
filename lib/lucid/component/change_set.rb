@@ -7,7 +7,7 @@ module Lucid
       extend Forwardable
 
       def initialize (component)
-        @component = Check[component].type(Component::Base).value
+        @component = Types.component[component]
         @changes   = []
       end
 
@@ -67,7 +67,7 @@ module Lucid
         end
 
         def append_component (component)
-          Check[component].type(Component::Base)
+          Types.component[component]
           append_change_set(component.delta)
           append_children(component) unless component.delta.replace?
         end
@@ -96,7 +96,7 @@ module Lucid
       #
       class Change
         def initialize (component)
-          @component = Check[component].type(Component::Base).value
+          @component = Types.component[component]
           @template  = @component.template
         end
 
@@ -153,7 +153,7 @@ module Lucid
       class Prepend < Change
         def initialize (component, to:)
           super(component)
-          @parent = Check[to].type(Component::Base).value
+          @parent = Types.component[to]
         end
 
         def swap

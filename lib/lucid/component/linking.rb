@@ -6,8 +6,7 @@ module Lucid
       # links are applied only to the current Linkable instance.
       #
       def link_to (name = nil, params = {})
-        Check[name].symbol
-        Link::Scoped.new(self, name, params)
+        Link::Scoped.new(self, Types.symbol[name], params)
       end
 
       #
@@ -16,7 +15,7 @@ module Lucid
       # href for global links.
       #
       def visit (link)
-        Check[link].type(Link)
+        Types.instance(Link)[link]
         visitors[link.key].call(self, link) if visitors.key?(link.key)
         each_subcomponent { |sub| sub.visit(link) }
       end

@@ -13,13 +13,13 @@ module Lucid
       end
 
       def state_reader (app_root: "/")
-        case [has_message?, htmx?]
-        when [true, true] then state_from_hx_current_url(app_root)
-        when [true, false] then state_from_message_params
-        else state_from_fullpath(app_root)
-        end.tap do |result|
-          Check[result].type(State::Reader, State::HashReader)
-        end
+        Types.reader[
+           case [has_message?, htmx?]
+           when [true, true] then state_from_hx_current_url(app_root)
+           when [true, false] then state_from_message_params
+           else state_from_fullpath(app_root)
+           end
+        ]
       end
 
       def state_from_fullpath (app_root)

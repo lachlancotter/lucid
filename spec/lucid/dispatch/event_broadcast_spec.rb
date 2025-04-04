@@ -1,6 +1,11 @@
 module Lucid
   describe EventBroadcast do
     
+    class TestContainer < Injection::Container
+      provide(:message_bus) { nil }
+      provide(:session) { nil }
+    end
+    
     describe "subscriber registration" do
       context "one subscriber" do
         it "registers the subscriber" do
@@ -46,7 +51,7 @@ module Lucid
           event_class   = Class.new(Event)
           handler_class = Class.new(Handler) do
           end
-          expect { handler_class.publish(event_class.new, {}) }.not_to raise_error
+          expect { handler_class.publish(event_class.new, TestContainer.new) }.not_to raise_error
         end
       end
 
@@ -62,7 +67,7 @@ module Lucid
               handler_context = self
             end
           end
-          handler_class.publish(event_class.new, {})
+          handler_class.publish(event_class.new, TestContainer.new)
           expect(called).to be_truthy
           expect(handler_context).to be_instance_of(handler_class)
         end
@@ -76,7 +81,7 @@ module Lucid
             subscribe(event_class) { calls << "first" }
             subscribe(event_class) { calls << "second" }
           end
-          handler_class.publish(event_class.new, {})
+          handler_class.publish(event_class.new, TestContainer.new)
           expect(calls).to eq(%w[first second])
         end
       end
@@ -94,7 +99,7 @@ module Lucid
             recruit(nested_handler)
             subscribe(event_class) { calls << "second" }
           end
-          handler_class.publish(event_class.new, {})
+          handler_class.publish(event_class.new, TestContainer.new)
           expect(calls).to eq(%w[second first])
         end
       end
@@ -105,7 +110,7 @@ module Lucid
           handler_class = Class.new(Handler) do
           end
           expect do
-            handler_class.publish(event_class.new, {})
+            handler_class.publish(event_class.new, TestContainer.new)
           end.to raise_error(EventBroadcast::InvalidEvent)
         end
       end

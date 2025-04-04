@@ -45,8 +45,8 @@ module Lucid
       #
       class Wrapper
         def initialize (component, attrs)
-          @component = component
-          @attrs     = Check[attrs].hash.value
+          @component = Types.component[component]
+          @attrs     = Types.hash[attrs]
         end
 
         def wrap

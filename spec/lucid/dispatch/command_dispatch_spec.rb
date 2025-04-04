@@ -1,10 +1,17 @@
 module Lucid
   describe CommandDispatch do
+
+    class TestContainer < Injection::Container
+      provide(:message_bus) { nil }
+      provide(:session) { nil }
+      provide(:foo) { "bar" }
+    end
+
     describe "construction" do
       context "valid dependencies" do
         it "injects dependencies" do
           handler_class = Class.new(Handler) { use :foo, Types.string }
-          handler       = handler_class.new(foo: "bar") {}
+          handler       = handler_class.new(TestContainer.new) {}
           expect(handler.foo).to eq("bar")
         end
       end
@@ -104,32 +111,30 @@ module Lucid
     context "registered message" do
       it "calls the message handler" do
         dispatched_message = nil
-        message_class = Class.new(Command)
-        handler_class = Class.new(Handler) do
+        message_class      = Class.new(Command)
+        handler_class      = Class.new(Handler) do
           perform(message_class) do |message|
             dispatched_message = message
           end
         end
-        context = {}
-        handler_class.dispatch(message_class.new, context)
+        handler_class.dispatch(message_class.new, TestContainer.new)
         expect(dispatched_message).to be_instance_of(message_class)
       end
     end
 
     context "registered in nested handler" do
       it "calls the message handler" do
-        dispatched_message = nil
-        called_handler = nil
-        message_class = Class.new(Command)
+        dispatched_message   = nil
+        called_handler       = nil
+        message_class        = Class.new(Command)
         nested_handler_class = Class.new(Handler) do
           perform(message_class) do |message|
             dispatched_message = message
-            called_handler = self
+            called_handler     = self
           end
         end
-        handler_class = Class.new(Handler) { recruit(nested_handler_class) }
-        context = {}
-        handler_class.dispatch(message_class.new, context)
+        handler_class        = Class.new(Handler) { recruit(nested_handler_class) }
+        handler_class.dispatch(message_class.new, TestContainer.new)
         expect(dispatched_message).to be_instance_of(message_class)
         expect(called_handler).to be_instance_of(nested_handler_class)
       end
@@ -139,9 +144,8 @@ module Lucid
       it "raises an exception" do
         message_class = Class.new(Command)
         handler_class = Class.new(Handler)
-        context = {}
         expect do
-          handler_class.dispatch(message_class.new, context)
+          handler_class.dispatch(message_class.new, TestContainer.new)
         end.to raise_error(CommandDispatch::NoHandler)
       end
     end

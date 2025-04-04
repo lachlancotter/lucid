@@ -24,7 +24,7 @@ module Lucid
       end
 
       def write_component (component, on_route:)
-        Check[component].type(Component::Base)
+        Types.component[component]
         tap do
           state_map = component.class.state_map
           state_map = state_map.off_route unless on_route
@@ -59,7 +59,7 @@ module Lucid
       end
 
       def write_message (message)
-        Check[message].type(HttpMessage)
+        Types.http_message[message]
         @params.base.merge!(message.query_params)
       end
 

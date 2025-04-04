@@ -21,8 +21,8 @@ module Lucid
       NAME_PARAM  = "name".freeze
 
       def initialize (target, name, params)
-        @target = Check[target].type(Component::Base).value
-        @name   = Check[name].symbol.value
+        @target = Types.component[target]
+        @name   = Types.symbol[name]
         super(params)
       end
 

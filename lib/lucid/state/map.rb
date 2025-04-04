@@ -56,7 +56,7 @@ module Lucid
       #
       class Rule
         def initialize (key)
-          @key = Check[key].type(Symbol, String).value
+          @key = Types.union(String, Symbol)[key]
         end
 
         attr_reader :key

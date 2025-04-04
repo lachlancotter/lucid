@@ -25,8 +25,7 @@ module Lucid
       #
       class Singleton < Factory
         def initialize (component_class, &config_block)
-          Check[component_class].extends(Component::Base)
-          @component_class = component_class
+          @component_class = Types.subclass(Component::Base)[component_class]
           @config_block    = config_block
         end
 
@@ -54,7 +53,7 @@ module Lucid
         end
 
         def custom_props
-          Check[@config_block.call].hash.value
+          Types.hash[@config_block.call]
         end
       end
 
@@ -104,7 +103,7 @@ module Lucid
         end
 
         def custom_props (item, index)
-          Check[@config_block.call(item, index)].hash.value
+          Types.hash[@config_block.call(item, index)]
         end
       end
     end

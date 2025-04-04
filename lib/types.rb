@@ -14,4 +14,22 @@ module Types
   def self.subclass(type)
     Types::Class.constrained(lt: type)
   end
+  
+  def self.union (a, b)
+    Types.instance(a) | Types.instance(b)
+  end
+  
+  # Lucid types....
+  
+  def self.http_message
+    Types.instance(Lucid::HTTP::Message)
+  end
+  
+  def self.component
+    Types.instance(Lucid::Component::Base)
+  end
+  
+  def self.reader
+    union(Lucid::State::HashReader, Lucid::State::Reader)
+  end
 end

@@ -5,13 +5,13 @@ module Lucid
     #
     class HashReader
       def initialize (hash)
-        @hash = Check[hash].value.map do |k, v|
+        @hash = Types.hash[hash].map do |k, v|
           [k.to_sym, v]
         end.to_h
       end
 
       def read (map)
-        Check[map].type(State::Map)
+        Types.instance(State::Map)[map]
         @hash.select do |k, _|
           map.rules.any? { |rule| rule.key == k }
         end

@@ -13,7 +13,7 @@ module Lucid
       attr_reader :props
 
       def initialize_props (props_hash)
-        @props = self.class.props_class.new(Check[props_hash].hash.value)
+        @props = self.class.props_class.new(Types.hash[props_hash])
       end
 
       private
