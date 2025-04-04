@@ -1,8 +1,6 @@
 module MusicStore
   module Checkout
     class Handler < Lucid::Handler
-      prop :session, Types.Instance(MusicStore::Session)
-
       perform SetShippingAddress do |cmd|
         cart                  = session.cart
         cart.shipping_address = cmd.address

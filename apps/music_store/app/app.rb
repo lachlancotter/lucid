@@ -9,9 +9,10 @@ module MusicStore
       set :static, true
 
       # Lucid configuration
-      set :component, Layout
-      set :handler, Handler
-      set :session, Session
+      set :component_class, Layout
+      set :handler_class, Handler
+      set :session_class, Session
+      set :container_class, Container
       set :app_root, "/"
     end
   end

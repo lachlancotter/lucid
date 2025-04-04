@@ -20,15 +20,17 @@ module MusicStore
       # end
 
       on ItemAdded[quantity: 1] do |event|
-        item = find_cart_item(event[:product_id])
-        view = item_views.build(item)
-        delta.append(view, to: ".items")
+        find_cart_item(event[:product_id]).tap do |item|
+          delta.append(
+             item_views.build(item), to: ".items"
+          )
+        end
       end
 
       on ItemRemoved[quantity: 0] do |event|
-        item = find_cart_item(event[:product_id])
-        view = item_views.for(item)
-        delta.remove(view)
+        find_cart_item(event[:product_id]).tap do |item|
+          delta.remove(item_views.for(item))
+        end
       end
 
       def find_cart_item (product_id)

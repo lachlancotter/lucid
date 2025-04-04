@@ -1,8 +1,6 @@
 module MusicStore
   module ShoppingCart
     class Handler < Lucid::Handler
-      prop :session, Types.Instance(MusicStore::Session)
-
       perform Empty do |cmd|
         cart = session.cart
         cart.empty
