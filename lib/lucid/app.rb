@@ -9,11 +9,11 @@ module Lucid
     enable :sessions
 
     # include Dry::Configurable
-    
+
     # ===================================================== #
     #    Default Settings
     # ===================================================== #
-    
+
     # The root component class.
     set :component_class, lambda { raise "Component class not set" }
 
@@ -32,7 +32,7 @@ module Lucid
     # ===================================================== #
     #    Routing
     # ===================================================== #
-    
+
     get "/?*" do
       # LOADER.reload
       Logger.cycle(request, response, session) do
@@ -48,11 +48,10 @@ module Lucid
     end
 
     private
-    
+
     # ===================================================== #
     #    Build and Dispatch
     # ===================================================== #
-    
 
     # def validate (request)
     #   log(request, "Starting validation") do
@@ -65,21 +64,19 @@ module Lucid
     # 
     def cycle (request, response)
       Cycle.new(
-         HTTP::RequestAdaptor.new(request),
-         HTTP::ResponseAdaptor.new(response),
-         component_class: settings.component_class,
-         handler_class:   settings.handler_class,
-         container:       container,
-         app_root:        settings.app_root
+         HTTP::RequestAdaptor.new(request), 
+         HTTP::ResponseAdaptor.new(response), 
+         container
       )
     end
 
-    #
-    # Build the container object for resolving dependencies within
-    # a request/response cycle.
-    # 
     def container
-      settings.container_class.new(settings, session)
+      settings.container_class.new({
+         app_root:        settings.app_root,
+         component_class: settings.component_class,
+         handler_class:   settings.handler_class,
+         session_class:   settings.session_class,
+      }, env)
     end
 
   end

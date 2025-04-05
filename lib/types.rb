@@ -2,6 +2,8 @@ require "dry/types"
 
 module Types
   include Dry.Types()
+  
+  # Primitive types
 
   %i[string integer float bool date time datetime array hash symbol].each do |name|
     define_singleton_method(name) { Params.const_get(name.capitalize) }
@@ -12,7 +14,7 @@ module Types
   end
 
   def self.subclass(type)
-    Types::Class.constrained(lt: type)
+    Types::Class.constrained(lteq: type)
   end
   
   def self.union (a, b)
@@ -27,6 +29,14 @@ module Types
   
   def self.component
     Types.instance(Lucid::Component::Base)
+  end
+  
+  def self.handler
+    Types.subclass(Lucid::Handler)
+  end
+  
+  def self.container
+    Types.instance(Lucid::App::Container)
   end
   
   def self.reader

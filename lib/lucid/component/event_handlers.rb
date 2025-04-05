@@ -38,8 +38,8 @@ module Lucid
       #
       class Constrained
         def initialize (constraint, &block)
-          @constraint = Types.Instance(Constraint)[constraint]
-          @block      = Types.Instance(Proc)[block]
+          @constraint = Types.instance(Constraint)[constraint]
+          @block      = Types.instance(Proc)[block]
         end
 
         def call (message, context = {})

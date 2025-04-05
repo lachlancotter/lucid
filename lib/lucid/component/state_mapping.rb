@@ -27,7 +27,7 @@ module Lucid
           case sub
           when Component::Base
             hash.merge(name => sub.deep_state)
-          when Collection
+          when Nesting::Collection
             hash.merge(
                name => sub.map do |e|
                  { e.collection_key => e.deep_state }

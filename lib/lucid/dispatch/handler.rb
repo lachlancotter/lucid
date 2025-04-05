@@ -16,7 +16,7 @@ module Lucid
     # The message bus is shared among all handlers. This provides a means for
     # handlers to dispatch commands and publish events for other handlers.
     # 
-    use :message_bus, Types.subclass(Handler)
+    use :message_bus, Types.instance(App::Container::MessageBus)
 
     #
     # Handlers have access to the session object, which is a wrapper around
@@ -31,9 +31,8 @@ module Lucid
     # The container provides the dependencies required by the handler.
     #
     def initialize (container, &handler)
-      @handler   = handler
-      @container = container
       super(container)
+      @handler = handler
     end
 
     #
@@ -47,14 +46,14 @@ module Lucid
     # Publish new events for other handlers and components to consume.
     # 
     def publish (event)
-      message_bus.publish(event, @container)
+      message_bus.publish(event)
     end
 
     #
     # Dispatch new commands to other handlers.
     # 
     def dispatch (command)
-      message_bus.dispatch(command, @container)
+      message_bus.dispatch(command)
     end
 
     #

@@ -18,6 +18,10 @@ module Lucid
       raise NoSuchField.new(name, self) unless field?(name)
       fields[name]
     end
+    
+    def [] (name)
+      field(name).value
+    end
 
     def field? (name)
       fields.key?(name)

@@ -21,7 +21,7 @@ module Lucid
         end
 
         def event_handlers
-          @responders ||= EventHandlers.new
+          @event_handlers ||= EventHandlers.new
         end
       end
     end

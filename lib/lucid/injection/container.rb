@@ -57,6 +57,7 @@ module Lucid
         # 
         def provide (key, &block)
           providers[key] = block
+          define_method(key) { self[key] }
         end
 
         #
@@ -76,6 +77,15 @@ module Lucid
           return true if providers.key?(key)
           return superclass&.key?(key) if superclass.respond_to?(:key?)
           false
+        end
+
+        def keys
+          providers.keys.concat(
+             case superclass.respond_to?(:keys)
+             when true then superclass.keys
+             else []
+             end
+          )
         end
 
         private

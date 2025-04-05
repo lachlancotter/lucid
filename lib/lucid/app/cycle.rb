@@ -4,13 +4,10 @@ module Lucid
     # Manages a request/response cycle.
     #
     class Cycle
-      def initialize (request, response, component_class:, handler_class:, container:, app_root:)
+      def initialize (request, response, container)
         @request         = request
         @response        = response
-        @component_class = component_class
-        @handler_class   = handler_class
         @container       = container
-        @app_root        = app_root
       end
 
       def query
@@ -18,14 +15,14 @@ module Lucid
           @request.yield_link do |link|
             validate_message!(link) do |valid_link|
               Logger.link(valid_link)
-              base_view.visit(valid_link)
-              # base_view.check_guards do
-              @response.send_delta(base_view, htmx: @request.htmx?)
+              component.visit(valid_link)
+              # component.check_guards do
+              @response.send_delta(component, htmx: @request.htmx?)
               # end
             end
           end.yield_no_message do
-            # base_view.check_guards do
-            @response.send_state(base_view)
+            # component.check_guards do
+            @response.send_state(component)
             # end
           end
         end
@@ -34,14 +31,13 @@ module Lucid
       def command
         run_with_context do
           @request.yield_command do |command|
-            base_view # Build the tree before dispatching the command.
+            component # Build the tree before dispatching the command.
             validate_message!(command) do |valid_command|
               Logger.command(valid_command)
-              puts valid_command.class
-              @handler_class.dispatch(valid_command, @container)
+              message_bus.dispatch(valid_command)
             end
-            # base_view.check_guards do
-            @response.send_delta(base_view, htmx: @request.htmx?)
+            # component.check_guards do
+            @response.send_delta(component, htmx: @request.htmx?)
             # end
           end
         end
@@ -51,22 +47,24 @@ module Lucid
         @request.htmx?
       end
 
-      def base_view
-        @base_view ||= build(
-           @request.state_reader(app_root: @app_root)
-        )
+      def component
+        @container[:component]
+      end
+      
+      def message_bus
+        @container[:message_bus]
       end
 
       def href
-        base_view.href
+        component.href
       end
 
       def notify (event)
-        base_view.notify(event)
+        component.notify(event)
       end
 
       def state
-        base_view.deep_state
+        component.deep_state
       end
 
       #
@@ -77,19 +75,11 @@ module Lucid
         if htmx?
           message_params
         else
-          base_view.merge_state(message_params)
+          component.merge_state(message_params)
         end
       end
 
       private
-
-      def build (state)
-        @component_class.new(state,
-           app_root: @app_root,
-           session:  @container[:session],
-           path:     Path.new
-        )
-      end
 
       def run_with_context
         with_context { yield }
