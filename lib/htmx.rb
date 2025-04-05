@@ -12,10 +12,11 @@ class HTMX < Hash
     self[boost: true]
   end
 
-  def self.oob (outerHTML: nil, beforeend: nil, afterbegin: nil)
+  def self.oob (outerHTML: nil, beforeend: nil, afterbegin: nil, delete: nil)
     return self["swap-oob": "outerHTML:##{outerHTML}"] unless outerHTML.nil?
     return self["swap-oob": "beforeend:##{beforeend}"] unless beforeend.nil?
     return self["swap-oob": "afterbegin:##{afterbegin}"] unless afterbegin.nil?
+    return self["swap-oob": "delete:##{delete}"] unless delete.nil?
     self["swap-oob": true]
   end
 

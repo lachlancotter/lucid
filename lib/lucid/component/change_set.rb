@@ -22,14 +22,23 @@ module Lucid
       def replace
         tap { @changes = [Replace.new(@component)] }
       end
+      
+      def delete
+        tap { @changes = [Remove.new(@component)] }
+      end
 
       def append (subcomponent, to: "")
         selector = [@component.element_id, to].reject(&:empty?).join(" ")
         tap { add_change Append.new(subcomponent, to: selector) }
       end
 
-      def prepend (subcomponent)
-        tap { add_change Prepend.new(subcomponent, to: @component) }
+      def prepend (subcomponent, to: "")
+        selector = [@component.element_id, to].reject(&:empty?).join(" ")
+        tap { add_change Prepend.new(subcomponent, to: selector) }
+      end
+      
+      def remove (subcomponent)
+        tap { add_change Remove.new(subcomponent) }
       end
 
       def add_change (change)
@@ -191,6 +200,33 @@ module Lucid
         end
       end
 
+      #
+      # Remove a subcomponent from the DOM.
+      # 
+      class Remove < Change
+        def initialize (component)
+          super(component)
+        end
+
+        def call (oob: false)
+          wrap(oob: oob) { "" }
+        end
+
+        def swap
+          :delete
+        end
+
+        def target
+          @component.element_id
+        end
+
+        private
+
+        def wrapper_attrs (oob:)
+          super.merge(oob ? HTMX.oob(swap => target) : {})
+        end
+      end
+      
     end
   end
 end
