@@ -4,12 +4,7 @@ module MusicStore
       prop :cart, Types.Instance(Cart)
 
       nest(:total_view) { |cart| CartTotalView[cart: cart] }
-
-      nest(:item_views) do |cart|
-        CartItemView.enum(cart.items) do |item|
-          { item: item, cart: cart }
-        end
-      end
+      nest(:item_views) { |cart| CartItemView.enum(cart.items) { |item| { item: item, cart: cart } } }
 
       # nest(:item_views) do |cart|
       #   enum(cart.items) { |item| CartItemView[item: item, cart: cart] }

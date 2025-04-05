@@ -5,7 +5,7 @@ module MusicStore
       set :environment, :development
       set :raise_errors, true
       set :show_exceptions, false
-      set :public_folder, File.dirname(__FILE__) + "/public"
+      set :public_folder, File.dirname(__FILE__) + "/../public"
       set :static, true
 
       # Lucid configuration

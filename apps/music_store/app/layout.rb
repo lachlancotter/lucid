@@ -1,7 +1,9 @@
 module MusicStore
   class Layout < Lucid::Component::Base
+    DEFAULT_PAGE = "store".freeze
+    
     route "/:page", nest: :content
-    param :page, Types.string.default("store".freeze)
+    param :page, Types.string.default(DEFAULT_PAGE)
 
     to Catalogue::Link, page: "store"
     to Checkout::Link, page: "checkout"
@@ -53,7 +55,9 @@ module MusicStore
     end
 
     template :branding do
-      div(class: "branding") { h2 "Branding" }
+      div(class: "branding") { 
+        h2 { text "Branding" } 
+      }
     end
 
   end

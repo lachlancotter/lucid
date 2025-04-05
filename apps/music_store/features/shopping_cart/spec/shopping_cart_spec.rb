@@ -1,5 +1,5 @@
 module MusicStore
-  describe "Shopping Cart", type: :feature do
+  describe "Shopping Cart", type: :feature, js: true do
 
     before { Cart.reset }
     before { visit "/" }
