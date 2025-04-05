@@ -6,7 +6,9 @@ module MusicStore
       let(:product_id) { |item| item.product_id }
       key { product_id }
 
-      on(ItemChanged[:product_id]) { delta.replace }
+      on(ItemChanged[:product_id]) do |event|
+        delta.replace unless event[:quantity] == 0
+      end
 
       element :div do |item|
         p item.product_name

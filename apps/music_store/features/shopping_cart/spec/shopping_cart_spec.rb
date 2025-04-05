@@ -14,8 +14,23 @@ module MusicStore
         expect(page).to have_content("1")
         expect(page).to have_content("$2,499")
       end
-      within ".product-details" do
+    end
+
+    scenario "add multiple products to cart" do
+      click_link "Open Cart"
+      click_link "Guitars & Basses"
+      click_link "Gibson Les Paul"
+      click_button "Add to Cart"
+      click_link "Wind Instruments"
+      click_link "Alto Saxophone"
+      click_button "Add to Cart"
+      within ".cart" do
         expect(page).to have_content("Gibson Les Paul")
+        expect(page).to have_content("1")
+        expect(page).to have_content("$2,499")
+        expect(page).to have_content("Alto Saxophone")
+        expect(page).to have_content("1")
+        expect(page).to have_content("$899")
       end
     end
 
@@ -42,6 +57,18 @@ module MusicStore
         click_button "-"
         expect(page).to have_content("1")
         expect(page).to have_content("$2,499")
+      end
+    end
+
+    scenario "remove product from cart" do
+      click_link "Guitars & Basses"
+      click_link "Gibson Les Paul"
+      click_button "Add to Cart"
+      click_link "Open Cart"
+      within ".cart" do
+        click_button "-"
+        expect(page).not_to have_content("Gibson Les Paul")
+        expect(page).to have_content("$0")
       end
     end
   end

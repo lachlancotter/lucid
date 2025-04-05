@@ -6,12 +6,11 @@ module MusicStore
       to Close, open: false
 
       use :cart, from: :session
-      let(:item_count) { |cart| cart.item_count }
-      nest(:contents) { CartItemsListing[cart: cart] }
-      on(ItemAdded) { invalidate(:item_count) }
+      nest(:contents) { |cart| CartItemsListing[cart: cart] }
+      nest(:item_count) { |cart| CartItemsCount[cart: cart] }
 
-      element do |item_count, open|
-        p item_count
+      element do |open|
+        subview(:item_count)
         div(class: "cart") {
           link_to Open, "Open Cart" unless open
           link_to Close, "Close Cart" if open
