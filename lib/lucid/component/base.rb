@@ -28,12 +28,12 @@ module Lucid
       #
       # Access to the Session for the current request.
       #
-      prop :session, Types.Instance(App::Session).optional.default(nil)
+      prop :session, Types.instance(App::Session).optional.default(nil)
 
       #
       # This component's parent in the component tree.
       #
-      prop :parent, Types.Instance(Component::Base).optional.default(nil)
+      prop :parent, Types.component.optional.default(nil)
 
       #
       # The name of this component in the parent.
@@ -44,10 +44,6 @@ module Lucid
       # Whether this component is a member of a collection.
       #
       prop :collection_member, Types.bool.default(false)
-
-      # def self.build (buffer, &config)
-      #   new(buffer, &config)
-      # end
 
       def initialize (state, **props)
         initialize_state(state)

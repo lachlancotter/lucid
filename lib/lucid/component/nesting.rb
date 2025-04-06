@@ -116,17 +116,24 @@ module Lucid
           super(Types.enumerable[collection])
         end
 
+        # Build a new subcomponent and append it to the collection.
         def append (model)
           build(model).tap do |subcomponent|
-            collection_selector = "." + parent.collection_classname(collection_name)
             parent.delta.append(subcomponent, to: collection_selector)
           end
         end
 
+        # Build a new subcomponent and prepend it to the collection.
         def prepend (model)
           build(model).tap do |subcomponent|
-            collection_selector = "." + parent.collection_classname(collection_name)
             parent.delta.prepend(subcomponent, to: collection_selector)
+          end
+        end
+
+        # Remove subcomponents that match the given block.
+        def remove (&block)
+          each do |subcomponent|
+            parent.delta.remove(subcomponent) if block.call(subcomponent)
           end
         end
 
@@ -136,6 +143,10 @@ module Lucid
 
         def parent
           Types.component[@nest_binding.parent]
+        end
+
+        def collection_selector
+          "." + parent.collection_classname(collection_name)
         end
 
         def collection_name

@@ -13,6 +13,10 @@ module Types
     Types::Array.of(type)
   end
   
+  def self.any
+    Types::Any
+  end
+  
   def self.enumerable
     instance(Enumerable)
   end
