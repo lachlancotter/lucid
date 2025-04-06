@@ -108,10 +108,26 @@ module Lucid
           emit @renderable.template(name).render(*a, **b, &block)
         end
 
+        #
+        # Render a component in the template.
+        # 
         def subview (name_or_component)
+          # Wrap the subview in a div to ensure it has an ID we can target.
           emit Component::ChangeSet::Replace.new(
              normalize_subview name_or_component
           ).call
+        end
+
+        #
+        # Render a collection of subcomponents in the template.
+        # 
+        def subviews (enum_name)
+          # Wrap the collection in a div we can target for insertions.
+          div(class: @renderable.collection_classname(enum_name)) do
+            @renderable.send(enum_name).each do |subcomponent|
+              subview(subcomponent)
+            end
+          end
         end
 
         # TODO maybe we should explicitly expose methods to the template 

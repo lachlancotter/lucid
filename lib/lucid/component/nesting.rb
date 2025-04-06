@@ -15,7 +15,10 @@ module Lucid
 
       def subcomponents # Hash[Symbol => Component::Base | Enumerable]
         nests.map do |(name, nest)|
-          [name, nest.enum? ? nest.collection : nest.component]
+          [name, nest.enum? ?
+             Types.collection[nest.collection] :
+             Types.component[nest.component]
+          ]
         end.to_h
       end
 
@@ -25,7 +28,9 @@ module Lucid
       end
 
       def each_subcomponent (&block)
-        subcomponents.values.flatten.each(&block)
+        subcomponents.values.flatten.each do |sub|
+          block.call(Types.component[sub])
+        end
       end
 
       def root?
@@ -51,7 +56,14 @@ module Lucid
       def collection_key
         raise "You must define a collection_key method to use collections."
       end
-      
+
+      #
+      # CSS class name for the div wrapping the collection of nested components.
+      # 
+      def collection_classname (collection_name)
+        "#{collection_name}-items"
+      end
+
       module ClassMethods
         # DSL method to define a nested component.
         def nest (name, &block)
@@ -79,7 +91,7 @@ module Lucid
         # Defines a slot for a nested component provided as a prop.
         #
         def slot (name)
-          prop name, Types.Instance(Class)
+          prop name, Types.subclass(Component::Base)
           nest(name) { props[name] }
           watch(name) { nests[name].update_component(nested_state(name)) }
         end
@@ -101,11 +113,33 @@ module Lucid
       class Collection < SimpleDelegator
         def initialize (nest_binding, collection)
           @nest_binding = Types.instance(Nest::Binding)[nest_binding]
-          super(Types.instance(Enumerable)[collection])
+          super(Types.enumerable[collection])
+        end
+
+        def append (model)
+          build(model).tap do |subcomponent|
+            collection_selector = "." + parent.collection_classname(collection_name)
+            parent.delta.append(subcomponent, to: collection_selector)
+          end
+        end
+
+        def prepend (model)
+          build(model).tap do |subcomponent|
+            collection_selector = "." + parent.collection_classname(collection_name)
+            parent.delta.prepend(subcomponent, to: collection_selector)
+          end
         end
 
         def build (model)
           @nest_binding.build(model)
+        end
+
+        def parent
+          Types.component[@nest_binding.parent]
+        end
+
+        def collection_name
+          Types.symbol[@nest_binding.name]
         end
 
         def is_a? (klass)

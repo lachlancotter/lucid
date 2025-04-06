@@ -66,8 +66,8 @@ module Lucid
       #
       class Enumerated < Factory
         def initialize (component_class, enumerable, &config_block)
-          @component_class = component_class
-          @enumerable      = enumerable
+          @component_class = Types.subclass(Component::Base)[component_class]
+          @enumerable      = Types.enumerable[enumerable]
           @config_block    = config_block
         end
 
