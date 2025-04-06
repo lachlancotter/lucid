@@ -174,55 +174,6 @@ module Lucid
       end
       
       # ===================================================== #
-      #    #remove
-      # ===================================================== #
-      
-      describe "#remove" do
-        let(:view) do
-          Class.new(Component::Base) do
-            prop :subview_class, Types.subclass(Component::Base)
-            element { h1 { text "Hello, World" } }
-            nest :item_views do |subview_class|
-              subview_class.enum([1,2,3]) { |i| { index: i } }
-            end
-          end.new({}, subview_class: subview_class)
-        end
-        let(:subview_class) do
-          Class.new(Component::Base) do
-            prop :index, Types.integer
-            element { |index| p { text "Item #{index}" } }
-            key { props.index }
-          end
-        end
-
-        it "adds a remove action" do
-          view.delta.remove(view.item_views.first)
-          expect(view.changes.count).to eq(1)
-          expect(view.changes.first).to be_a(ChangeSet::Remove)
-          expect(view.changes.to_s).to match(/id="item_views-1"/)
-          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
-        end
-
-        it "is cumulative" do
-          view.delta.remove(view.item_views.first)
-          view.delta.remove(view.item_views.last)
-          expect(view.changes.count).to eq(2)
-          expect(view.changes.to_s).to match(/id="item_views-1"/)
-          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
-          expect(view.changes.to_s).to match(/id="item_views-3"/)
-          expect(view.changes.to_s).not_to match(/<p>Item 3<\/p>/)
-        end
-
-        it "defers to a replace action" do
-          view.delta.replace
-          view.delta.append(view.item_views.build(0))
-          expect(view.changes.count).to eq(1)
-          expect(view.changes.first).to be_a(ChangeSet::Replace)
-          expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
-        end
-      end
-
-      # ===================================================== #
       #    #prepend
       # ===================================================== #
 
@@ -269,6 +220,75 @@ module Lucid
         end
       end
 
+      # ===================================================== #
+      #    #remove
+      # ===================================================== #
+
+      describe "#remove" do
+        let(:view) do
+          Class.new(Component::Base) do
+            prop :subview_class, Types.subclass(Component::Base)
+            element { h1 { text "Hello, World" } }
+            nest :item_views do |subview_class|
+              subview_class.enum([1,2,3]) { |i| { index: i } }
+            end
+          end.new({}, subview_class: subview_class)
+        end
+        let(:subview_class) do
+          Class.new(Component::Base) do
+            prop :index, Types.integer
+            element { |index| p { text "Item #{index}" } }
+            key { props.index }
+          end
+        end
+        
+        it "adds a delete action for the subcomponent" do
+          view.delta.remove(view.item_views.first)
+          expect(view.changes.count).to eq(1)
+          expect(view.changes.first).to be_a(ChangeSet::Delete)
+          expect(view.changes.to_s).to match(/id="item_views-1"/)
+          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
+        end
+
+        it "is cumulative" do
+          view.delta.remove(view.item_views.first)
+          view.delta.remove(view.item_views.last)
+          expect(view.changes.count).to eq(2)
+          expect(view.changes.to_s).to match(/id="item_views-1"/)
+          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
+          expect(view.changes.to_s).to match(/id="item_views-3"/)
+          expect(view.changes.to_s).not_to match(/<p>Item 3<\/p>/)
+        end
+
+        it "defers to a replace action" do
+          view.delta.replace
+          view.delta.append(view.item_views.build(0))
+          expect(view.changes.count).to eq(1)
+          expect(view.changes.first).to be_a(ChangeSet::Replace)
+          expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
+        end
+
+        it "overrides changes on the removed component" do
+          subcomponent = view.item_views.first
+          subcomponent.delta.replace
+          view.delta.remove(subcomponent)
+          expect(view.changes.count).to eq(1)
+          expect(view.changes.first).to be_a(ChangeSet::Delete)
+          expect(view.changes.to_s).to match(/id="item_views-1"/)
+          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
+        end
+
+        it "override subsequent replace action" do
+          subcomponent = view.item_views.first
+          view.delta.remove(subcomponent)
+          subcomponent.delta.replace
+          expect(view.changes.count).to eq(1)
+          expect(view.changes.first).to be_a(ChangeSet::Delete)
+          expect(view.changes.to_s).to match(/id="item_views-1"/)
+          expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
+        end
+      end
+      
       # ===================================================== #
       #    #any?
       # ===================================================== #

@@ -1,7 +1,7 @@
 module Lucid
   module Component
     #
-    # Configure render settings for a component.
+    # Manages changes applied to a tree of components.
     #
     class ChangeSet
       extend Forwardable
@@ -18,31 +18,41 @@ module Lucid
       def replace?
         any? { |change| change.is_a?(Replace) }
       end
+      
+      def delete?
+        any? { |change| change.is_a?(Delete) }
+      end
 
       def replace
-        tap { @changes = [Replace.new(@component)] }
+        # Replacing a component makes any other changes irrelevant.
+        # Except the case where the component is deleted. Then the
+        # replace update is discarded.
+        tap { @changes = [Replace.new(@component)] unless delete? }
       end
       
       def delete
-        tap { @changes = [Remove.new(@component)] }
+        # If a component is deleted, that overrides any other updates.
+        tap { @changes = [Delete.new(@component)] }
       end
 
       def append (subcomponent, to: "")
-        selector = [@component.element_id, to].reject(&:empty?).join(" ")
-        tap { add_change Append.new(subcomponent, to: selector) }
+        tap { add_change Append.new(subcomponent, to: selector(nest: to)) }
       end
 
       def prepend (subcomponent, to: "")
-        selector = [@component.element_id, to].reject(&:empty?).join(" ")
-        tap { add_change Prepend.new(subcomponent, to: selector) }
+        tap { add_change Prepend.new(subcomponent, to: selector(nest: to)) }
       end
       
       def remove (subcomponent)
-        tap { add_change Remove.new(subcomponent) }
+        tap { subcomponent.delta.delete }
+      end
+      
+      def selector (nest: "")
+        [@component.element_id, nest].reject(&:empty?).join(" ")
       end
 
       def add_change (change)
-        @changes << change unless replace?
+        @changes << change unless replace? || delete?
       end
 
       #
@@ -157,53 +167,9 @@ module Lucid
       end
 
       #
-      # Prepend a template as the first child of the element.
-      #
-      class Prepend < Change
-        def initialize (component, to:)
-          super(component)
-          @parent = Types.component[to]
-        end
-
-        def swap
-          :afterbegin
-        end
-
-        private
-
-        def wrapper_attrs (oob:)
-          super.merge(oob ? HTMX.oob(swap => @parent.element_id) : {})
-        end
-      end
-
-      #
-      # Append a template as the last child of the element.
-      #
-      class Append < Change
-        def initialize (component, to:)
-          super(component)
-          @selector = to
-        end
-
-        def swap
-          :beforeend
-        end
-
-        def target
-          @selector
-        end
-
-        private
-
-        def wrapper_attrs (oob:)
-          super.merge(oob ? HTMX.oob(swap => target) : {})
-        end
-      end
-
-      #
-      # Remove a subcomponent from the DOM.
+      # Delete the component element from the DOM.
       # 
-      class Remove < Change
+      class Delete < Change
         def initialize (component)
           super(component)
         end
@@ -226,7 +192,44 @@ module Lucid
           super.merge(oob ? HTMX.oob(swap => target) : {})
         end
       end
-      
+
+      #
+      # Insert items into a collection.
+      # 
+      class CollectionChange < Change
+        def initialize (component, to:)
+          super(component)
+          @selector = to
+        end
+
+        def target
+          @selector
+        end
+
+        private
+
+        def wrapper_attrs (oob:)
+          super.merge(oob ? HTMX.oob(swap => target) : {})
+        end
+      end
+
+      #
+      # Prepend a template as the first child of the element.
+      #
+      class Prepend < CollectionChange
+        def swap
+          :afterbegin
+        end
+      end
+
+      #
+      # Append a template as the last child of the element.
+      #
+      class Append < CollectionChange
+        def swap
+          :beforeend
+        end
+      end
     end
   end
 end
