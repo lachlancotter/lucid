@@ -6,7 +6,7 @@ module MusicStore
       nest(:total_view) do |cart|
         CartTotalView[cart: cart]
       end
-      
+
       nest(:item_views) do |cart|
         CartItemView.enum(cart.items) do |item|
           { item: item, cart: cart }
@@ -14,24 +14,15 @@ module MusicStore
       end
 
       on ItemAdded[quantity: 1] do |event|
-        find_cart_item(event[:product_id]).tap do |item|
-          # item_views.append(item)
-          delta.append(item_views.build(item), to: ".items")
-        end
+        item_views.append(find_cart_item(event[:product_id]))
       end
 
       on ItemRemoved[quantity: 0] do |event|
-        find_cart_item_view(event[:product_id]).tap do |item_view|
-          delta.remove(item_view) unless item_view.nil?
-        end
+        item_views.remove { |view| view.props.item.product_id == event[:product_id] }
       end
-      
+
       def find_cart_item (product_id)
         props.cart.items.find { |item| item.product_id == product_id }
-      end
-      
-      def find_cart_item_view (product_id)
-        item_views.find { |view| view.props.item.product_id == product_id }
       end
 
       element do
@@ -42,9 +33,7 @@ module MusicStore
           p "Price"
           p "Actions"
         }
-        div(class: "items") {
-          item_views.each { |item| subview(item) }
-        }
+        subviews(:item_views)
         subview(:total_view)
         p { link_to Checkout::Link, "Checkout" }
       end
