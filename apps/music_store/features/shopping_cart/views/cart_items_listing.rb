@@ -15,6 +15,7 @@ module MusicStore
 
       on ItemAdded[quantity: 1] do |event|
         find_cart_item(event[:product_id]).tap do |item|
+          # item_views.append(item)
           delta.append(item_views.build(item), to: ".items")
         end
       end
