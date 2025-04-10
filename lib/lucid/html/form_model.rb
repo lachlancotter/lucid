@@ -13,6 +13,14 @@ module Lucid
         @message_params = validate_params(message_params)
       end
 
+      def or_default (default_params)
+        if @message_params.empty?
+          FormModel.new(@form_name, @message_type, default_params)
+        else
+          self
+        end
+      end
+
       def valid?
         result.success?
       end

@@ -25,11 +25,13 @@ module Lucid
       end
 
       module ClassMethods
-        def echo (name, message_class)
+        def echo (name, message_class, &block)
           Types.symbol[name]
           Types.subclass(Message)[message_class]
           after_initialize do
-            forms[name]  = HTML::FormModel.new(name, message_class, params_for_form(name))
+            form_model   = HTML::FormModel.new(name, message_class, params_for_form(name))
+            form_model   = block.call(form_model) if block_given?
+            forms[name]  = form_model
             fields[name] = Field.new(self) { forms[name] }
           end
         end
