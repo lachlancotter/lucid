@@ -19,15 +19,24 @@ module Lucid
 
       module ClassMethods
         def after_initialize (&block)
-          @callbacks                    ||= {}
-          @callbacks[:after_initialize] ||= []
-          @callbacks[:after_initialize] << block
+          callbacks_registry[:after_initialize] ||= []
+          callbacks_registry[:after_initialize] << block
+        end
+        
+        def after_mount (&block)
+          callbacks_registry[:after_mount] ||= []
+          callbacks_registry[:after_mount] << block
         end
 
         def callbacks (name)
-          @callbacks ||= {}
           (superclass.respond_to?(:callbacks) ? superclass.callbacks(name) : [])
-             .concat(@callbacks[name] || [])
+             .concat(callbacks_registry[name] || [])
+        end
+        
+        private
+        
+        def callbacks_registry
+          @callbacks ||= {}
         end
       end
     end

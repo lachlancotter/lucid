@@ -54,6 +54,7 @@ module Lucid
         initialize_state(state)
         initialize_props(props)
         run_callbacks(:after_initialize)
+        run_callbacks(:after_mount)
       end
 
       #

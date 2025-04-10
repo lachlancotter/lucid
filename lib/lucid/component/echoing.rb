@@ -12,15 +12,30 @@ module Lucid
         @forms ||= {}
       end
 
+      def echos
+        @echos ||= {}
+      end
+
       private
 
       module ClassMethods
+        #
+        # Create a FormModel that echos back the parameters from the request.
+        # The block can be used to modify the FormModel before it is used to
+        # generate the HTML.
+        # 
         def echo (name, message_class, except: [], &block)
           after_initialize do
-            form_model   = Echo.new(props.env, name, message_class, except: except).to_form_model
+            binding      = Echo.new(props.env, name, message_class, except: except)
+            form_model   = binding.to_form_model
             form_model   = block.call(form_model) if block_given?
+            echos[name]  = binding
             forms[name]  = form_model
             fields[name] = Field.new(self) { forms[name] }
+          end
+
+          after_mount do
+            fields[name].notify if echos[name].active_form?
           end
         end
       end

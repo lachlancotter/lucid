@@ -93,6 +93,18 @@ module Lucid
           component       = component_class.new({}, env: env)
           expect(component.forms[:form_name].to_h).to eq({ "foo" => "bar" })
         end
+
+        it "triggers form dependencies" do
+          called          = false
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Base) do
+            echo :form_name, message_class
+            watch(:form_name) { called = true }
+          end
+          env             = mock_post_params(:form_name, { foo: "bar" })
+          component       = component_class.new({}, env: env)
+          expect(called).to be_truthy
+        end
       end
 
       context "request contains another form" do
@@ -102,6 +114,18 @@ module Lucid
           env             = mock_post_params(:other_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
           expect(component.forms[:form_name].to_h).to eq({})
+        end
+
+        it "does not trigger form dependencies" do
+          called          = false
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Base) do
+            echo :form_name, message_class
+            watch(:form_name) { called = true }
+          end
+          env             = mock_post_params(:another_form, { foo: "bar" })
+          component       = component_class.new({}, env: env)
+          expect(called).to be_falsey
         end
       end
 
