@@ -14,28 +14,71 @@ module Lucid
 
       private
 
-      def params_for_form (form_name)
-        request     = Rack::Request.new(props.env)
-        form_params = request.POST.merge(request.GET)
-        if form_params["form_name"] == form_name.to_s
-          form_params.tap { |h| h.delete("form_name") }
-        else
-          {}
-        end
-      end
-
       module ClassMethods
-        def echo (name, message_class, &block)
-          Types.symbol[name]
-          Types.subclass(Message)[message_class]
+        def echo (name, message_class, except: [], &block)
           after_initialize do
-            form_model   = HTML::FormModel.new(name, message_class, params_for_form(name))
+            form_model   = Echo.new(props.env, name, message_class, except: except).to_form_model
             form_model   = block.call(form_model) if block_given?
             forms[name]  = form_model
             fields[name] = Field.new(self) { forms[name] }
           end
         end
       end
+
+      #
+      # Access and filter form parameters from the request so that they can
+      # be 'echoed' back to the view.
+      # 
+      class Echo
+        def initialize (env, form_name, message_class, except: [])
+          @env           = Types.hash[env]
+          @form_name     = Types.symbol[form_name]
+          @message_class = Types.subclass(Message)[message_class]
+          @param_filter  = validate_filter(except)
+        end
+
+        def to_form_model
+          HTML::FormModel.new(@form_name, @message_class, to_h)
+        end
+
+        def to_h
+          active_form? ? filtered_params : {}
+        end
+
+        # Was this form submitted in the current request?
+        def active_form?
+          active_form_name == @form_name
+        end
+
+        private
+
+        def validate_filter (filter)
+          case filter
+          when Symbol then [filter.to_s]
+          when Array then filter.map { |f| f.to_s }
+          else raise ArgumentError, "Invalid filter: #{filter.inspect}"
+          end
+        end
+
+        def active_form_name
+          raw_params["form_name"] ? Types.symbol[raw_params["form_name"]] : nil
+        end
+
+        def filtered_params
+          raw_params.reject do |key, _|
+            @param_filter.include?(key) || key == "form_name"
+          end
+        end
+
+        def raw_params
+          @raw_params ||= request.POST.merge(request.GET)
+        end
+
+        def request
+          @request ||= Rack::Request.new(@env)
+        end
+      end
+
     end
   end
 end

@@ -55,6 +55,16 @@ module Lucid
         end
       end
 
+      context "with param filter" do
+        it "filters out the specified keys" do
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Base) { echo :credentials, message_class, except: :password }
+          env             = mock_post_params(:credentials, { "email" => "foo", "password" => "bar" })
+          component       = component_class.new({}, env: env)
+          expect(component.forms[:credentials].to_h).to eq({ "email" => "foo" })
+        end
+      end
+
       context "GET message" do
         it "provides the GET params" do
           message_class   = Class.new(Lucid::Link)
