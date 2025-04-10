@@ -29,7 +29,7 @@ module Lucid
           Types.symbol[name]
           Types.subclass(Message)[message_class]
           after_initialize do
-            forms[name]  = HTML::FormModel.new(message_class, params_for_form(name))
+            forms[name]  = HTML::FormModel.new(name, message_class, params_for_form(name))
             fields[name] = Field.new(self) { forms[name] }
           end
         end

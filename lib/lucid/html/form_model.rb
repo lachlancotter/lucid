@@ -7,7 +7,8 @@ module Lucid
     class FormModel
       attr_reader :message_type, :message_params
 
-      def initialize (message_type, message_params)
+      def initialize (form_name, message_type, message_params)
+        @form_name      = Types.symbol[form_name]
         @message_type   = Types.subclass(HTTP::Message)[message_type]
         @message_params = validate_params(message_params)
       end
