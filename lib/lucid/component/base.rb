@@ -26,6 +26,11 @@ module Lucid
       prop :app_root, Types.Constructor(Path).default { |path| path["/"]  }
 
       #
+      # Access to the rack environment for the current request.
+      # 
+      prop :env, Types.hash.optional.default { {} }
+
+      #
       # Access to the Session for the current request.
       #
       prop :session, Types.instance(App::Session).optional.default(nil)

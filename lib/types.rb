@@ -22,7 +22,7 @@ module Types
   end
   
   def self.callable
-    Types::Callable
+    instance(Proc)
   end
 
   def self.instance (type)

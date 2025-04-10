@@ -68,7 +68,7 @@ module Lucid
         def initialize (component_class, enumerable, &config_block)
           @component_class = Types.subclass(Component::Base)[component_class]
           @enumerable      = Types.enumerable[enumerable]
-          @config_block    = config_block
+          @config_block    = Types.callable[config_block]
         end
 
         def build (reader, parent, name)

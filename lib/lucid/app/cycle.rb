@@ -48,7 +48,7 @@ module Lucid
       end
 
       def component
-        @container[:component]
+        Types.component[@container[:component]]
       end
       
       def message_bus

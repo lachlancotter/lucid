@@ -95,7 +95,7 @@ module Lucid
               Class.new(Component::Base) do
                 element { p { text "Item" } }
                 key { "foo" }
-              end.enum([])
+              end.enum([]) { {} }
             end
           end.new({})
         end

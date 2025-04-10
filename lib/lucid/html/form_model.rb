@@ -8,7 +8,7 @@ module Lucid
       attr_reader :message_type, :message_params
 
       def initialize (message_type, message_params)
-        @message_type   = Types.Instance(Class)[message_type]
+        @message_type   = Types.subclass(HTTP::Message)[message_type]
         @message_params = validate_params(message_params)
       end
 

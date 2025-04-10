@@ -77,7 +77,7 @@ module Lucid
         #
         class URL
           def initialize (message_type, params)
-            @message_type = message_type
+            @message_type = Types.subclass(Message)[message_type]
             @params       = Types.hash[params]
           end
 
