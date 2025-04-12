@@ -39,6 +39,25 @@ module Lucid
           expect(component.forms[:form_name]).to be_a(Lucid::HTML::FormModel)
           expect(component.forms[:form_name].message_type).to eq(message_class)
         end
+        
+        # Message needs to have a constant name.
+        TestCommand = Class.new(Lucid::Command)
+
+        it "echos the form state to the template" do
+          component_class = Class.new(Base) do
+            echo :form_name, TestCommand
+            element do |form_name|
+              form_for form_name do |f|
+                emit f.text(:foo)
+              end
+            end
+          end
+          env             = mock_post_params(:form_name, { foo: "bar" })
+          component       = component_class.new({}, env: env)
+          render          = component.render_full
+          expect(render).to include("name=\"foo\"")
+          expect(render).to include("value=\"bar\"")
+        end
       end
 
       context "with default params" do

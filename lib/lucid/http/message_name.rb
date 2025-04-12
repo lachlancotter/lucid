@@ -12,7 +12,7 @@ module Lucid
       #   "Lucid::HTTP::MessageName" => "lucid/http/message-name"
       #
       def self.encode (klass)
-        klass.name.split('::').map do |part|
+        Types.string[klass.name].split('::').map do |part|
           part.split(/(?=[A-Z])/).map do |word|
             word.downcase
           end.join('-')

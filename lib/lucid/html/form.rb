@@ -4,10 +4,10 @@ module Lucid
     # Build an HTML form to compose a Message.
     #
     class Form
-      def initialize (message_params, **opts, &block)
-        @message_params = message_params
-        @options        = opts
-        @block          = block
+      def initialize (form_model, **opts, &block)
+        @form_model = Types.instance(FormModel)[form_model]
+        @options    = Types.hash[opts]
+        @block      = block
       end
 
       def to_s
@@ -15,20 +15,20 @@ module Lucid
       end
 
       def template
-        Papercraft.html do |message_params|
-          form action: message_params.form_action, method: message_params.http_method do
-            emit_yield Builder.new(self, message_params, Path.new)
+        Papercraft.html do |form_model|
+          form action: form_model.form_action, method: form_model.http_method do
+            emit_yield Builder.new(self, form_model, Path.new)
           end
-        end.apply(@message_params, &@block)
+        end.apply(@form_model, &@block)
       end
 
       class Builder
         include Templating
 
-        def initialize (renderer, message_params, path = Path.new)
-          @renderer       = renderer
-          @message_params = Types.Instance(FormModel)[message_params]
-          @path           = Types.Instance(Path)[path]
+        def initialize (renderer, form_model, path = Path.new)
+          @renderer   = renderer
+          @form_model = Types.instance(FormModel)[form_model]
+          @path       = Types.instance(Path)[path]
         end
 
         def emit (template)
@@ -38,7 +38,7 @@ module Lucid
         def scoped (name)
           yield Builder.new(
              @renderer,
-             @message_params,
+             @form_model,
              @path.concat(name)
           )
         end
@@ -58,18 +58,19 @@ module Lucid
         end
 
         def field_value (key)
-          @path.concat(key).inject(@message_params.to_h) do |params, entry|
+          Types.union(String, Symbol)[key]
+          @path.concat(key).inject(@form_model.to_h) do |params, entry|
             params.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
           end
         end
 
         def errors (key)
-          @path.concat(key).inject(@message_params.errors) do |errors, entry|
+          @path.concat(key).inject(@form_model.errors) do |errors, entry|
             raise KeyError, errors.to_s if errors.is_a?(Array)
             errors.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
           end
         end
-        
+
         def has_helper? (name)
           respond_to?(name)
         end

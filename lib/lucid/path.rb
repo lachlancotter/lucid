@@ -42,7 +42,7 @@ module Lucid
     end
 
     def concat (component)
-      Path.new(@components + [component])
+      Path.new(@components + [component.to_s])
     end
 
     def components
