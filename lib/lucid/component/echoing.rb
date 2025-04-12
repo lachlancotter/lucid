@@ -34,7 +34,7 @@ module Lucid
             fields[name] = Field.new(self) { forms[name] }
           end
 
-          after_mount do
+          after_build do
             fields[name].notify if echos[name].active_form?
           end
         end

@@ -23,9 +23,9 @@ module Lucid
           callbacks_registry[:after_initialize] << block
         end
         
-        def after_mount (&block)
-          callbacks_registry[:after_mount] ||= []
-          callbacks_registry[:after_mount] << block
+        def after_build (&block)
+          callbacks_registry[:after_build] ||= []
+          callbacks_registry[:after_build] << block
         end
 
         def callbacks (name)
