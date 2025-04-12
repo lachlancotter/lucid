@@ -26,7 +26,7 @@ module Lucid
         # 
         def echo (name, message_class, except: [], &block)
           after_initialize do
-            binding      = Echo.new(props.env, name, message_class, except: except)
+            binding      = Echo.new(props.env, self, name, message_class, except: except)
             form_model   = binding.to_form_model
             form_model   = block.call(form_model) if block_given?
             echos[name]  = binding
@@ -45,15 +45,16 @@ module Lucid
       # be 'echoed' back to the view.
       # 
       class Echo
-        def initialize (env, form_name, message_class, except: [])
+        def initialize (env, component, form_name, message_class, except: [])
           @env           = Types.hash[env]
+          @component     = Types.component[component]
           @form_name     = Types.symbol[form_name]
           @message_class = Types.subclass(Message)[message_class]
           @param_filter  = validate_filter(except)
         end
 
         def to_form_model
-          HTML::FormModel.new(@form_name, @message_class, to_h)
+          HTML::FormModel.new(@component.path.to_s, @form_name, @message_class, to_h)
         end
 
         def to_h

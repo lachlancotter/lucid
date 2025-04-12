@@ -17,7 +17,10 @@ module Lucid
       def template
         Papercraft.html do |form_model|
           form action: form_model.form_action, method: form_model.http_method do
-            emit_yield Builder.new(self, form_model, Path.new)
+            builder = Builder.new(self, form_model, Path.new)
+            emit builder.hidden(:component, value: form_model.component_id)
+            emit builder.hidden(:form, value: form_model.form_name)
+            emit_yield builder
           end
         end.apply(@form_model, &@block)
       end
@@ -93,11 +96,11 @@ module Lucid
           self.class.template(name).bind(self)
         end
 
-        template :hidden do |key, options = {}|
+        template :hidden do |key, value: nil, **options|
           input({
              type:  :hidden,
              name:  field_name(key),
-             value: field_value(key),
+             value: value || field_value(key),
              id:    field_id(key)
           }.merge(options))
         end

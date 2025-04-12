@@ -5,9 +5,10 @@ module Lucid
     # hypermedia controls and access validation errors.
     #
     class FormModel
-      attr_reader :message_type, :message_params
+      attr_reader :component_id, :form_name, :message_type, :message_params
 
-      def initialize (form_name, message_type, message_params)
+      def initialize (component_id, form_name, message_type, message_params)
+        @component_id   = Types.string[component_id]
         @form_name      = Types.symbol[form_name]
         @message_type   = Types.subclass(HTTP::Message)[message_type]
         @message_params = validate_params(message_params)
@@ -15,7 +16,7 @@ module Lucid
 
       def or_default (default_params)
         if @message_params.empty?
-          FormModel.new(@form_name, @message_type, default_params)
+          FormModel.new(@component_id, @form_name, @message_type, default_params)
         else
           self
         end

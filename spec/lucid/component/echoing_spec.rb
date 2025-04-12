@@ -58,6 +58,25 @@ module Lucid
           expect(render).to include("name=\"foo\"")
           expect(render).to include("value=\"bar\"")
         end
+
+        it "echos the component path to the form" do
+          component_class = Class.new(Base) do
+            echo :form_name, TestCommand
+            element do |form_name|
+              form_for form_name do |f|
+                emit f.text(:foo)
+              end
+            end
+          end
+          env             = mock_post_params(:form_name, { foo: "bar" })
+          component       = component_class.new({}, env: env)
+          render          = component.render_full
+          puts render
+          expect(render).to include("name=\"component\"")
+          expect(render).to include("value=\"/\"")
+          expect(render).to include("name=\"form\"")
+          expect(render).to include("value=\"form_name\"")
+        end
       end
 
       context "with default params" do
