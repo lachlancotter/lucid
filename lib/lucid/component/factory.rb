@@ -12,6 +12,7 @@ module Lucid
            parent:            parent,
            app_root:          parent.props.app_root,
            session:           parent.props.session,
+           env:               parent.props.env,
            name:              name,
            collection_member: member
         }

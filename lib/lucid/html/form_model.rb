@@ -5,6 +5,14 @@ module Lucid
     # hypermedia controls and access validation errors.
     #
     class FormModel
+      #
+      # These are special form parameters that are added to every request generated
+      # with the Form::Builder. Used to identify which component and form originated
+      # the request. 
+      # 
+      FORM_NAME_PARAM_KEY      = "form"
+      COMPONENT_PATH_PARAM_KEY = "component"
+      
       attr_reader :component_id, :form_name, :message_type, :message_params
 
       def initialize (component_id, form_name, message_type, message_params)

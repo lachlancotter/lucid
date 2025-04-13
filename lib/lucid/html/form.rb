@@ -16,11 +16,12 @@ module Lucid
 
       def template
         Papercraft.html do |form_model|
-          form action: form_model.form_action, method: form_model.http_method do
-            builder = Builder.new(self, form_model, Path.new)
-            emit builder.hidden(:component, value: form_model.component_id)
-            emit builder.hidden(:form, value: form_model.form_name)
-            emit_yield builder
+          Builder.new(self, form_model).tap do |builder|
+            form action: form_model.form_action, method: form_model.http_method do
+              emit builder.hidden(FormModel::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
+              emit builder.hidden(FormModel::FORM_NAME_PARAM_KEY, value: form_model.form_name)
+              emit_yield builder
+            end
           end
         end.apply(@form_model, &@block)
       end

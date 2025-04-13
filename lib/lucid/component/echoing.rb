@@ -63,13 +63,15 @@ module Lucid
 
         # Was this form submitted in the current request?
         def active_form?
-          active_form_name == @form_name
+          active_component_path == @component.path.to_s &&
+             active_form_name == @form_name
         end
 
         private
 
         def validate_filter (filter)
           case filter
+          when String then [filter]
           when Symbol then [filter.to_s]
           when Array then filter.map { |f| f.to_s }
           else raise ArgumentError, "Invalid filter: #{filter.inspect}"
@@ -77,12 +79,18 @@ module Lucid
         end
 
         def active_form_name
-          raw_params["form_name"] ? Types.symbol[raw_params["form_name"]] : nil
+          form_param = raw_params[HTML::FormModel::FORM_NAME_PARAM_KEY]
+          form_param ? Types.symbol[form_param] : nil
+        end
+
+        def active_component_path
+          component_param = raw_params[HTML::FormModel::COMPONENT_PATH_PARAM_KEY]
+          component_param ? Types.string[component_param] : nil
         end
 
         def filtered_params
           raw_params.reject do |key, _|
-            @param_filter.include?(key) || key == "form_name"
+            @param_filter.include?(key) || %w[form component].include?(key)
           end
         end
 
