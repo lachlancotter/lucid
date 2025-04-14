@@ -1,34 +1,64 @@
 module Lucid
   module HTML
     #
-    # A container for message parameters that can be used to generate
-    # hypermedia controls and access validation errors.
+    # Data model for generating HTML form elements representing messages, with 
+    # validation messages. Also used to extract a message from an HTTP request.
     #
     class FormModel
-      #
-      # These are special form parameters that are added to every request generated
-      # with the Form::Builder. Used to identify which component and form originated
-      # the request. 
-      # 
-      FORM_NAME_PARAM_KEY      = "form"
-      COMPONENT_PATH_PARAM_KEY = "component"
-      
       attr_reader :component_id, :form_name, :message_type, :message_params
 
-      def initialize (component_id, form_name, message_type, message_params)
+      def initialize (message_type, message_params, component_id: "", form_name: :nil_form)
         @component_id   = Types.string[component_id]
         @form_name      = Types.symbol[form_name]
         @message_type   = Types.subclass(HTTP::Message)[message_type]
         @message_params = validate_params(message_params)
       end
 
+      #
+      # Convenience method for constructing a FormModel with default parameters
+      # if the receiving instance is empty. 
+      # 
       def or_default (default_params)
         if @message_params.empty?
-          FormModel.new(@component_id, @form_name, @message_type, default_params)
+          FormModel.new(@message_type, default_params,
+             component_id: @component_id, form_name: @form_name
+          )
         else
           self
         end
       end
+      
+      # ===================================================== #
+      #    Requests
+      # ===================================================== #
+
+      def yield_link
+        tap { yield to_message if is_link? && valid? }
+      end
+
+      def yield_command
+        tap { yield to_message if is_command? && valid? }
+      end
+
+      def to_message
+        @message_type.new(result.to_h)
+      end
+
+      def is_link?
+        @message_type.ancestors.include?(Lucid::Link)
+      end
+
+      def is_command?
+        @message_type.ancestors.include?(Lucid::Command)
+      end
+
+      def to_h
+        @message_params
+      end
+      
+      # ===================================================== #
+      #    Validation
+      # ===================================================== #
 
       def valid?
         result.success?
@@ -40,14 +70,6 @@ module Lucid
 
       def result
         @message_type.schema.call(@message_params)
-      end
-
-      def to_message
-        @message_type.new(result.to_h)
-      end
-
-      def to_h
-        @message_params
       end
 
       #

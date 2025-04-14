@@ -41,16 +41,16 @@ module Lucid
       #
       # Generate a link to send this message.
       #
-      def link (text, **opts, &block)
-        HTML::Anchor.new(self, text: text, **opts, &block).template
-      end
-
+      # def link (text, **opts, &block)
+      #   HTML::Anchor.new(self, text: text, **opts, &block).template
+      # end
       #
-      # Generate a button to send this message.
-      #
-      def button (label, **opts)
-        HTML::Button.new(self, label, **opts).template
-      end
+      # #
+      # # Generate a button to send this message.
+      # #
+      # def button (label, **opts)
+      #   HTML::Button.new(self, label, **opts).template
+      # end
 
       class << self
         def url (params)

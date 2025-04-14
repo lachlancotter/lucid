@@ -62,12 +62,12 @@ module Lucid
         @request.get_header("HTTP_HX_REQUEST") == "true"
       end
 
-      def yield_link
-        tap { yield message_params if has_link? }
+      def yield_link (&block)
+        message_params.yield_link(&block)
       end
 
-      def yield_command
-        tap { yield message_params if has_command? }
+      def yield_command (&block)
+        message_params.yield_command(&block)
       end
 
       def yield_no_message
@@ -76,14 +76,6 @@ module Lucid
 
       def has_message?
         Message.present?(@request)
-      end
-
-      def has_link?
-        has_message? && message_class.ancestors.include?(Lucid::Link)
-      end
-
-      def has_command?
-        has_message? && message_class.ancestors.include?(Lucid::Command)
       end
 
       def message_params

@@ -13,8 +13,8 @@ module Lucid
 
       def template
         button_label = @label
-        message = @message
-        Form.new(form_params) do |f|
+        message      = @message
+        Form.new(form_model) do |f|
           emit f.submit(button_label)
           message.to_h.each do |key, value|
             emit f.hidden(key, value: value)
@@ -24,8 +24,10 @@ module Lucid
 
       private
 
-      def form_params
-        FormModel.new(:button, @message.class, @message.to_h)
+      def form_model
+        FormModel.new(@message.class, @message.to_h,
+           component_id: "", form_name: :button
+        )
       end
     end
   end

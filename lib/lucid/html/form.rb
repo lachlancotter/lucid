@@ -4,6 +4,13 @@ module Lucid
     # Build an HTML form to compose a Message.
     #
     class Form
+      #
+      # Special fields added by default to identify the 
+      # component and form that originated the request. 
+      # 
+      FORM_NAME_PARAM_KEY      = "form"
+      COMPONENT_PATH_PARAM_KEY = "component"
+      
       def initialize (form_model, **opts, &block)
         @form_model = Types.instance(FormModel)[form_model]
         @options    = Types.hash[opts]
@@ -18,8 +25,8 @@ module Lucid
         Papercraft.html do |form_model|
           Builder.new(self, form_model).tap do |builder|
             form action: form_model.form_action, method: form_model.http_method do
-              emit builder.hidden(FormModel::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
-              emit builder.hidden(FormModel::FORM_NAME_PARAM_KEY, value: form_model.form_name)
+              emit builder.hidden(COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
+              emit builder.hidden(FORM_NAME_PARAM_KEY, value: form_model.form_name)
               emit_yield builder
             end
           end
@@ -71,7 +78,7 @@ module Lucid
         def errors (key)
           @path.concat(key).inject(@form_model.errors) do |errors, entry|
             raise KeyError, errors.to_s if errors.is_a?(Array)
-            errors.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
+            errors.fetch(entry.to_sym) { raise KeyError, "Key not found: #{entry}" }
           end
         end
 

@@ -11,15 +11,15 @@ module Lucid
         #
         # Wrap a request cycle.
         #
-        def cycle (request, response, session_data, &block)
+        def cycle (cycle, &block)
           block_result = nil
-          Console.logger.info(request) do |buffer|
+          Console.logger.info(cycle.request) do |buffer|
             @buffer = buffer
             begin
-              request(request)
+              request(cycle.request)
               # session(session_data)
               block_result = block.call
-              response(response)
+              response(cycle.response)
             end
           end
           block_result

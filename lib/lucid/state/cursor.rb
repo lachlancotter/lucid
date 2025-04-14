@@ -49,7 +49,7 @@ module Lucid
       # keys are missing, an empty hash is returned.
       #
       def nested_hash_at_path (data)
-        @param_path.inject(data) { |d, k| d.fetch(k) { Hash.new } }
+        @param_path.inject(data) { |d, k| d.fetch(k.to_sym) { Hash.new } }
       end
     end
   end

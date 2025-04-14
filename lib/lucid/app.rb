@@ -33,31 +33,15 @@ module Lucid
     #    Routing
     # ===================================================== #
 
-    get "/?*" do
-      # LOADER.reload
-      Logger.cycle(request, response, session) do
-        cycle(request, response).query
-      end
-    end
-
-    post "/?*" do
-      # LOADER.reload
-      Logger.cycle(request, response, session) do
-        cycle(request, response).command
-      end
-    end
+    get("/@/?*") { cycle(request, response).link }
+    post("/@/?*") { cycle(request, response).command }
+    get("/?*") { cycle(request, response).state }
 
     private
 
     # ===================================================== #
     #    Build and Dispatch
     # ===================================================== #
-
-    # def validate (request)
-    #   log(request, "Starting validation") do
-    #
-    #   end
-    # end
 
     #
     # Build a request/response cycle to dispatch.
