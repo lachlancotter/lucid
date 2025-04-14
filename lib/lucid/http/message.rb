@@ -8,9 +8,6 @@ module Lucid
     class Message < Lucid::Message
       POST       = "POST".freeze
       GET        = "GET".freeze
-      MODE_PARAM = "mode".freeze
-      EXECUTE    = "execute".freeze
-      VALIDATE   = "validate".freeze
       PATTERN    = /^(?:.*?\/@\/)(.+?)(\?.*)?$/
 
       #
