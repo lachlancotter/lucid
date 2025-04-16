@@ -8,22 +8,7 @@ module Lucid
     class Message < Lucid::Message
       POST       = "POST".freeze
       GET        = "GET".freeze
-      PATTERN    = /^(?:.*?\/@\/)(.+?)(\?.*)?$/
-
-      #
-      # Indicates that the given request path does not match
-      # the expected format.
-      #
-      class InvalidName < StandardError
-        def self.check (fullpath)
-          raise new(fullpath) unless fullpath.match?(PATTERN)
-        end
-
-        def initialize (fullpath)
-          super("Cannot parse message URL: #{fullpath}")
-        end
-      end
-
+      
       #
       # Convert the message into a URL that can be used to invoke it.
       #
@@ -37,20 +22,6 @@ module Lucid
       def query_params
         self.class.merge_app_state(to_h)
       end
-
-      #
-      # Generate a link to send this message.
-      #
-      # def link (text, **opts, &block)
-      #   HTML::Anchor.new(self, text: text, **opts, &block).template
-      # end
-      #
-      # #
-      # # Generate a button to send this message.
-      # #
-      # def button (label, **opts)
-      #   HTML::Button.new(self, label, **opts).template
-      # end
 
       class << self
         def url (params)
@@ -106,28 +77,11 @@ module Lucid
         end
 
         #
-        # Checks whether the request contains a message.
-        #
-        def present? (request)
-          request.fullpath.match?(PATTERN)
-        end
-
-        #
         # Messages types have a name that is used to identify them in
         # HTTP requests and responses.
         #
         def message_name
-          MessageName.encode(self)
-        end
-
-        def decode_name (request)
-          InvalidName.check(request.fullpath)
-          path = request.fullpath.match(PATTERN)[1]
-          MessageName.decode(path)
-        end
-
-        def decode_params (request)
-          (request.GET || {}).merge(request.POST || {})
+          MessageName.from_class(self)
         end
 
         #

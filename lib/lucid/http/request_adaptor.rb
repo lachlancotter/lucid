@@ -7,11 +7,7 @@ module Lucid
     # for parsing the request and extracting component params
     # and messages.
     #
-    class RequestAdaptor
-      def initialize (request)
-        @request = request
-      end
-
+    class RequestAdaptor < SimpleDelegator
       def state_reader (app_root: "/")
         Types.reader[
            case [has_message?, htmx?]
@@ -23,13 +19,13 @@ module Lucid
       end
 
       def state_from_fullpath (app_root)
-        fullpath     = @request.fullpath
+        fullpath     = self.fullpath
         state_string = RequestAdaptor.normalize_path(fullpath, app_root)
         State::Reader.new(state_string)
       end
 
       def state_from_hx_current_url (app_root)
-        current_url  = @request.get_header("HTTP_HX_CURRENT_URL")
+        current_url  = self.get_header("HTTP_HX_CURRENT_URL")
         state_string = RequestAdaptor.normalize_path(current_url, app_root)
         State::Reader.new(state_string)
       end
@@ -54,47 +50,40 @@ module Lucid
         end
       end
 
-      def cookies
-        @request.cookies
-      end
-
       def htmx?
-        @request.get_header("HTTP_HX_REQUEST") == "true"
+        get_header("HTTP_HX_REQUEST") == "true"
       end
 
       def yield_link (&block)
-        message_params.yield_link(&block)
+        form_model.yield_link(&block)
       end
 
       def yield_command (&block)
-        message_params.yield_command(&block)
+        form_model.yield_command(&block)
       end
 
-      def yield_no_message
-        tap { yield unless has_message? }
+      def form_model
+        HTML::FormModel.new(message_class, message_params) if has_message?
+      end
+      
+      def state_params
+        raw_params["state"] || {}
+      end
+      
+      def message_params
+        raw_params.reject { |key, _| key == "state" }
       end
 
       def has_message?
-        Message.present?(@request)
-      end
-
-      def message_params
-        HTML::FormModel.new(
-           message_class,
-           raw_params.reject { |key, _| key == "state" }
-        ) if has_message?
-      end
-
-      def message_name
-        Message.decode_name(@request)
+        MessageName.message?(self)
       end
 
       def message_class
-        MessageName.to_class(message_name)
+        MessageName.message_class_from_request(self)
       end
 
       def raw_params
-        Message.decode_params(@request) || {}
+        (self.GET || {}).merge(self.POST || {})
       end
     end
   end

@@ -107,6 +107,31 @@ module Lucid
           end
         end
       end
+
+      describe "#raw_params" do
+        it "decodes GET params" do
+          get_params = { "id" => "1", "state" => { "foo" => "bar" } }
+          request    = Rack::Request.new("REQUEST_METHOD" => "GET", "QUERY_STRING" => Rack::Utils.build_nested_query(get_params), "rack.input" => StringIO.new(""))
+          params     = RequestAdaptor.new(request).raw_params
+          expect(params).to eq(get_params)
+        end
+
+        it "decodes POST params" do
+          post_params = { "id" => "1", "state" => { "foo" => "bar" } }
+          request     = Rack::Request.new("REQUEST_METHOD" => "POST", "rack.input" => StringIO.new(Rack::Utils.build_nested_query(post_params)))
+          params      = RequestAdaptor.new(request).raw_params
+          expect(params).to eq({ "id" => "1", "state" => { "foo" => "bar" } })
+        end
+
+        it "decodes mixed params" do
+          get_params  = { "id" => "1" }
+          post_params = { "state" => { "baz" => "qux" } }
+          request     = Rack::Request.new("REQUEST_METHOD" => "POST", "rack.input" => StringIO.new(Rack::Utils.build_nested_query(post_params)), "QUERY_STRING" => Rack::Utils.build_nested_query(get_params))
+          params      = RequestAdaptor.new(request).raw_params
+          expect(params).to eq({ "id" => "1", "state" => { "baz" => "qux" } })
+        end
+      end
+
     end
   end
 end
