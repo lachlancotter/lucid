@@ -4,7 +4,6 @@ module MusicStore
       use :cart, from: :session
       nest(:cart_view) { ShoppingCart::CartView }
       echo(:shipping_address, SetShippingAddress) { |f| f.or_default(form_defaults) }
-      on(ShippingAddressUpdated) { delta.replace }
 
       def form_defaults
         {
