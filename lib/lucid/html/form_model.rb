@@ -72,13 +72,6 @@ module Lucid
         @message_type.schema.call(@message_params)
       end
 
-      #
-      # Generate an HTML form control with these parameters.
-      #
-      def form (**opts, &block)
-        Form.new(self, **opts, &block).template
-      end
-
       def form_action
         @message_type.url(@message_params)
       end

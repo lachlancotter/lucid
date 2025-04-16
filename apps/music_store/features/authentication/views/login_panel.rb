@@ -5,7 +5,7 @@ module MusicStore
 
       to ShowLogin, show: true
       on(Authenticated) { update(show: false) }
-      echo(Authenticate, as: :credentials) { { email: "" } }
+      echo :credentials, Authenticate
 
       element do |show, credentials|
         if show

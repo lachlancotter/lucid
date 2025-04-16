@@ -28,7 +28,7 @@ module Lucid
           after_initialize do
             binding      = Echo.new(props.env, self, name, message_class, except: except)
             form_model   = binding.to_form_model
-            form_model   = block.call(form_model) if block_given?
+            form_model   = instance_exec(form_model, &block) if block_given?
             echos[name]  = binding
             forms[name]  = form_model
             fields[name] = Field.new(self) { forms[name] }

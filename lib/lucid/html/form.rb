@@ -71,7 +71,7 @@ module Lucid
         def field_value (key)
           Types.union(String, Symbol)[key]
           @path.concat(key).inject(@form_model.to_h) do |params, entry|
-            params.fetch(entry) { raise KeyError, "Key not found: #{entry}" }
+            params.fetch(entry.to_sym) { raise KeyError, "Key not found: #{entry}" }
           end
         end
 
