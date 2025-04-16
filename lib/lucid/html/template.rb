@@ -93,15 +93,15 @@ module Lucid
         end
 
         def link_to (message, text = nil, **opts, &block)
-          emit normalize_message(message).link(text, **opts, &block)
+          emit Anchor.new(normalize_message(message), text: text, **opts, &block).template
         end
 
         def button_to (message, text = nil, **opts)
-          emit normalize_message(message).button(text, **opts)
+          emit Button.new(normalize_message(message), text, **opts).template
         end
 
-        def form_for (form_params, **opts, &block)
-          emit form_params.form(**opts, &block)
+        def form_for (form_model, **opts, &block)
+          emit Form.new(form_model, opts, &block).template
         end
 
         def fragment (name, *a, **b, &block)

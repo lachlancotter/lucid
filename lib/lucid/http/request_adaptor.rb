@@ -82,7 +82,11 @@ module Lucid
       end
 
       def raw_params
-        @raw_params ||= (self.GET || {}).merge(self.POST || {})
+        @raw_params ||= if post?
+          (self.POST || {}).merge(self.GET || {})
+        else
+          (self.GET || {})
+        end
       end
     end
   end

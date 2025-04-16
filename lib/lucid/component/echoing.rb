@@ -54,7 +54,7 @@ module Lucid
         end
 
         def to_form_model
-          HTML::FormModel.new(@message_class, to_h, 
+          HTML::FormModel.new(@message_class, to_h,
              component_id: @component.path.to_s, form_name: @form_name
           )
         end
@@ -81,27 +81,29 @@ module Lucid
         end
 
         def active_form_name
-          form_param = raw_params[HTML::Form::FORM_NAME_PARAM_KEY]
+          form_param = message_params[HTML::Form::FORM_NAME_PARAM_KEY]
           form_param ? Types.symbol[form_param] : nil
         end
 
         def active_component_path
-          component_param = raw_params[HTML::Form::COMPONENT_PATH_PARAM_KEY]
+          component_param = message_params[HTML::Form::COMPONENT_PATH_PARAM_KEY]
           component_param ? Types.string[component_param] : nil
         end
 
         def filtered_params
-          raw_params.reject do |key, _|
+          message_params.reject do |key, _|
             @param_filter.include?(key) || %w[form component].include?(key)
           end
         end
 
-        def raw_params
-          @raw_params ||= request.POST.merge(request.GET)
+        def message_params
+          request.message_params
+          # @raw_params ||= request.POST.merge(request.GET)
         end
 
         def request
-          @request ||= Rack::Request.new(@env)
+          # TODO we should pass the container instead of the env
+          @request ||= HTTP::RequestAdaptor.new(Rack::Request.new(@env))
         end
       end
 
