@@ -63,7 +63,7 @@ module Lucid
         end
 
         def event (event)
-          puts("  🔔 #{event.class.name}")
+          puts("  🔈 #{event.class.name}")
           log_data(event.to_h)
         end
 

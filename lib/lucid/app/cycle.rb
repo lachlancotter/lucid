@@ -4,39 +4,37 @@ module Lucid
     # Manages a request/response cycle.
     #
     class Cycle
+      attr_reader :request, :response
+      
       def initialize (request, response, container)
         @request   = request
         @response  = response
         @container = container
       end
-      
+
       def state
-        Logger.cycle(self) do
+        run_with_context do
           @response.send_state(component)
         end
       end
 
       def link
-        Logger.cycle(self) do
-          run_with_context do
-            @request.yield_link do |link|
-              Logger.link(link)
-              component.visit(link)
-              @response.send_delta(component, htmx: @request.htmx?)
-            end
+        run_with_context do
+          @request.yield_link do |link|
+            Logger.link(link)
+            component.visit(link)
+            @response.send_delta(component, htmx: @request.htmx?)
           end
         end
       end
 
       def command
-        Logger.cycle(self) do
-          run_with_context do
-            @request.yield_command do |command|
-              component # Build the tree before dispatching the command.
-              Logger.command(command)
-              message_bus.dispatch(command)
-              @response.send_delta(component, htmx: @request.htmx?)
-            end
+        run_with_context do
+          @request.yield_command do |command|
+            component # Build the tree before dispatching the command.
+            Logger.command(command)
+            message_bus.dispatch(command)
+            @response.send_delta(component, htmx: @request.htmx?)
           end
         end
       end
@@ -61,10 +59,6 @@ module Lucid
         component.notify(event)
       end
 
-      # def state
-      #   component.deep_state
-      # end
-
       #
       # Merge the current state to the message params unless HTMX is enabled.
       # For HTMX requests, the current state is passed in the HX-Current-URL header.
@@ -80,27 +74,14 @@ module Lucid
       private
 
       def run_with_context
-        with_context { yield }
+        Logger.cycle(self) do
+          with_context { yield }
+        end
       rescue Dry::Types::CoercionError => e
         Logger.exception(e)
         @response.send_error(e)
       end
-
-      # def validate_message! (message_params)
-      #   if message_params.valid?
-      #     yield message_params.to_message
-      #   else
-      #     Logger.error(
-      #        message_params.message_type,
-      #        message_params.errors
-      #     )
-      #     Validation::Failed.notify(
-      #        message_type:   message_params.message_type,
-      #        message_params: message_params.message_params
-      #     )
-      #   end
-      # end
-
+      
       def with_context (&block)
         HTTP::Message.with_app_state(self) do
           block.call

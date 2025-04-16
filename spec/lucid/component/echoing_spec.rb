@@ -66,7 +66,6 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
           render          = component.render_full
-          puts render
           expect(render).to include("name=\"component\"")
           expect(render).to include("value=\"/\"")
           expect(render).to include("name=\"form\"")
