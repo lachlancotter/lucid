@@ -19,19 +19,18 @@ module Lucid
       end
 
       def state_from_fullpath (app_root)
-        fullpath     = self.fullpath
         state_string = RequestAdaptor.normalize_path(fullpath, app_root)
         State::Reader.new(state_string)
       end
 
       def state_from_hx_current_url (app_root)
-        current_url  = self.get_header("HTTP_HX_CURRENT_URL")
+        current_url  = get_header("HTTP_HX_CURRENT_URL")
         state_string = RequestAdaptor.normalize_path(current_url, app_root)
         State::Reader.new(state_string)
       end
 
       def state_from_message_params
-        State::HashReader.new(raw_params["state"] || {})
+        State::HashReader.new(state_params)
       end
 
       def self.normalize_path (url, app_root)
@@ -65,25 +64,25 @@ module Lucid
       def form_model
         HTML::FormModel.new(message_class, message_params) if has_message?
       end
-      
+
+      def has_message?
+        MessageName.valid?(fullpath)
+      end
+
+      def message_class
+        MessageName.to_class(fullpath)
+      end
+
       def state_params
         raw_params["state"] || {}
       end
-      
+
       def message_params
         raw_params.reject { |key, _| key == "state" }
       end
 
-      def has_message?
-        MessageName.message?(self)
-      end
-
-      def message_class
-        MessageName.message_class_from_request(self)
-      end
-
       def raw_params
-        (self.GET || {}).merge(self.POST || {})
+        @raw_params ||= (self.GET || {}).merge(self.POST || {})
       end
     end
   end

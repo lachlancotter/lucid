@@ -12,22 +12,25 @@ module Lucid
       #
       # Checks whether the request contains a message.
       #
-      def self.message? (request)
-        request.fullpath.match?(PATTERN)
+      def self.valid? (fullpath)
+        fullpath.match?(PATTERN)
       end
 
       #
-      # Maps a request representing a message to the class of that message.
+      # Maps a request path to a message to the class of that message.
       # 
-      def self.to_class (request)
-        PathInvalid.check(request.fullpath)
-        path       = request.fullpath.match(PATTERN)[1]
+      def self.to_class (fullpath)
+        PathInvalid.check(fullpath)
+        path       = fullpath.match(PATTERN)[1]
         class_name = MessageName.decode(path)
         const_get(class_name).tap do |klass|
           ClassInvalid.check(klass)
         end
       end
-      
+ 
+      #
+      # Maps a message class to a URL path.
+      # 
       def self.from_class (message_class)
         encode(message_class.name)
       end
@@ -64,7 +67,7 @@ module Lucid
       #
       class PathInvalid < StandardError
         def self.check (fullpath)
-          raise new(fullpath) unless fullpath.match?(PATTERN)
+          raise new(Types.string[fullpath]) unless fullpath.match?(PATTERN)
         end
 
         def initialize (fullpath)
