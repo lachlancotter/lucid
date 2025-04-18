@@ -11,7 +11,7 @@ module Lucid
         @component_id   = Types.string[component_id]
         @form_name      = Types.symbol[form_name]
         @message_type   = Types.subclass(Message)[message_type]
-        @message_params = validate_params(message_params)
+        @message_params = parse_params(message_params)
       end
 
       #
@@ -53,7 +53,7 @@ module Lucid
       end
 
       def to_h
-        @message_params
+        @message_params.to_h
       end
 
       # ===================================================== #
@@ -69,7 +69,7 @@ module Lucid
       end
 
       def result
-        @message_type.schema.call(@message_params)
+        @message_type.schema.call(@message_params.to_h)
       end
 
       def form_action
@@ -82,28 +82,15 @@ module Lucid
 
       private
 
-      def validate_params (params)
-        deep_symbolize_keys(
+      def parse_params (params)
+        Types.instance(MessageParams)[
            case params
-           when Hash then params
-           when MessageParams then params.to_h
-           when FormModel then params.to_h
+           when MessageParams then params
+           when Hash then MessageParams.new(params)
+           when FormModel then params.message_params
            else raise ArgumentError, "Invalid message parameters: #{params.inspect}"
            end
-        )
-      end
-
-      def deep_symbolize_keys (obj)
-        case obj
-        when Hash
-          obj.each_with_object({}) do |(k, v), result|
-            result[k.to_sym] = deep_symbolize_keys(v)
-          end
-        when Array
-          obj.map { |e| deep_symbolize_keys(e) }
-        else
-          obj
-        end
+        ]
       end
     end
   end

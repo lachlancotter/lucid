@@ -6,9 +6,9 @@ module Lucid
     # requests and decoded from HTTP responses.
     #
     class Message < Lucid::Message
-      POST       = "POST".freeze
-      GET        = "GET".freeze
-      
+      POST = "POST".freeze
+      GET  = "GET".freeze
+
       #
       # Convert the message into a URL that can be used to invoke it.
       #
@@ -25,7 +25,7 @@ module Lucid
 
       class << self
         def url (params)
-          URL.new(self, Types.hash[params]).to_s
+          URL.new(self, params).to_s
         end
 
         def http_method
@@ -44,9 +44,9 @@ module Lucid
         # Encodes a message as a URL.
         #
         class URL
-          def initialize (message_type, params)
-            @message_type = Types.subclass(Message)[message_type]
-            @params       = Types.hash[params]
+          def initialize (message_type, message_params)
+            @message_type   = Types.subclass(Message)[message_type]
+            @message_params = parse_params(message_params)
           end
 
           def to_s
@@ -66,10 +66,18 @@ module Lucid
           end
 
           def query_params
-            @query_params ||= @message_type.merge_app_state(@params)
+            @query_params ||= @message_type.merge_app_state(@message_params.to_h)
           end
 
           private
+
+          def parse_params (params)
+            case params
+            when Hash then params
+            when MessageParams then params.to_h
+            else raise ArgumentError, "Invalid params: #{params.inspect}"
+            end
+          end
 
           def encode_params (params)
             Rack::Utils.build_nested_query(params)

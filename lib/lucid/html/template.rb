@@ -155,9 +155,8 @@ module Lucid
           case message
           when Message then message
           when Symbol then @renderable.link_to(message)
-          when -> (k) { k <= HTTP::Message } then message.new
-          else raise ArgumentError,
-             "Message type, MessageParms or Symbol expected: #{message.inspect}"
+          # when Types.subclass(HTTP::Message) then message.new
+          else raise ArgumentError, "Message or Symbol expected: #{message.inspect}"
           end
         end
       end

@@ -1,14 +1,15 @@
 module Lucid
   module HTML
     class Anchor
-      def initialize (message, **opts, &block)
+      def initialize (message, state, text:, &block)
         @message = message
-        @options = opts
+        @state   = state
+        @text    = text
         @block   = block
       end
 
       def template
-        "<a href='#{href}'>#{@options[:text]}</a>"
+        "<a href='#{href}'>#{@text}</a>"
       end
 
       def href

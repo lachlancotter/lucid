@@ -70,7 +70,7 @@ module Lucid
 
         def errors (key)
           @path.concat(key).inject(@form_model.errors) do |errors, entry|
-            raise KeyError, errors.to_s if errors.is_a?(Array)
+            # raise KeyError, errors.to_s if errors.is_a?(Array)
             errors.fetch(entry.to_sym) { raise KeyError, "Key not found: #{entry}" }
           end
         end

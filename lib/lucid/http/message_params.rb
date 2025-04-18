@@ -8,18 +8,24 @@ module Lucid
       # Special fields added to forms by default to identify the 
       # component and form that originated the request. 
       # 
-      FORM_NAME_PARAM_KEY      = "form"
-      COMPONENT_PATH_PARAM_KEY = "component"
-      STATE_HASH_PARAM_KEY     = "state"
+      FORM_NAME_PARAM_KEY      = :form
+      COMPONENT_PATH_PARAM_KEY = :component
+      STATE_HASH_PARAM_KEY     = :state
+      SPECIAL_PARAMS           = [FORM_NAME_PARAM_KEY, COMPONENT_PATH_PARAM_KEY].freeze
 
       def initialize (raw, filter: [])
-        @raw    = Types.hash[raw]
+        @raw    = deep_symbolize_keys(Types.hash[raw])
         @filter = parse_filter(filter)
       end
 
+      def empty?
+        to_h.empty?
+      end
+
       def to_h
-        filtered_keys = @filter.concat [FORM_NAME_PARAM_KEY, COMPONENT_PATH_PARAM_KEY, STATE_HASH_PARAM_KEY]
-        @raw.reject { |key, _| filtered_keys.include?(key) }
+        @raw.reject do |key, _|
+          @filter.include?(key) || SPECIAL_PARAMS.include?(key)
+        end
       end
 
       def state
@@ -38,12 +44,26 @@ module Lucid
 
       def parse_filter (filter)
         case filter
-        when String then [filter]
-        when Symbol then [filter.to_s]
-        when Array then filter.map { |f| f.to_s }
+        when String then [filter.to_sym]
+        when Symbol then [filter]
+        when Array then filter.map { |f| f.to_sym }
         else raise ArgumentError, "Invalid filter: #{filter.inspect}"
         end
       end
+
+      def deep_symbolize_keys (obj)
+        case obj
+        when Hash
+          obj.each_with_object({}) do |(k, v), result|
+            result[k.to_sym] = deep_symbolize_keys(v)
+          end
+        when Array
+          obj.map { |e| deep_symbolize_keys(e) }
+        else
+          obj
+        end
+      end
+
     end
   end
 end
