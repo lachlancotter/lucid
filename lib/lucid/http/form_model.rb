@@ -1,5 +1,5 @@
 module Lucid
-  module HTML
+  module HTTP
     #
     # Data model for generating HTML form elements representing messages, with 
     # validation messages. Also used to extract a message from an HTTP request.
@@ -10,7 +10,7 @@ module Lucid
       def initialize (message_type, message_params, component_id: "", form_name: :nil_form)
         @component_id   = Types.string[component_id]
         @form_name      = Types.symbol[form_name]
-        @message_type   = Types.subclass(HTTP::Message)[message_type]
+        @message_type   = Types.subclass(Message)[message_type]
         @message_params = validate_params(message_params)
       end
 
@@ -27,7 +27,7 @@ module Lucid
           self
         end
       end
-      
+
       # ===================================================== #
       #    Requests
       # ===================================================== #
@@ -45,17 +45,17 @@ module Lucid
       end
 
       def is_link?
-        @message_type.ancestors.include?(Lucid::Link)
+        @message_type.ancestors.include?(Link)
       end
 
       def is_command?
-        @message_type.ancestors.include?(Lucid::Command)
+        @message_type.ancestors.include?(Command)
       end
 
       def to_h
         @message_params
       end
-      
+
       # ===================================================== #
       #    Validation
       # ===================================================== #
@@ -83,10 +83,26 @@ module Lucid
       private
 
       def validate_params (params)
-        case params
-        when Hash then params
-        when FormModel then params.to_h
-        else raise ArgumentError, "Invalid message parameters: #{params.inspect}"
+        deep_symbolize_keys(
+           case params
+           when Hash then params
+           when MessageParams then params.to_h
+           when FormModel then params.to_h
+           else raise ArgumentError, "Invalid message parameters: #{params.inspect}"
+           end
+        )
+      end
+
+      def deep_symbolize_keys (obj)
+        case obj
+        when Hash
+          obj.each_with_object({}) do |(k, v), result|
+            result[k.to_sym] = deep_symbolize_keys(v)
+          end
+        when Array
+          obj.map { |e| deep_symbolize_keys(e) }
+        else
+          obj
         end
       end
     end

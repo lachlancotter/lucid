@@ -25,7 +25,7 @@ module Lucid
       private
 
       def form_model
-        FormModel.new(@message.class, @message.to_h,
+        HTTP::FormModel.new(@message.class, @message.to_h,
            component_id: "", form_name: :button
         )
       end

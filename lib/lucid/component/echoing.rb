@@ -50,17 +50,17 @@ module Lucid
           @component     = Types.component[component]
           @form_name     = Types.symbol[form_name]
           @message_class = Types.subclass(Message)[message_class]
-          @param_filter  = validate_filter(except)
+          @param_filter  = except
         end
 
         def to_form_model
-          HTML::FormModel.new(@message_class, to_h,
+          HTTP::FormModel.new(@message_class, to_h,
              component_id: @component.path.to_s, form_name: @form_name
           )
         end
 
         def to_h
-          active_form? ? filtered_params : {}
+          active_form? ? message_params.to_h : {}
         end
 
         # Was this form submitted in the current request?
@@ -71,34 +71,16 @@ module Lucid
 
         private
 
-        def validate_filter (filter)
-          case filter
-          when String then [filter]
-          when Symbol then [filter.to_s]
-          when Array then filter.map { |f| f.to_s }
-          else raise ArgumentError, "Invalid filter: #{filter.inspect}"
-          end
-        end
-
         def active_form_name
-          form_param = message_params[HTML::Form::FORM_NAME_PARAM_KEY]
-          form_param ? Types.symbol[form_param] : nil
+          message_params.active_form_name
         end
 
         def active_component_path
-          component_param = message_params[HTML::Form::COMPONENT_PATH_PARAM_KEY]
-          component_param ? Types.string[component_param] : nil
-        end
-
-        def filtered_params
-          message_params.reject do |key, _|
-            @param_filter.include?(key) || %w[form component].include?(key)
-          end
+          message_params.active_component_path
         end
 
         def message_params
-          request.message_params
-          # @raw_params ||= request.POST.merge(request.GET)
+          request.message_params(filter: @param_filter)
         end
 
         def request

@@ -31,7 +31,7 @@ module Lucid
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form]).to be_a(Lucid::HTML::FormModel)
+          expect(component.forms[:foo_form]).to be_a(HTTP::FormModel)
           expect(component.forms[:foo_form].message_type).to eq(message_class)
         end
 
@@ -78,12 +78,12 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) do
             echo(:foo_form, message_class) do |form|
-              form.or_default({ "foo" => "default" })
+              form.or_default({ foo: "default" })
             end
           end
           env             = mock_post_params("/", nil, {})
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form].to_h).to eq({ "foo" => "default" })
+          expect(component.forms[:foo_form].to_h).to eq({ foo: "default" })
         end
       end
 
@@ -91,9 +91,9 @@ module Lucid
         it "filters out the specified keys" do
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :credentials, message_class, except: :password }
-          env             = mock_post_params("/", :credentials, { "email" => "foo", "password" => "bar" })
+          env             = mock_post_params("/", :credentials, { email: "foo", password: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:credentials].to_h).to eq({ "email" => "foo" })
+          expect(component.forms[:credentials].to_h).to eq({ email: "foo" })
         end
       end
 
@@ -103,7 +103,7 @@ module Lucid
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_get_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form].to_h).to eq({ "foo" => "bar" })
+          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
       end
 
@@ -113,7 +113,7 @@ module Lucid
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form].to_h).to eq({ "foo" => "bar" })
+          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
       end
 
@@ -123,7 +123,7 @@ module Lucid
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form].to_h).to eq({ "foo" => "bar" })
+          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
 
         it "triggers form dependencies" do
@@ -173,7 +173,7 @@ module Lucid
           root_component       = root_component_class.new({}, env: env)
           source_component     = root_component.component1
           other_component      = root_component.component2
-          expect(source_component.forms[:foo_form].to_h).to eq({ "foo" => "bar" })
+          expect(source_component.forms[:foo_form].to_h).to eq({ foo: "bar" })
           expect(other_component.forms[:foo_form].to_h).to eq({})
         end
 

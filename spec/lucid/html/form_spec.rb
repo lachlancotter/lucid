@@ -6,7 +6,7 @@ module Lucid
         context "top level" do
           it "is the name of the field" do
             message_type = Class.new(HTTP::Message)
-            params       = FormModel.new(message_type, { foo: "bar" })
+            params       = HTTP::FormModel.new(message_type, { foo: "bar" })
             builder      = Form::Builder.new(nil, params)
             expect(builder.field_name(:foo)).to eq("foo")
           end
@@ -15,7 +15,7 @@ module Lucid
         context "nested field" do
           it "includes the nested key" do
             message_type = Class.new(HTTP::Message)
-            params       = FormModel.new(message_type, { foo: { bar: "baz" } })
+            params       = HTTP::FormModel.new(message_type, { foo: { bar: "baz" } })
             builder      = Form::Builder.new(nil, params, Path.new(:foo))
             expect(builder.field_name(:bar)).to eq("foo[bar]")
           end
@@ -24,7 +24,7 @@ module Lucid
         context "deeply nested field" do
           it "includes the nested keys" do
             message_type = Class.new(HTTP::Message)
-            params       = FormModel.new(message_type, { foo: { bar: { baz: "quox" } } })
+            params       = HTTP::FormModel.new(message_type, { foo: { bar: { baz: "quox" } } })
             builder      = Form::Builder.new(nil, params, Path.new("foo/bar"))
             expect(builder.field_name(:baz)).to eq("foo[bar][baz]")
           end
@@ -44,7 +44,7 @@ module Lucid
         end
         context "top level" do
           it "returns the errors list" do
-            params      = FormModel.new(message_class, { foo: "bar", bar: {} })
+            params      = HTTP::FormModel.new(message_class, { foo: "bar", bar: {} })
             no_renderer = nil
             builder     = Form::Builder.new(no_renderer, params)
             expect(builder.errors(:foo)).to eq(["must be an integer"])
@@ -54,7 +54,7 @@ module Lucid
         context "missing hash error" do
           it "returns the errors list" do
             data        = { foo: "bar" }
-            params      = FormModel.new(message_class, data)
+            params      = HTTP::FormModel.new(message_class, data)
             no_renderer = nil
             builder     = Form::Builder.new(no_renderer, params)
             expect(builder.errors(:bar)).to eq(["is missing"])
@@ -64,7 +64,7 @@ module Lucid
         context "nested hash schema errors" do
           it "returns the errors list" do
             data   = { foo: "bar", bar: { baz: "string" } }
-            params = FormModel.new(message_class, data)
+            params = HTTP::FormModel.new(message_class, data)
             Form::Builder.new(nil, params).scoped(:bar) do |builder|
               expect(builder.errors(:baz)).to eq(["must be an integer"])
             end

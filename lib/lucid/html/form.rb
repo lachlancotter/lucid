@@ -4,15 +4,8 @@ module Lucid
     # Build an HTML form to compose a Message.
     #
     class Form
-      #
-      # Special fields added by default to identify the 
-      # component and form that originated the request. 
-      # 
-      FORM_NAME_PARAM_KEY      = "form"
-      COMPONENT_PATH_PARAM_KEY = "component"
-      
       def initialize (form_model, **opts, &block)
-        @form_model = Types.instance(FormModel)[form_model]
+        @form_model = Types.instance(HTTP::FormModel)[form_model]
         @options    = Types.hash[opts]
         @block      = block
       end
@@ -25,8 +18,8 @@ module Lucid
         Papercraft.html do |form_model|
           Builder.new(self, form_model).tap do |builder|
             form action: form_model.form_action, method: form_model.http_method do
-              emit builder.hidden(COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
-              emit builder.hidden(FORM_NAME_PARAM_KEY, value: form_model.form_name)
+              emit builder.hidden(HTTP::MessageParams::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
+              emit builder.hidden(HTTP::MessageParams::FORM_NAME_PARAM_KEY, value: form_model.form_name)
               emit_yield builder
             end
           end
@@ -38,7 +31,7 @@ module Lucid
 
         def initialize (renderer, form_model, path = Path.new)
           @renderer   = renderer
-          @form_model = Types.instance(FormModel)[form_model]
+          @form_model = Types.instance(HTTP::FormModel)[form_model]
           @path       = Types.instance(Path)[path]
         end
 
