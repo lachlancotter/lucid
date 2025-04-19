@@ -14,9 +14,9 @@ module Lucid
         )
       end
 
-      def notify (message, context = {})
+      def call (event, container = {})
         @handlers.each do |handler|
-          handler.call(message, context)
+          handler.call(event, container)
         end
       end
 

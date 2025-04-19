@@ -12,7 +12,7 @@ module Lucid
           end
           component       = component_class.new({})
           event           = event_class.new
-          component.notify(event)
+          component.apply(event)
           expect(result).to be(component)
         end
       end
@@ -29,7 +29,7 @@ module Lucid
           end
           component        = component_class.new({})
           event            = event_class.new
-          component.notify(event)
+          component.apply(event)
           expect(result).to be(component)
         end
       end
@@ -47,7 +47,7 @@ module Lucid
             end
             component       = component_class.new({})
             event           = event_class.new(foo: "bar")
-            component.notify(event)
+            component.apply(event)
             expect(result).to be(event)
           end
 
@@ -62,7 +62,7 @@ module Lucid
             end
             component       = component_class.new({})
             event           = event_class.new(foo: "baz")
-            component.notify(event)
+            component.apply(event)
             expect(result).to be_nil
           end
         end
@@ -78,7 +78,7 @@ module Lucid
             end
             component       = component_class.new({})
             event           = event_class.new(foo: "bar")
-            component.notify(event)
+            component.apply(event)
             expect(result).to be(event)
           end
 
@@ -92,7 +92,7 @@ module Lucid
             end
             component       = component_class.new({})
             event           = event_class.new(foo: "baz")
-            component.notify(event)
+            component.apply(event)
             expect(result).to be_nil
           end
         end

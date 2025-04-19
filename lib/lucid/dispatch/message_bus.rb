@@ -15,7 +15,7 @@ module Lucid
 
     def publish (event)
       @handler.publish(event, @container)
-      @component.notify(event)
+      @component.apply(event)
     end
 
     def to_s
