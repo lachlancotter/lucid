@@ -1,7 +1,7 @@
 module Lucid
   module HTTP
     #
-    # Parses and filters message parameters from an HTTP request.
+    # Parse and filter message parameters from an HTTP request.
     # 
     class MessageParams
       #
@@ -38,6 +38,22 @@ module Lucid
 
       def active_component_path
         Types.string.optional[@raw[COMPONENT_PATH_PARAM_KEY]]
+      end
+
+      def merge_params (params)
+        MessageParams.new(
+           @raw.merge(params),
+           filter: @filter,
+        )
+      end
+
+      def merge_state (state)
+        MessageParams.new(
+           (state.empty? ?
+              @raw.reject { |k, _| k == STATE_HASH_PARAM_KEY } :
+              @raw.merge(STATE_HASH_PARAM_KEY => state)),
+           filter: @filter
+        )
       end
 
       private

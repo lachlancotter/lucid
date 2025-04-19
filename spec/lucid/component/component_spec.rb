@@ -12,7 +12,7 @@ module Lucid
         it "renders the main template" do
           view = Class.new(Component::Base) do
             param :name
-            element { div { text "Hello, #{state.name}" } }
+            element { div { text "Hello, #{state[:name]}" } }
           end.new(name: "World")
           expect(view.render_full).to eq("<div>Hello, World</div>")
         end

@@ -12,6 +12,7 @@ module Lucid
     LOADER.inflector.inflect('htmx' => 'HTMX')
     LOADER.inflector.inflect('http' => 'HTTP')
     LOADER.inflector.inflect('html' => 'HTML')
+    LOADER.inflector.inflect('url' => 'URL')
     LOADER.enable_reloading
     LOADER.setup
   end

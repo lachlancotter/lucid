@@ -27,10 +27,10 @@ module Lucid
       end
 
       def query_params
-        super.tap do |params|
-          params[SCOPE_PARAM] = @target.path.to_s
-          params[NAME_PARAM]  = @name.to_s
-        end
+        HTTP::MessageParams.new(super).merge_params(
+           SCOPE_PARAM => @target.path.to_s,
+           NAME_PARAM  => @name.to_s
+        ).to_h
       end
 
       def message_name

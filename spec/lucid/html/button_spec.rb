@@ -13,13 +13,8 @@ module Lucid
 
       it "passes state" do
         message = TestMessage.new(foo: "bar")
-        app     = Class.new do
-          def merge_state (params)
-            params.merge(state: { baz: "qux" })
-          end
-        end.new
         button  = Button.new(message, "Submit")
-        HTTP::Message.with_app_state(app) do
+        HTTP::Message.with_state(baz: "qux") do
           expect(button.to_s).to include("state[baz]=qux")
         end
       end

@@ -60,15 +60,12 @@ module Lucid
       end
 
       #
-      # Merge the current state to the message params unless HTMX is enabled.
-      # For HTMX requests, the current state is passed in the HX-Current-URL header.
+      # Returns the state of the component for inclusion in links and forms.
+      # If HTMX is enabled for the request, the state is omitted as we will 
+      # rely on the HX-Current-URL header to pass the state instead.
       #
-      def merge_state (message_params)
-        if htmx?
-          message_params
-        else
-          component.merge_state(message_params)
-        end
+      def state_for_messages
+        htmx? ? {} : component.deep_state
       end
 
       private
@@ -83,7 +80,7 @@ module Lucid
       end
       
       def with_context (&block)
-        HTTP::Message.with_app_state(self) do
+        HTTP::Message.with_state(state_for_messages) do
           block.call
         end
       end

@@ -43,13 +43,6 @@ module Lucid
         nest.name == self.class.instance_variable_get(:@nested_route_component)
       end
 
-      #
-      # Add the component state to the given message parameters.
-      #
-      def merge_state (message_params)
-        message_params.merge(state: deep_state)
-      end
-
       private
 
       def initialize_state (reader_data)
