@@ -48,7 +48,8 @@ module Lucid
             end
           end
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           render          = component.render_full
           expect(render).to include("name=\"foo\"")
           expect(render).to include("value=\"bar\"")
@@ -64,7 +65,8 @@ module Lucid
             end
           end
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           render          = component.render_full
           expect(render).to include("name=\"component\"")
           expect(render).to include("value=\"/\"")
@@ -82,7 +84,8 @@ module Lucid
             end
           end
           env             = mock_post_params("/", nil, {})
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:foo_form].to_h).to eq({ foo: "default" })
         end
       end
@@ -92,7 +95,8 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :credentials, message_class, except: :password }
           env             = mock_post_params("/", :credentials, { email: "foo", password: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:credentials].to_h).to eq({ email: "foo" })
         end
       end
@@ -102,7 +106,8 @@ module Lucid
           message_class   = Class.new(Lucid::Link)
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_get_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
       end
@@ -112,7 +117,8 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
       end
@@ -122,7 +128,8 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
         end
 
@@ -134,7 +141,8 @@ module Lucid
             watch(:foo_form) { called = true }
           end
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(called).to be_truthy
         end
       end
@@ -144,7 +152,8 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :other_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(component.forms[:foo_form].to_h).to eq({})
         end
 
@@ -156,7 +165,8 @@ module Lucid
             watch(:foo_form) { called = true }
           end
           env             = mock_post_params("/", :bar_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
           expect(called).to be_falsey
         end
       end
@@ -170,7 +180,8 @@ module Lucid
             nest(:component2) { component_class }
           end
           env                  = mock_post_params("/component1", :foo_form, { foo: "bar" })
-          root_component       = root_component_class.new({}, env: env)
+          container            = App::Container.new({}, env)
+          root_component       = root_component_class.new({}, container: container)
           source_component     = root_component.component1
           other_component      = root_component.component2
           expect(source_component.forms[:foo_form].to_h).to eq({ foo: "bar" })
@@ -189,7 +200,8 @@ module Lucid
             nest(:component2) { component_class }
           end
           env                  = mock_post_params("/component1", :foo_form, { foo: "bar" })
-          root_component       = root_component_class.new({}, env: env)
+          container            = App::Container.new({}, env)
+          root_component       = root_component_class.new({}, container: container)
           expect(called).to eq(1)
         end
       end

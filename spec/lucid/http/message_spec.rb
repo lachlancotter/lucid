@@ -37,7 +37,7 @@ module Lucid
             it "includes the current state" do
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
-              HTTP::Message.with_state(cycle.state_for_messages) do
+              HTTP::Message.with_state(cycle.send(:state_for_messages)) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state[baz]=qux")
               end
             end
@@ -55,7 +55,7 @@ module Lucid
             it "omits the current state" do
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
-              HTTP::Message.with_state(cycle.state_for_messages) do
+              HTTP::Message.with_state(cycle.send(:state_for_messages)) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar")
               end
             end
@@ -86,7 +86,7 @@ module Lucid
             it "includes the current state and omits message params" do
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
-              HTTP::Message.with_state(cycle.state_for_messages) do
+              HTTP::Message.with_state(cycle.send(:state_for_messages)) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?state[baz]=qux")
               end
             end
@@ -104,7 +104,7 @@ module Lucid
             it "omits the current state" do
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
-              HTTP::Message.with_state(cycle.state_for_messages) do
+              HTTP::Message.with_state(cycle.send(:state_for_messages)) do
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message")
               end
             end

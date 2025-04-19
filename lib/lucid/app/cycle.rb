@@ -39,6 +39,8 @@ module Lucid
         end
       end
 
+      private
+
       def htmx?
         @request.htmx?
       end
@@ -51,12 +53,13 @@ module Lucid
         @container[:message_bus]
       end
 
-      def href
-        component.href
-      end
-
-      def notify (event)
-        component.notify(event)
+      def run_with_context (&block)
+        Logger.cycle(self) do
+          HTTP::Message.with_state(state_for_messages, &block)
+        end
+      rescue Dry::Types::CoercionError => e
+        Logger.exception(e)
+        @response.send_error(e)
       end
 
       #
@@ -66,23 +69,6 @@ module Lucid
       #
       def state_for_messages
         htmx? ? {} : component.deep_state
-      end
-
-      private
-
-      def run_with_context
-        Logger.cycle(self) do
-          with_context { yield }
-        end
-      rescue Dry::Types::CoercionError => e
-        Logger.exception(e)
-        @response.send_error(e)
-      end
-      
-      def with_context (&block)
-        HTTP::Message.with_state(state_for_messages) do
-          block.call
-        end
       end
     end
   end

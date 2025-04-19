@@ -23,12 +23,12 @@ module Lucid
       # Used to encode URLs for the webserver. Useful if you want to
       # nest your application under a subdirectory.
       #
-      prop :app_root, Types.Constructor(Path).default { |path| path["/"]  }
+      prop :app_root, Types.Constructor(Path).default { |path| path["/"] }
 
       #
-      # Access to the rack environment for the current request.
+      # Access to the environment for the current request.
       # 
-      prop :env, Types.hash.optional.default { {} }
+      prop :container, Types.container.optional.default { App::Container.new({}, {}) }
 
       #
       # Access to the Session for the current request.

@@ -46,6 +46,18 @@ module Lucid
       def key? (key)
         self.class.key?(key)
       end
+      
+      # ===================================================== #
+      #    Inspection
+      # ===================================================== #
+
+      def to_s
+        "<#{self.class.name} {#{self.class.keys}}>"
+      end
+
+      def inspect
+        to_s
+      end
 
       # ===================================================== #
       #    Class DSL

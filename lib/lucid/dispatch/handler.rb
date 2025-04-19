@@ -16,7 +16,7 @@ module Lucid
     # The message bus is shared among all handlers. This provides a means for
     # handlers to dispatch commands and publish events for other handlers.
     # 
-    use :message_bus, Types.instance(App::Container::MessageBus)
+    use :message_bus, Types.instance(MessageBus)
 
     #
     # Handlers have access to the session object, which is a wrapper around

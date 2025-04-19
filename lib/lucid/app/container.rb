@@ -10,14 +10,6 @@ module Lucid
         @config = Types.hash[config]
         @env    = Types.hash[env]
       end
-      
-      def to_s
-        "<#{self.class.name} {#{self.class.keys}}>"
-      end
-      
-      def inspect
-        to_s
-      end
 
       def session_class
         @config[:session_class] || Lucid::App::Session
@@ -58,35 +50,6 @@ module Lucid
       provide(:state) do
         request.state_reader(app_root: app_root)
       end
-
-      #
-      # Dispatch events to the component and handler.
-      # 
-      class MessageBus
-        def initialize (component, handler, container)
-          @component = Types.component[component]
-          @handler   = Types.handler[handler]
-          @container = Types.container[container]
-        end
-
-        def dispatch (command)
-          @handler.dispatch(command, @container)
-        end
-
-        def publish (event)
-          @handler.publish(event, @container)
-          @component.notify(event)
-        end
-        
-        def to_s
-          "<#{self.class.name} #{object_id}>"
-        end
-        
-        def inspect
-          to_s
-        end
-      end
-
     end
   end
 end

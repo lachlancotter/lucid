@@ -26,7 +26,8 @@ module Lucid
         # 
         def echo (name, message_class, except: [], &block)
           after_initialize do
-            binding      = Echo.new(props.env, self, name, message_class, except: except)
+            request      = props.container[:request]
+            binding      = Echo.new(request, self, name, message_class, except: except)
             form_model   = binding.to_form_model
             form_model   = instance_exec(form_model, &block) if block_given?
             echos[name]  = binding
@@ -45,8 +46,8 @@ module Lucid
       # be 'echoed' back to the view.
       # 
       class Echo
-        def initialize (env, component, form_name, message_class, except: [])
-          @env           = Types.hash[env]
+        def initialize (request, component, form_name, message_class, except: [])
+          @request       = Types.instance(HTTP::RequestAdaptor)[request]
           @component     = Types.component[component]
           @form_name     = Types.symbol[form_name]
           @message_class = Types.subclass(Message)[message_class]
@@ -80,12 +81,7 @@ module Lucid
         end
 
         def message_params
-          request.message_params(filter: @param_filter)
-        end
-
-        def request
-          # TODO we should pass the container instead of the env
-          @request ||= HTTP::RequestAdaptor.new(Rack::Request.new(@env))
+          @request.message_params(filter: @param_filter)
         end
       end
 
