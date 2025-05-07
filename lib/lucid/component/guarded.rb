@@ -12,7 +12,6 @@ module Lucid
     module Guarded
       def self.included(base)
         base.extend(ClassMethods)
-        base.template(PermissionError) { text "Denied" }
         base.prepend(TemplateOverride)
       end
 

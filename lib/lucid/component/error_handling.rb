@@ -3,22 +3,13 @@ module Lucid
     module ErrorHandling
 
       def self.included(base)
-        install_template_overrides(base)
-        register_default_error_templates(base)
-      end
-
-      # ===================================================== #
-      #    Override Template Lookup
-      # ===================================================== #
-
-      def self.install_template_overrides (base)
         base.prepend(SemanticErrorTemplateOverride)
-        base.prepend(ParamErrorTemplateOverride)
+        base.prepend(StateErrorTemplateOverrides)
       end
 
-      module ParamErrorTemplateOverride
+      module StateErrorTemplateOverrides
         def template (name = Rendering::BASE_TEMPLATE)
-          if @error
+          if invalid?
             self.class.template(@error.class).bind(self)
           else
             super
@@ -57,47 +48,6 @@ module Lucid
         when ConfigError then true
         when StateError then true
         else false
-        end
-      end
-
-      # ===================================================== #
-      #    Error Templates
-      # ===================================================== #
-
-      def self.register_default_error_templates (base)
-        base.template ParamError do
-          div(class: "error param-error") {
-            h1 { text "Invalid Request" }
-            p { text "The request parameters are invalid." }
-          }
-        end
-
-        base.template PermissionError do
-          div(class: "error permission-error") {
-            h1 { text "Permission Denied" }
-            p { text "You do not have permission to access this resource." }
-          }
-        end
-
-        base.template ResourceError do
-          div(class: "error resource-error") {
-            h1 { text "Resource Not Found" }
-            p { text "The requested resource was not found." }
-          }
-        end
-
-        base.template ConfigError do
-          div(class: "error config-error") {
-            h1 { text "Invalid Config" }
-            p { text "The component was configured incorrectly. This is a bug." }
-          }
-        end
-
-        base.template StateError do
-          div(class: "error state-error") {
-            h1 { text "Invalid State" }
-            p { text "An invalid state was applied to this component. This is a bug." }
-          }
         end
       end
 
