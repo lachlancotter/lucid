@@ -17,6 +17,7 @@ module Lucid
       include HTML::Templating
       include Rendering
       include Guarded
+      include ErrorHandling
 
       #
       # The path from the web server root to the application root.
@@ -65,7 +66,7 @@ module Lucid
         @state = @state.new(data)
         data.keys.each { |key| field(key).invalidate if field?(key) }
       rescue Dry::Struct::Error => e
-        raise State::Map::Invalid.new(self, data, e.message)
+        @error = StateError.new(self, data, e.message)
       end
 
       #

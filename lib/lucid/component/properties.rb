@@ -14,6 +14,8 @@ module Lucid
 
       def initialize_props (props_hash)
         @props = self.class.props_class.new(Types.hash[props_hash])
+      rescue Dry::Struct::Error => e
+        @error = ConfigError.new(self, props_hash, e.message)
       end
 
       private

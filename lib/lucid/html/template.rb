@@ -37,6 +37,20 @@ module Lucid
         def parameters
           @template.parameters
         end
+
+        def args
+          @args ||= parameters.map do |p|
+            begin
+              @renderable.send(p.last)
+            rescue StandardError => error
+              error
+            end
+          end
+        end
+
+        def error
+          args.find { |v| v.is_a?(StandardError) }
+        end
       end
 
       #

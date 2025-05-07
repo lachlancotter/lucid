@@ -10,11 +10,9 @@ module Lucid
     # name in your component.
     #
     module Guarded
-      DENIED_TEMPLATE = :__denied__
-      
       def self.included(base)
         base.extend(ClassMethods)
-        base.template(DENIED_TEMPLATE) { text "Denied" }
+        base.template(PermissionError) { text "Denied" }
         base.prepend(TemplateOverride)
       end
 
@@ -33,7 +31,7 @@ module Lucid
       module TemplateOverride
         def template (name = Rendering::BASE_TEMPLATE)
           if denied?
-            self.class.template(DENIED_TEMPLATE).bind(self)
+            self.class.template(PermissionError).bind(self)
           else
             super
           end
@@ -49,6 +47,12 @@ module Lucid
           after_initialize do
             @guards = self.class.guards.map do |guard|
               guard.bind(self)
+            end
+          end
+          if guards.length == 1
+            # Register the callback exactly once regardless of how many guards are defined.
+            after_build do
+              @error = PermissionError.new(self) if denied?
             end
           end
         end

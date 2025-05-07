@@ -25,6 +25,11 @@ module Lucid
         end
       end
 
+      # 
+      # Retrieves the template to be rendered.
+      # Note that this base method is overridden in mixin modules that
+      # provide error handling and permission checking.
+      # 
       def template (name = BASE_TEMPLATE)
         self.class.template(name).bind(self)
       end

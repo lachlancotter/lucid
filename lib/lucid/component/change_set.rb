@@ -26,7 +26,7 @@ module Lucid
       def replace
         # Replacing a component makes any other changes irrelevant.
         # Except the case where the component is deleted. Then the
-        # replace update is discarded.
+        # Replace update is discarded.
         tap { @changes = [Replace.new(@component)] unless delete? }
       end
       

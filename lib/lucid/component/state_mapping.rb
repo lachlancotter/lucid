@@ -45,11 +45,13 @@ module Lucid
 
       private
 
-      def initialize_state (reader_data)
-        validate_reader!(reader_data).tap do |reader|
+      def initialize_state (state)
+        validate_reader!(state).tap do |reader|
           @state_reader = reader
           @state        = self.class.build_state(reader)
         end
+      rescue ParamError => e
+        @error = e
       end
 
       #
@@ -59,12 +61,12 @@ module Lucid
         Types.reader[@state_reader.seek(self.class.state_map.path_count, key)]
       end
 
-      def validate_reader! (value)
-        case value
-        when State::Reader then value
-        when State::HashReader then value
-        when Hash then State::HashReader.new(value)
-        else raise ArgumentError, "Invalid state: #{value}"
+      def validate_reader! (reader)
+        case reader
+        when State::Reader then reader
+        when State::HashReader then reader
+        when Hash then State::HashReader.new(reader)
+        else raise ArgumentError, "Invalid state: #{reader}"
         end
       end
 
@@ -109,13 +111,7 @@ module Lucid
           data = reader.read(state_map)
           state_class.new(data)
         rescue Dry::Struct::Error => e
-          raise Invalid.new(self, data, e.message)
-        end
-      end
-
-      class Invalid < ArgumentError
-        def initialize (component, data, message)
-          super("Invalid state for #{component}: #{data.inspect}. #{message}")
+          raise ParamError.new(self, data, e.message)
         end
       end
     end

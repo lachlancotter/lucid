@@ -25,4 +25,48 @@ module Lucid
       return path.to_s if path.join("Gemfile").exist?
     end
   end
+  
+  # ===================================================== #
+  #    Error Types
+  # ===================================================== #
+  
+  class RequestError < StandardError
+    # Base class for errors in the request.
+  end
+  
+  # Maybe it should be called InvalidState
+  class ParamError < RequestError
+    def initialize (component, data, message)
+      super("Invalid params for #{component}: #{data.inspect}. #{message}")
+    end
+  end
+
+  class PermissionError < RequestError
+    def initialize (component)
+      super("Permission denied for #{component}.")
+    end
+  end
+  
+  class ResourceError < RequestError
+    def initialize (component, resource)
+      super("Missing resource #{resource}")
+    end
+  end
+  
+  class ApplicationError < StandardError
+    # Base class for error in the application.
+  end
+  
+  class ConfigError < ApplicationError
+    def initialize (component, config, message)
+      super("Invalid props #{config} given to #{component}: #{message}")
+    end
+  end
+  
+  class StateError < ApplicationError
+    def initialize (component, state, message)
+      super("Invalid state #{state} applied to #{component}: #{message}")
+    end
+  end
+  
 end
