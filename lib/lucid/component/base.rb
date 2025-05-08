@@ -18,6 +18,7 @@ module Lucid
       include Rendering
       include Guarded
       include ErrorHandling
+      include ErrorTemplates
 
       #
       # The path from the web server root to the application root.

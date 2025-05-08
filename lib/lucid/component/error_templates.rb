@@ -36,8 +36,14 @@ module Lucid
             p { text "An invalid state was applied to this component. This is a bug." }
           }
         end
-      end
 
+        base.template StandardError do
+          div(class: "error unknown-error") {
+            h1 { text "Unknown Error" }
+            p { text "Could not fulfil the request due to an unknown error." }
+          }
+        end
+      end
     end
   end
 end
