@@ -18,7 +18,7 @@ module Lucid
 
     def value
       unless @evaluated
-        @value     = @block.call(*args)
+        @value     = @context.instance_exec(*args, &@block)
         @evaluated = true
       end
       @value

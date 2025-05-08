@@ -19,6 +19,7 @@ module Lucid
       include Guarded
       include ErrorHandling
       include ErrorTemplates
+      include Title
 
       #
       # The path from the web server root to the application root.

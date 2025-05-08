@@ -89,7 +89,8 @@ module Lucid
           component_class = Class.new(Component::Base) do
             param :count, Types.integer
           end
-          expect { component_class.new(count: "1") }.not_to raise_error
+          component = component_class.new(count: "1")
+          expect(component.valid?).to be_truthy
         end
       end
 
@@ -98,9 +99,9 @@ module Lucid
           component_class = Class.new(Component::Base) do
             param :count, Types.integer
           end
-          expect do
-            component_class.new(count: "foo")
-          end.to raise_error(Component::StateMapping::Invalid)
+          component = component_class.new(count: "foo")
+          expect(component.valid?).to be_falsey
+          expect(component.error).to be_a(ParamError)
         end
       end
     end

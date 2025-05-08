@@ -32,6 +32,10 @@ module Lucid
           block.call(Types.component[sub])
         end
       end
+      
+      def nested_route_component
+        subcomponent self.class.instance_variable_get(:@nested_route_component)
+      end
 
       def root?
         props.parent.nil?
