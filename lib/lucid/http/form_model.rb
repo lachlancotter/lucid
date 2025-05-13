@@ -40,6 +40,10 @@ module Lucid
         tap { yield to_message if is_command? && valid? }
       end
 
+      def yield_invalid
+        tap { yield to_h unless valid? }
+      end
+
       def to_message
         @message_type.new(result.to_h)
       end

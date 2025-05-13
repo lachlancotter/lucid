@@ -60,6 +60,10 @@ module Lucid
       def yield_command (&block)
         form_model.yield_command(&block)
       end
+      
+      def yield_invalid (&block)
+        form_model.yield_invalid(&block)
+      end
 
       def form_model
         FormModel.new(message_class, message_params) if has_message?

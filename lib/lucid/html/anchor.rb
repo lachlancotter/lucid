@@ -1,9 +1,8 @@
 module Lucid
   module HTML
     class Anchor
-      def initialize (message, state, text:, &block)
+      def initialize (message, text:, &block)
         @message = message
-        @state   = state
         @text    = text
         @block   = block
       end

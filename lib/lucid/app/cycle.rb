@@ -36,6 +36,9 @@ module Lucid
             message_bus.dispatch(command)
             @response.send_delta(component, htmx: @request.htmx?)
           end
+          @request.yield_invalid do |params|
+            Logger.error("Invalid command", params)
+          end
         end
       end
 

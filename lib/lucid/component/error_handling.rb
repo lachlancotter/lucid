@@ -10,12 +10,12 @@ module Lucid
       # This stops error propagation in the parent and provides a graceful
       # error page to the user.
       # 
-      def rescue_child_errors (name, *errors, &block)
+      def rescue_child_errors (name, *error_types, &block)
         block.call
-      rescue *errors => e
+      rescue *error_types => e
         replace_nest(name) { ErrorPage[error: e] }
       end
-       
+
     end
   end
 end

@@ -101,7 +101,7 @@ module Lucid
         end
 
         def form_for (form_model, **opts, &block)
-          emit Form.new(form_model, opts, &block).template
+          emit Form.new(form_model, **opts, &block).template
         end
 
         def fragment (name, *a, **b, &block)
