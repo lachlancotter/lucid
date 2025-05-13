@@ -7,6 +7,15 @@ module Lucid
     #
     class Writer
 
+      #
+      # Add context to errors raised during encoding.
+      # 
+      class Error < StandardError
+        def initialize (component, reason)
+          super("Error encoding component: #{component}: #{reason}")
+        end
+      end
+
       def initialize (state = {})
         @state    = Stack.new(state)
         @segments = []
@@ -31,12 +40,12 @@ module Lucid
           write_state(state_map)
           write_nests(component.nests, on_route: on_route)
         end
+      rescue State::Map::MissingValue => e
+        raise Error.new(component, e.message)
       end
-
+      
       def write_state (map)
-        map.rules.each do |rule|
-          rule.encode(@state.top, self)
-        end
+        map.encode(@state.top, self)
       end
 
       def write_nests (nests, on_route:)

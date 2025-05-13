@@ -55,7 +55,7 @@ module Lucid
       it "raises when segments are undefined" do
         component_class = Class.new(Component::Base) { route ":foo" }
         instance        = component_class.new({})
-        expect { instance.url }.to raise_error(State::Map::MissingValue)
+        expect { instance.url }.to raise_error(State::Writer::Error)
       end
 
       it "ignores leading and trailing slashes" do

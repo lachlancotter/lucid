@@ -37,11 +37,17 @@ module Lucid
         Map.new.tap do |map|
           @rules.each do |rule|
             if rule.is_a?(Path)
-              map.rules << Param.new(rule.key)
+              map.rules << Param.new(rule.key) if rule.key.is_a?(Symbol)
             else
               map.rules << rule
             end
           end
+        end
+      end
+
+      def encode (state, buffer)
+        rules.each do |rule|
+          rule.encode(state, buffer)
         end
       end
 
