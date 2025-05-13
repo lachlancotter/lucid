@@ -2,55 +2,20 @@ module Lucid
   module Component
     module ErrorHandling
 
-      def self.included(base)
-        base.prepend(SemanticErrorTemplateOverride)
-        base.prepend(StateErrorTemplateOverrides)
+      #
+      # When an exception is thrown by a child component, whether during
+      # initialization, message application or rendering, we replace the
+      # invalid child component with the ErrorPage component.
+      # 
+      # This stops error propagation in the parent and provides a graceful
+      # error page to the user.
+      # 
+      def rescue_child_errors (name, *errors, &block)
+        block.call
+      rescue *errors => e
+        replace_nest(name) { ErrorPage[error: e] }
       end
-
-      module StateErrorTemplateOverrides
-        def template (name = Rendering::BASE_TEMPLATE)
-          if invalid?
-            self.class.template(@error.class).bind(self)
-          else
-            super
-          end
-        end
-      end
-
-      module SemanticErrorTemplateOverride
-        def template (name = Rendering::BASE_TEMPLATE)
-          binding = self.class.template(name).bind(self)
-          error   = binding.error
-          if error
-            @error = error
-            self.class.template(error.class).bind(self)
-          else
-            super
-          end
-        end
-      end
-
-      # ===================================================== #
-      #    Error Predicates
-      # ===================================================== #
-
-      def error
-        @error
-      end
-
-      def valid?
-        !invalid?
-      end
-
-      def invalid?
-        case @error
-        when ParamError then true
-        when ConfigError then true
-        when StateError then true
-        else false
-        end
-      end
-
+       
     end
   end
 end

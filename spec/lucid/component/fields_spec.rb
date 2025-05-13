@@ -65,6 +65,15 @@ module Lucid
           view.update(foo: "baz")
           expect(view.baz).to eq("BAZ")
         end
+
+        it "rescues exceptions and returns them" do
+          view   = Class.new(Component::Base) do
+            let(:foo) { raise StandardError }
+          end.new({})
+          result = nil
+          expect { result = view.foo }.not_to raise_error
+          expect(result).to be_a(StandardError)
+        end
       end
 
       describe ".watch" do

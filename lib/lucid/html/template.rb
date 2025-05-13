@@ -37,20 +37,6 @@ module Lucid
         def parameters
           @template.parameters
         end
-
-        def args
-          @args ||= parameters.map do |p|
-            begin
-              @renderable.send(p.last)
-            rescue StandardError => error
-              error
-            end
-          end
-        end
-
-        def error
-          args.find { |v| v.is_a?(StandardError) }
-        end
       end
 
       #
@@ -126,10 +112,11 @@ module Lucid
         # Render a component in the template.
         # 
         def subview (name_or_component)
-          # Wrap the subview in a div to ensure it has an ID we can target.
-          emit Component::ChangeSet::Replace.new(
-             normalize_subview name_or_component
-          ).call
+          subcomponent = normalize_subview(name_or_component)
+          emit Component::ChangeSet::Replace.new(subcomponent).call
+        rescue => e
+          replace_nest(subcomponent.name.value) { Component::ErrorPage[error: e] }
+          retry
         end
 
         #

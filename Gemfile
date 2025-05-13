@@ -1,16 +1,5 @@
 source "https://rubygems.org"
-
-gem "rack"
-gem "zeitwerk"
-gem "sinatra"
-gem "docile" # Build DSLs.
-gem "dry-types" # Type checking.
-gem "dry-struct" # Component state and props.
-gem "dry-schema" # Message validation.
-gem "papercraft" # Generate HTML from Ruby.
-gem "htmlbeautifier" # Pretty-print HTML.
-gem "console" # Pretty console logging.
-gem "binding_of_caller" # For assertions.
+gemspec
 
 group :test do
   gem "rspec"

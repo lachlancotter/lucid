@@ -12,21 +12,30 @@ module Types
   def self.array (type = Types::Any)
     Types::Array.of(type)
   end
-  
+
   def self.any
     Types::Any
   end
-  
+
   def self.enumerable
     instance(Enumerable)
   end
-  
+
   def self.callable
     instance(Proc)
   end
 
   def self.instance (type)
     Instance(type)
+  end
+
+  # Convert a class to a type.
+
+  def self.normalize (type)
+    case type
+    when Dry::Types::Type then type
+    else instance(type)
+    end
   end
 
   def self.subclass(type)

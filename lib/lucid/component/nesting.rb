@@ -13,6 +13,11 @@ module Lucid
         @nests ||= {}
       end
 
+      # Used by error handler.
+      def replace_nest (name, &block)
+        nests[name] = Nest.new(name, &block).bind(self, {})
+      end
+
       def subcomponents # Hash[Symbol => Component::Base | Enumerable]
         nests.map do |(name, nest)|
           [name, nest.enum? ?
@@ -32,7 +37,7 @@ module Lucid
           block.call(Types.component[sub])
         end
       end
-      
+
       def nested_route_component
         subcomponent self.class.instance_variable_get(:@nested_route_component)
       end
@@ -74,7 +79,9 @@ module Lucid
           Nest.new(name, &block).tap do |nest|
             nests[name] = nest
             after_initialize do
-              nests[name] = nest.bind(self, nested_state(name))
+              rescue_child_errors(name, StandardError) do
+                nests[name] = nest.bind(self, nested_state(name))
+              end
             end
             if block_given?
               watch(*block.parameters.map(&:last)) do

@@ -15,14 +15,14 @@ module Lucid
       def initialize_props (props_hash)
         @props = self.class.props_class.new(Types.hash[props_hash])
       rescue Dry::Struct::Error => e
-        @error = ConfigError.new(self, props_hash, e.message)
+        raise ConfigError.new(self, props_hash, e.message)
       end
 
       private
 
       module ClassMethods
         def prop(name, type = Types.string)
-          props_class.attribute(name, type)
+          props_class.attribute(name, Types.normalize(type))
           after_initialize { fields[name] = Field.new(self) { props[name] } }
           define_method(name) { fields[name] }
         end

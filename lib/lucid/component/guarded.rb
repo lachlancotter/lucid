@@ -1,5 +1,5 @@
 module Lucid
-  module Component 
+  module Component
     #
     # Provides guard expressions for components. Guards are conditions that must
     # be met in order for the component to render. If the guard condition is not
@@ -26,7 +26,7 @@ module Lucid
       def permitted?
         !denied?
       end
-      
+
       module TemplateOverride
         def template (name = Rendering::BASE_TEMPLATE)
           if denied?
@@ -51,7 +51,7 @@ module Lucid
           if guards.length == 1
             # Register the callback exactly once regardless of how many guards are defined.
             after_build do
-              @error = PermissionError.new(self) if denied?
+              raise PermissionError.new(self) if denied?
             end
           end
         end

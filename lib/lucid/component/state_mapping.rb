@@ -50,8 +50,6 @@ module Lucid
           @state_reader = reader
           @state        = self.class.build_state(reader)
         end
-      rescue ParamError => e
-        @error = e
       end
 
       #

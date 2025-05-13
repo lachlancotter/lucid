@@ -18,7 +18,6 @@ module Lucid
       include Rendering
       include Guarded
       include ErrorHandling
-      include ErrorTemplates
       include Title
 
       #
@@ -68,7 +67,7 @@ module Lucid
         @state = @state.new(data)
         data.keys.each { |key| field(key).invalidate if field?(key) }
       rescue Dry::Struct::Error => e
-        @error = StateError.new(self, data, e.message)
+        raise StateError.new(self, data, e.message)
       end
 
       #
