@@ -82,9 +82,10 @@ module Lucid
         class << self
           def template (name, &block)
             if block_given?
-              define_method(name) do |*args|
-                template(name).render(*args)
+              define_method(name) do |*args, **opts|
+                template(name).render(*args, **opts)
               end
+              # Maybe we should remove the bang version.
               define_method("#{name}!") do |*args|
                 emit template(name).render(*args)
               end
@@ -112,11 +113,19 @@ module Lucid
           }
         end
 
-        template :text do |key, options = {}|
+        template :text do |key, value: nil, **options|
           input({
              type:  :text,
              name:  field_name(key),
-             value: field_value(key),
+             value: value || field_value(key),
+             id:    field_id(key)
+          }.merge(options))
+        end
+
+        template :textarea do |key, value: nil, **options|
+          tag(:textarea, {
+             name:  field_name(key),
+             value: value || field_value(key),
              id:    field_id(key)
           }.merge(options))
         end
