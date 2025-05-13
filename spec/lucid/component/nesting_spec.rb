@@ -130,16 +130,6 @@ module Lucid
           expect(view.foo[1].props.app_root).to eq("/app/root")
           expect(view.foo[1].path).to eq("/foo-1")
         end
-
-      end
-      
-      context "configuration error" do
-        it "puts the parent into an error state" do 
-          component_class = Class.new(Component::Base) { nest(:foo) { raise ConfigError.new(nil, {}, "Bad props") } }
-          component       = component_class.new({})
-          expect(component.error).to be_a(ConfigError)
-          expect(component.foo).to be_nil
-        end
       end
     end
 
