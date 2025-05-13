@@ -12,7 +12,7 @@ module Lucid
     module Guarded
       def self.included(base)
         base.extend(ClassMethods)
-        base.prepend(TemplateOverride)
+        # base.prepend(TemplateOverride)
       end
 
       def guards
@@ -27,15 +27,15 @@ module Lucid
         !denied?
       end
 
-      module TemplateOverride
-        def template (name = Rendering::BASE_TEMPLATE)
-          if denied?
-            self.class.template(PermissionError).bind(self)
-          else
-            super
-          end
-        end
-      end
+      # module TemplateOverride
+      #   def template (name = Rendering::BASE_TEMPLATE)
+      #     if denied?
+      #       self.class.template(PermissionError).bind(self)
+      #     else
+      #       super
+      #     end
+      #   end
+      # end
 
       #
       # DSL methods for defining guard conditions.

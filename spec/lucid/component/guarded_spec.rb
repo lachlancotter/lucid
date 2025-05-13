@@ -22,27 +22,30 @@ module Lucid
 
       context "deny" do
         it "denies access to the template" do
-          component = Class.new(Base) do
+          component_class = Class.new(Base) do
             guard { Deny }
             element { h1 { text "Exposed!" } }
-          end.new({})
-          expect(component.denied?).to be_truthy
-          expect(component.permitted?).to be_falsey
-          expect(component.template.render).to eq("Denied")
+          end
+          expect { component_class.new({}) }.to raise_error(PermissionError)
+          # expect(component.denied?).to be_truthy
+          # expect(component.permitted?).to be_falsey
+          # expect(component.template.render).to eq("Denied")
         end
       end
 
       context "invalid result" do
         it "raises an exception on render" do
-          component = Class.new(Base) { guard { "foo" } }.new({})
-          expect { component.template }.to raise_error(Guard::Invalid)
+          component_class = Class.new(Base) { guard { "foo" } }
+          expect { component_class.new({}) }.to raise_error(Guard::Invalid)
+          # expect { component.template }.to raise_error(Guard::Invalid)
         end
       end
 
       context "guard exception" do
         it "raises an exception on render" do
-          component = Class.new(Base) { guard { raise "foo" } }.new({})
-          expect { component.template }.to raise_error(RuntimeError)
+          component_class = Class.new(Base) { guard { raise "foo" } }
+          expect { component_class.new({}) }.to raise_error(RuntimeError)
+          # expect { component.template }.to raise_error(RuntimeError)
         end
       end
 
@@ -55,7 +58,6 @@ module Lucid
           expect(component.permitted?).to be_truthy
         end
       end
-
 
       # describe "#check_guards" do
       #   context "no guards" do
