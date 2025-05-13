@@ -49,12 +49,12 @@ module Lucid
     #
     class Project < DirectoryLayout
       CONFIG_FILES = %w[]
-      CODE_DIRS = %w[app]
+      CODE_DIRS = %w[config]
 
       def configure (zeitwerk_loader)
         super
         core_layout.configure(zeitwerk_loader)
-        messages_files.each { |f| require feature_file(f) }
+        feature_files.each { |f| require f }
         feature_layouts.each { |l| l.configure(zeitwerk_loader) }
       end
 
@@ -76,10 +76,6 @@ module Lucid
         "#{features_path}/#{feature_name}"
       end
 
-      def feature_file (filename)
-        "#{features_path}/#{filename}"
-      end
-
       def feature_class (feature_name)
         @namespace.const_get(
            feature_name.split("_").map(&:capitalize).join
@@ -92,8 +88,12 @@ module Lucid
         end
       end
 
-      def messages_files
-        feature_directories.map { |d| "#{d}/messages/messages.rb" }
+      def feature_files
+        Dir.children(features_path).select do |entry|
+          File.file?("#{features_path}/#{entry}") && entry.end_with?(".rb")
+        end.map do |filename|
+          "#{features_path}/#{filename}"
+        end
       end
     end
 
@@ -103,6 +103,15 @@ module Lucid
     class Feature < DirectoryLayout
       CONFIG_FILES = %w[]
       CODE_DIRS    = %w[data models services views handlers]
+      
+      def configure (zeitwerk_loader)
+        require feature_file
+        super
+      end
+      
+      def feature_file
+        "#{@root_path}.rb"
+      end
     end
 
     #
@@ -110,7 +119,7 @@ module Lucid
     #
     class Core < DirectoryLayout
       CONFIG_FILES = %w[]
-      CODE_DIRS    = %w[lib]
+      CODE_DIRS    = %w[models]
     end
   end
 end
