@@ -46,7 +46,7 @@ module Lucid
       InvalidEvent.check(event)
       App::Logger.event(event)
       each_subscriber(event.class) do |klass, handler_block|
-        klass.new(context, &handler_block).call(event)
+        klass.new(event, context, &handler_block).call
       end
     end
 

@@ -11,7 +11,7 @@ module Lucid
       context "valid dependencies" do
         it "injects dependencies" do
           handler_class = Class.new(Handler) { use :foo, Types.string }
-          handler       = handler_class.new(TestContainer.new) {}
+          handler       = handler_class.new(nil, TestContainer.new) {}
           expect(handler.foo).to eq("bar")
         end
       end
@@ -19,7 +19,7 @@ module Lucid
       context "invalid dependencies" do
         it "raises an exception" do
           handler_class = Class.new(Handler) { use :foo, Types.string }
-          expect { handler_class.new({}) }.to raise_error(Handler::MissingDependency)
+          expect { handler_class.new(nil, {}) }.to raise_error(Handler::MissingDependency)
         end
       end
     end

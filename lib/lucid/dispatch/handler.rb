@@ -30,16 +30,18 @@ module Lucid
     # The block will be called with the message as an argument.
     # The container provides the dependencies required by the handler.
     #
-    def initialize (container, &handler)
+    def initialize (message, container, &handler)
       super(container)
-      @handler = handler
+      @message  = message
+      @handler  = handler
+      @memoized = {}
     end
 
     #
     # Entry point for handlers.
     # 
-    def call (message)
-      instance_exec(message, &@handler)
+    def call
+      instance_exec(@message, &@handler)
     end
 
     #
@@ -63,6 +65,14 @@ module Lucid
       def recruit (message_class)
         recruit_dispatcher message_class
         recruit_broadcaster message_class
+      end
+
+      def let (key, &block)
+        define_method(key) do
+          @memoized.fetch(key) do
+            @memoized[key] = instance_exec(@message, &block)
+          end
+        end
       end
     end
   end

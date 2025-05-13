@@ -55,9 +55,9 @@ module Lucid
     #
     # Call the handler for the given message type.
     # 
-    def dispatch (message, context)
+    def dispatch (message, container)
       find_handler!(message.class) do |klass, handler_block|
-        klass.new(context, &handler_block).call(message)
+        klass.new(message, container, &handler_block).call
       end
     end
 
