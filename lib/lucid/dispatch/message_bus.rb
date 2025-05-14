@@ -4,18 +4,18 @@ module Lucid
   # 
   class MessageBus
     def initialize (component, handler, container)
-      @component = Types.component[component]
-      @handler   = Types.handler[handler]
-      @container = Types.container[container]
+      @component = Types.component.optional[component]
+      @handler   = Types.handler.optional[handler]
+      @container = Types.container.optional[container]
     end
 
     def dispatch (command)
-      @handler.dispatch(command, @container)
+      @handler.dispatch(command, @container) if @handler
     end
 
     def publish (event)
-      @handler.publish(event, @container)
-      @component.apply(event)
+      @handler.publish(event, @container) if @handler
+      @component.apply(event) if @component
     end
 
     def to_s

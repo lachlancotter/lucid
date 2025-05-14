@@ -63,7 +63,7 @@ module Lucid
           define_method(name) do
             if @container.key?(name)
               # Validate that the resolved dependency is of the correct type.
-              @container[name].tap { |dep| key.type[dep] }
+              key.type[@container[name]]
             else
               # Raise an error unless the dependency is optional.
               MissingDependency.check(key, self, @container)

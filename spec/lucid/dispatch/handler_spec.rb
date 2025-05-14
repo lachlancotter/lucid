@@ -1,7 +1,24 @@
 module Lucid
   describe Handler do
-    
+
     describe "#call" do
+      it "handles errors" do
+        message_class = Class.new(Command)
+        handler_class = Class.new(Handler) { perform(message_class) { raise StandardError } }
+        block         = handler_class.handlers[message_class]
+        
+        message_bus   = MessageBus.new(nil, nil, nil)
+        container     = { message_bus: message_bus, session: nil }
+        handler       = handler_class.new(message_class.new, container, &block)
+        expect(message_bus).to receive(:publish) do |event|
+          expect(event).to be_a(HandlerRaised)
+          expect(event.error).to be_a(StandardError)
+        end
+        expect { handler.call }.not_to raise_error
+      end
+    end
+
+    describe "#permitted?" do
 
     end
 

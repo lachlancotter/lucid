@@ -42,6 +42,9 @@ module Lucid
     # 
     def call
       instance_exec(@message, &@handler)
+    rescue StandardError => e
+      App::Logger.error(e.message)
+      publish(HandlerRaised.new(error: e))
     end
 
     #
