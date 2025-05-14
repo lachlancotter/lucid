@@ -16,7 +16,7 @@ module Lucid
       include Echoing
       include HTML::Templating
       include Rendering
-      include Guarded
+      include Restricted
       include ErrorHandling
       include Title
 

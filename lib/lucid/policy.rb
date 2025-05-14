@@ -9,7 +9,7 @@ module Lucid
     end
 
     def apply (message, context = @context, &block)
-      context.instance_exec(&block) if permits_message?(message)
+      context.instance_exec(message, &block) if permits_message?(message)
     end
 
     def permits_message? (message)
@@ -44,6 +44,9 @@ module Lucid
       end
     end
 
+    #
+    # Subclasses must define the policy methods.
+    # 
     class NotImplemented < StandardError
       def initialize (method_name)
         super("Subclass must implement the #{method_name} method")

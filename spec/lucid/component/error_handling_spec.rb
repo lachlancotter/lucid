@@ -30,14 +30,22 @@ module Lucid
       context "permission error" do
         context "in self" do
           it "raises an exception" do
-            component_class = Class.new(Component::Base) { guard { Deny } }
+            component_class = Class.new(Component::Base) do
+              def permitted?
+                false
+              end
+            end
             expect { component_class.new({}) }.to raise_error(PermissionError)
           end
         end
 
         context "in a child component" do
           it "renders an error page" do
-            child_component_class  = Class.new(Component::Base) { guard { Deny } }
+            child_component_class  = Class.new(Component::Base) do
+              def permitted?
+                false
+              end
+            end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
               element { subview(:child) }
@@ -166,7 +174,7 @@ module Lucid
           end
         end
       end
-      
+
     end
   end
 end

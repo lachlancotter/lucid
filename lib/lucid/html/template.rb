@@ -115,7 +115,7 @@ module Lucid
           subcomponent = normalize_subview(name_or_component)
           emit Component::ChangeSet::Replace.new(subcomponent).call
         rescue => e
-          replace_nest(subcomponent.name.value) { Component::ErrorPage[error: e] }
+          replace_nest(subcomponent.name.value) { ErrorPage[error: e] }
           retry
         end
 
