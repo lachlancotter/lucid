@@ -41,7 +41,7 @@ module Lucid
     # Entry point for handlers.
     # 
     def call
-      instance_exec(@message, &@handler)
+      policy.apply(@message, &@handler)
     rescue StandardError => e
       App::Logger.error(e.message)
       publish(HandlerRaised.new(error: e))
@@ -61,6 +61,14 @@ module Lucid
       message_bus.dispatch(command)
     end
 
+    # 
+    # PublicPolicy makes all handlers available by default. Can
+    # be overridden with the adopt method to provide a custom policy.
+    # 
+    def policy
+      Policy::PublicPolicy.new(self)
+    end
+
     #
     # DSL methods.
     #
@@ -76,6 +84,10 @@ module Lucid
             @memoized[key] = instance_exec(@message, &block)
           end
         end
+      end
+
+      def adopt (policy_class)
+        define_method(:policy) { policy_class.new(self) }
       end
     end
   end
