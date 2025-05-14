@@ -82,7 +82,8 @@ module Lucid
       # Return a Factory for building components of the receiver class that
       # iterates over the given collection.
       #
-      def self.enum (collection, &block)
+      def self.enum (collection, as: :model, &block)
+        block = Proc.new { |model| { as => model } } unless block_given?
         Factory::Enumerated.new(self, collection, &block)
       end
 

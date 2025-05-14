@@ -1,5 +1,9 @@
 module Lucid
   describe Handler do
+    
+    describe "#call" do
+
+    end
 
     describe ".let" do
       it "defines values" do

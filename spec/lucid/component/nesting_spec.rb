@@ -72,12 +72,25 @@ module Lucid
           expect(view.foo).not_to eq(nested_view)
         end
 
-        it "iterates over a given collection" do
+        it "iterates over a collection with a block" do
           foo_class = Class.new(Component::Base) { prop :bar }
           view      = Class.new(Component::Base) do
             param :val
             nest :foo do
               foo_class.enum(%w[english spanish]) { |e| { bar: e } }
+            end
+          end.new({ val: "a" })
+
+          expect(view.foo[0]).to be_a(foo_class)
+          expect(view.foo[0].props.bar).to eq("english")
+        end
+
+        it "iterates over a collection with a key" do
+          foo_class = Class.new(Component::Base) { prop :bar }
+          view      = Class.new(Component::Base) do
+            param :val
+            nest :foo do
+              foo_class.enum(%w[english spanish], as: :bar)
             end
           end.new({ val: "a" })
 
