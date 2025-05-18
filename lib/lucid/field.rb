@@ -30,6 +30,24 @@ module Lucid
       @evaluated = false
       notify
     end
+    
+    private
+
+    def watch_dependencies
+      @exec.each_param do |param|
+        if @context.field?(param)
+          @context.field(param).attach(self) { invalidate }
+        end
+      end
+    end
+
+    def args
+      @exec.positional.map { |param| @context.field(param).value }
+    end
+
+    def kwargs
+      @exec.keywords.map { |param| [param, @context.field(param).value] }.to_h
+    end
 
     #
     # Enables dynamic manipulation of the parameters that a block is called with.
