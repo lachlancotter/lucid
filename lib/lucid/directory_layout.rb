@@ -102,7 +102,7 @@ module Lucid
     #
     class Feature < DirectoryLayout
       CONFIG_FILES = %w[]
-      CODE_DIRS    = %w[data models services views handlers]
+      CODE_DIRS    = %w[data models services views handlers policies]
       
       def configure (zeitwerk_loader)
         require feature_file
