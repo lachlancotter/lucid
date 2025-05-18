@@ -18,7 +18,7 @@ module Lucid
       raise NoSuchField.new(name, self) unless field?(name)
       fields[name]
     end
-    
+
     def [] (name)
       field(name).value
     end
@@ -43,6 +43,29 @@ module Lucid
       #
       def let (name, &block)
         after_initialize { fields[name] = Field.new(self, &block) }
+        define_method(name) { fields[name].value }
+      end
+
+      #
+      # name - The name of the field to be defined.
+      # over - The name of the collection to be mapped over.
+      # map_f - The block to be called for each element in the collection.
+      #  The block can also define additional keyword arguments, treated as signal
+      #  names, which will be passed to the block when it is called.
+      # 
+      def map (name, over:, &map_f)
+        after_initialize do
+          signal_block = proc do |**signal_kwargs|
+            enumerable = fields[over].value
+            map_kwargs = signal_kwargs.reject { |k, _| k == over }
+            enumerable.each_with_index.map do |element, index|
+              map_f.call(element, index, **map_kwargs)
+            end if enumerable
+          end
+          exec         = Field::Execution.new(signal_block)
+                                         .set_keywords(over, from_block: map_f)
+          fields[name] = Field.new(self, exec)
+        end
         define_method(name) { fields[name].value }
       end
 

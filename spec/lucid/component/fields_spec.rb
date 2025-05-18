@@ -67,6 +67,48 @@ module Lucid
         end
       end
 
+      describe ".map" do
+        it "maps a block over a signal" do
+          component_class = Class.new(Component::Base) do
+            let(:foo) { %w[a b c] }
+            map(:bar, over: :foo) { |f| f.upcase }
+          end
+          component       = component_class.new({})
+          expect(component.bar).to eq(%w[A B C])
+        end
+
+        it "maps with index" do
+          component_class = Class.new(Component::Base) do
+            let(:foo) { %w[a b c] }
+            map(:bar, over: :foo) { |f, i| [i, f.upcase] }
+          end
+          component       = component_class.new({})
+          expect(component.bar).to eq([[0, "A"], [1, "B"], [2, "C"]])
+        end
+
+        it "receives signal dependencies" do
+          component_class = Class.new(Component::Base) do
+            let(:foo) { %w[a b c] }
+            let(:baz) { "BAZ" }
+            map(:bar, over: :foo) { |f, baz:| "#{baz}:#{f.upcase}" }
+          end
+          component       = component_class.new({})
+          expect(component.bar).to eq(["BAZ:A", "BAZ:B", "BAZ:C"])
+        end
+
+        it "invalidates when dependencies change" do
+          component_class = Class.new(Component::Base) do
+            let(:foo) { %w[a b c] }
+            map(:bar, over: :foo) { |f| f }
+          end
+          component       = component_class.new({})
+          invalidated     = false
+          component.field(:bar).attach(self) { invalidated = true }
+          component.field(:foo).invalidate
+          expect(invalidated).to be true
+        end
+      end
+
       describe ".watch" do
         it "executes the block when the value changes" do
           bar  = nil
