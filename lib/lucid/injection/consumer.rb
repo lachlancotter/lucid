@@ -58,12 +58,11 @@ module Lucid
         # dependency when it is resolved. The type must be a Dry::Types.
         # 
         def use (name, type)
-          deps_class.attribute(name, type)
+          deps_class.attribute(name, Types.normalize(type))
           key = deps_class.schema.key(name)
           define_method(name) do
             if @container.key?(name)
-              # Validate that the resolved dependency is of the correct type.
-              key.type[@container[name]]
+              @container[name]
             else
               # Raise an error unless the dependency is optional.
               MissingDependency.check(key, self, @container)
