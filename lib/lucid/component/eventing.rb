@@ -10,11 +10,7 @@ module Lucid
 
       def apply (event)
         self.class.event_handlers.call(event, self)
-        each_subcomponent do |sub|
-          rescue_child_errors(sub.name.value, StateError) do
-            sub.apply(event)
-          end
-        end
+        each_subcomponent { |sub| sub.apply(event) }
       end
 
       private

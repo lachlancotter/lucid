@@ -17,11 +17,7 @@ module Lucid
       def visit (link)
         Types.instance(Link)[link]
         visitors[link.key].call(self, link) if visitors.key?(link.key)
-        each_subcomponent do |sub|
-          rescue_child_errors(sub.name.value, StateError) do
-            sub.visit(link)
-          end
-        end
+        each_subcomponent { |sub| sub.visit(link) }
       end
 
       def visitors

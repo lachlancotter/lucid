@@ -111,12 +111,13 @@ module Lucid
         #
         # Render a component in the template.
         # 
-        def subview (name_or_component)
-          subcomponent = normalize_subview(name_or_component)
-          emit Component::ChangeSet::Replace.new(subcomponent).call
-        rescue => e
-          replace_nest(subcomponent.name.value) { ErrorPage[error: e] }
-          retry
+        def subview (name, index = nil)
+          # If the subcomponent raises an error during rendering, then the
+          # nest will replace it with an error page. We retry the render after
+          # the replacement.
+          nests[name].with_component(index, retry_on_error: true) do |sub|
+            emit Component::ChangeSet::Replace.new(sub).call
+          end
         end
 
         #
@@ -125,8 +126,14 @@ module Lucid
         def subviews (enum_name)
           # Wrap the collection in a div we can target for insertions.
           div(class: @renderable.collection_classname(enum_name)) do
-            @renderable.send(enum_name).each do |subcomponent|
-              subview(subcomponent)
+            enum = @renderable.send(enum_name)
+            case enum
+            when Lucid::Component::Nesting::Collection
+              enum.each_with_index { |sub, index| subview(enum_name, index) }
+            when Lucid::Component::Base
+              subview(enum_name)
+            else
+              raise "Invalid subview: #{enum.class}"
             end
           end
         end

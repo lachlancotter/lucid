@@ -1,6 +1,6 @@
 module Lucid
   module Component
-    describe ErrorHandling do
+    describe "Error Handling" do
 
       # ===================================================== #
       #    Request Errors
@@ -90,14 +90,16 @@ module Lucid
               end
             end
             parent_component_class = Class.new(Component::Base) do
-              nest(:bars) { child_component_class.enum([1, 2, "foo", 4], as: :count) }
+              nest(:bars, over: [1, 2, "foo", 4]) { |c| child_component_class[count: c] }
               element { subviews(:bars) }
             end
             parent_component       = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Count 1/
-            expect(parent_component.render_full).to match /Count 2/
-            expect(parent_component.render_full).to match /Count 3/
-            expect(parent_component.render_full).to match /Count 4/
+            rendered               = parent_component.render_full
+            expect(rendered).to match /Count 1/
+            expect(rendered).to match /Count 2/
+            expect(rendered).not_to match /Count 3/
+            expect(rendered).to match /Invalid Config/
+            expect(rendered).to match /Count 4/
           end
         end
       end

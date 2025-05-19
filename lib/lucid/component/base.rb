@@ -17,7 +17,6 @@ module Lucid
       include HTML::Templating
       include Rendering
       include Restricted
-      include ErrorHandling
       include Title
 
       #

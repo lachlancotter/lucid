@@ -23,8 +23,10 @@ module Lucid
       end
 
       def each_subcomponent (&block)
-        subcomponents.values.flatten.each do |sub|
-          block.call(Types.component[sub])
+        nests.each do |(name, nest)|
+          nest.each_component do |subcomponent|
+            block.call(subcomponent)
+          end
         end
       end
 
@@ -173,19 +175,6 @@ module Lucid
         def on_route?
           @parent.routes_to?(self)
         end
-
-        def rescue_errors (*error_classes, index: nil, retry_block: false, &block)
-          yield content
-
-          #   error_classes << StandardError unless error_classes.any?
-          #   child_component = @over ? collection[index] : component
-          #   block.call(child_component)
-          # rescue *error_classes => error
-          #   puts "#{error.class}: #{error.message}"
-          #   puts error.backtrace.join("\n")
-          #   replace_crashed_component(child_component, error)
-          #   block.call(child_component) if retry_block
-        end
       end
 
       #
@@ -205,7 +194,18 @@ module Lucid
         def component (index = :ignored)
           @component
         end
-        
+
+        def each_component (&block)
+          with_component(&block)
+        end
+
+        def with_component (index = :ignored, retry_on_error: false, &block)
+          block.call(@component)
+        rescue StandardError => error
+          @component = ErrorPage.new({}, error: error)
+          block.call(@component) if retry_on_error
+        end
+
         def collection?
           false
         end
@@ -214,6 +214,8 @@ module Lucid
           props_binding.tap do |binding|
             @component = binding.call(state, @parent, @name)
           end
+        rescue StandardError => error
+          @component = ErrorPage.new({}, error: error)
         end
 
         def update
@@ -260,7 +262,20 @@ module Lucid
         def component (index)
           @collection[index]
         end
-        
+
+        def each_component (&block)
+          @collection.each_with_index do |component, index|
+            with_component(index, &block)
+          end
+        end
+
+        def with_component (index = :ignored, retry_on_error: false, &block)
+          block.call(@collection[index])
+        rescue StandardError => error
+          @collection[index] = ErrorPage.new({}, error: error)
+          block.call(@collection[index]) if retry_on_error
+        end
+
         def collection?
           true
         end
@@ -269,9 +284,13 @@ module Lucid
           # This block will be run in the context of the parent component.
           proc do |**kwargs|
             enumerable.each_with_index.map do |element, index|
-              props_binding = nest.props_binding(element, index, **kwargs)
-              # nested_state() isn't implemented for collections.
-              props_binding.call({}, parent, name, is_collection_member: true)
+              begin
+                props_binding = nest.props_binding(element, index, **kwargs)
+                # nested_state() isn't implemented for collections.
+                props_binding.call({}, parent, name, is_collection_member: true)
+              rescue StandardError => error
+                ErrorPage.new({}, error: error)
+              end
             end
           end
         end
@@ -373,38 +392,6 @@ module Lucid
 
         def parent
           @nest.parent
-        end
-      end
-
-      # ===================================================== #
-      #    Error Handler
-      # ===================================================== #
-
-      class ErrorHandler
-        #
-        # If a component raises an exception (either during construction),
-        # when applying a message, or when rendering, we consider that
-        # component to be invalid and replace it with an error page.
-        # 
-        def replace_crashed_component (component, error)
-          if @content && collection?
-            replace_crashed_collection_item(component, error)
-          else
-            factory  = ErrorPage[error: error]
-            @content = factory.build({}, @parent, name)
-          end
-        end
-
-        def replace_crashed_collection_item (component, error)
-          collection.map! do |sub|
-            if sub == component
-              factory = ErrorPage.enum([]) { { error: error } }
-              index   = collection.index(component)
-              factory.build_item(@parent, name, nil, index)
-            else
-              sub
-            end
-          end
         end
       end
 
