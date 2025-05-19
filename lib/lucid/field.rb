@@ -17,10 +17,10 @@ module Lucid
       @exec      = exec ? Types.instance(Execution)[exec] : Execution.new(block)
       watch_dependencies
     end
-    
+
     def value
       unless @evaluated
-        @value     = @exec.call(@context, *args, **kwargs)
+        @value     = @exec.call(@context)
         @evaluated = true
       end
       @value
@@ -30,7 +30,7 @@ module Lucid
       @evaluated = false
       notify
     end
-    
+
     private
 
     def watch_dependencies
@@ -39,14 +39,6 @@ module Lucid
           @context.field(param).attach(self) { invalidate }
         end
       end
-    end
-
-    def args
-      @exec.positional.map { |param| @context.field(param).value }
-    end
-
-    def kwargs
-      @exec.keywords.map { |param| [param, @context.field(param).value] }.to_h
     end
 
     #
@@ -63,7 +55,9 @@ module Lucid
         @keywords   = block_params(block, :keyreq)
       end
 
-      def call (context, *args, **kwargs)
+      def call (context)
+        args   = @positional.map { |param| context.field(param).value }
+        kwargs = @keywords.map { |param| [param, context.field(param).value] }.to_h
         context.instance_exec(*args, **kwargs, &@block)
       end
 

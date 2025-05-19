@@ -18,6 +18,15 @@ module Lucid
         raise ConfigError.new(self, props_hash, e.message)
       end
 
+      # Called internally by the change tracking system. You typically should
+      # not call this directly.
+      def update_props (changed_props)
+        @props = @props.new(changed_props)
+        changed_props.keys.each { |key| field(key).invalidate if field?(key) }
+      rescue Dry::Struct::Error => e
+        raise ConfigError.new(self, changed_props, e.message)
+      end
+
       private
 
       module ClassMethods

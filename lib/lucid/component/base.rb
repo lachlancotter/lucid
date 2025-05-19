@@ -74,17 +74,8 @@ module Lucid
       # Return a Factory for building components of the receiver class with the
       # given configuration.
       #
-      def self.[] (**config)
-        Factory::Singleton.new(self) { config }
-      end
-
-      #
-      # Return a Factory for building components of the receiver class that
-      # iterates over the given collection.
-      #
-      def self.enum (collection, as: :model, &block)
-        block = Proc.new { |model| { as => model } } unless block_given?
-        Factory::Enumerated.new(self, collection, &block)
+      def self.[] (**props)
+        PropsBinding.new(self, props)
       end
 
       def inspect
@@ -96,6 +87,14 @@ module Lucid
           "root"
         else
           path.to_s.gsub("/", "-").gsub(/^-/, "")
+        end
+      end
+      
+      def css_class_name
+        class_name = self.class.name
+        case class_name
+        when String then class_name.gsub(/::/, "-")
+        else "anon"
         end
       end
 

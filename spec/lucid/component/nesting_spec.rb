@@ -76,9 +76,8 @@ module Lucid
           foo_class = Class.new(Component::Base) { prop :bar }
           view      = Class.new(Component::Base) do
             param :val
-            nest :foo do
-              foo_class.enum(%w[english spanish]) { |e| { bar: e } }
-            end
+            let(:bar) { %w[english spanish] }
+            nest(:foo, over: :bar) { |e| foo_class[bar: e] }
           end.new({ val: "a" })
 
           expect(view.foo[0]).to be_a(foo_class)
@@ -89,9 +88,8 @@ module Lucid
           foo_class = Class.new(Component::Base) { prop :bar }
           view      = Class.new(Component::Base) do
             param :val
-            nest :foo do
-              foo_class.enum(%w[english spanish], as: :bar)
-            end
+            let(:bar) { %w[english spanish] }
+            nest(:foo, over: :bar) { |e| foo_class[bar: e] }
           end.new({ val: "a" })
 
           expect(view.foo[0]).to be_a(foo_class)
@@ -101,16 +99,10 @@ module Lucid
 
       context "named constructor" do
         class NamedNestedComponent < Component::Base
-          prop :bar, Types.string.default("default".freeze)
+          prop :var, Types.string.default("default".freeze)
           prop :index, Types.integer
-
-          def collection_key
-            props.index
-          end
-
-          def render
-            "Nested #{props[:bar]}"
-          end
+          key { props.index }
+          element { |var| text "Nested #{var}" }
         end
 
         it "nests a child component" do
@@ -122,24 +114,21 @@ module Lucid
 
         it "nests a child component over an array" do
           view = Class.new(Component::Base) do
-            nest :foo do
-              NamedNestedComponent.enum(%w[english spanish]) do |e, i|
-                { bar: e, index: i }
-              end
-            end
+            let(:bar) { %w[english spanish] }
+            nest(:foo, over: :bar) { |e, i| NamedNestedComponent[var: e, index: i] }
           end.new({}, app_root: "/app/root")
 
           expect(view.foo[0]).to be_a(Component::Base)
-          expect(view.foo[0].props.bar).to eq("english")
+          expect(view.foo[0].props.var).to eq("english")
           expect(view.foo[0].props.index).to eq(0)
-          expect(view.foo[0].render).to eq("Nested english")
+          expect(view.foo[0].render_full).to match /Nested english/
           expect(view.foo[0].props.app_root).to eq("/app/root")
           expect(view.foo[0].path.to_s).to eq("/foo-0")
 
           expect(view.foo[1]).to be_a(Component::Base)
-          expect(view.foo[1].props.bar).to eq("spanish")
+          expect(view.foo[1].props.var).to eq("spanish")
           expect(view.foo[1].props.index).to eq(1)
-          expect(view.foo[1].render).to eq("Nested spanish")
+          expect(view.foo[1].render_full).to match /Nested spanish/
           expect(view.foo[1].props.app_root).to eq("/app/root")
           expect(view.foo[1].path).to eq("/foo-1")
         end
@@ -153,7 +142,7 @@ module Lucid
           slot :nested
           element { div(class: "wrapper") { subview(:nested) } }
         end.new({}, nested: nested)
-        expect(base.render_full).to eq('<div class="wrapper"><div id="nested"><p>Nested content</p></div></div>')
+        expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><p>Nested content</p></div></div>')
       end
     end
 
