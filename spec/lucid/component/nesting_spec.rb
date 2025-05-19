@@ -32,7 +32,7 @@ module Lucid
             param :val
             nest(:foo) { foo_class[bar: 1] }
           end.new(foo: { bar: 0 }, val: "a")
-
+          
           expect(view.foo.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
           expect(view.foo.props.parent).to eq(view)

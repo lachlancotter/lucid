@@ -68,7 +68,7 @@ module Lucid
                 element { subview(:foo) }
               end.new({})
               view.delta.replace
-              expect(view.render_full).to match(/<div id="foo"><h1>Nested<\/h1><\/div>/)
+              expect(view.render_full).to match(/<div id="foo" class="anon"><h1>Nested<\/h1><\/div>/)
             end
           end
         end

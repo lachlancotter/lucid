@@ -99,8 +99,8 @@ module Lucid
           component.subcomponents.each do |(name, sub)|
             case sub
             when Component::Base then append_component(sub)
-            when Component::Nesting::Collection then append_collection(sub)
-            else raise ArgumentError, "Unsupported subcomponent type: #{sub.class}"
+            when Nesting::Collection then append_collection(sub)
+            else raise ArgumentError, "Unsupported subcomponent type: #{sub}: #{sub.class}"
             end
           end
         end
@@ -132,7 +132,7 @@ module Lucid
         end
 
         def wrapper_attrs (oob:)
-          { id: @component.element_id }
+          { id: @component.element_id, class: @component.css_class_name }
         end
 
         def args

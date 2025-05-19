@@ -79,6 +79,27 @@ module Lucid
             expect(parent_component.render_full).to match /Invalid Config/
           end
         end
+
+        context "in a child collection" do
+          it "renders the other collection members" do
+            child_component_class  = Class.new(Component::Base) do
+              prop :count, Types.integer
+              key { count.value }
+              element do |count|
+                h1 { text "Count #{count}" }
+              end
+            end
+            parent_component_class = Class.new(Component::Base) do
+              nest(:bars) { child_component_class.enum([1, 2, "foo", 4], as: :count) }
+              element { subviews(:bars) }
+            end
+            parent_component       = parent_component_class.new({})
+            expect(parent_component.render_full).to match /Count 1/
+            expect(parent_component.render_full).to match /Count 2/
+            expect(parent_component.render_full).to match /Count 3/
+            expect(parent_component.render_full).to match /Count 4/
+          end
+        end
       end
 
       context "link error" do
@@ -162,8 +183,7 @@ module Lucid
         context "in child component" do
           it "renders an error page" do
             child_component_class  = Class.new(Component::Base) do
-              let(:foo) { raise ResourceError.new(self, "foo") }
-              element { |foo| h1 { text "No Error" } }
+              element { raise ResourceError.new(self, "foo") }
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }

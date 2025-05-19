@@ -51,7 +51,7 @@ module Lucid
       def write_nests (nests, on_route:)
         nests.each do |(name, nest)|
           # TODO handle state for collections
-          unless nest.enum?
+          unless nest.collection?
             with_scope(name) do
               write_component(nest.component, on_route: nest.on_route? && on_route)
             end

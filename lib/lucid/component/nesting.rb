@@ -13,13 +13,13 @@ module Lucid
         @nests ||= {}
       end
 
-      def subcomponents # Hash[Symbol => Component::Base | Enumerable]
+      def subcomponents # Hash[Symbol => Component::Base | Nesting::Collection]
         nests.map { |(name, nest)| [name, nest.content] }.to_h
       end
 
       def subcomponent (name, index = nil)
         nest = nests.fetch(name) { raise "No subcomponent named #{name}" }
-        nest.collection? ? nest.collection[index] : nest.component
+        nest.component(index)
       end
 
       def each_subcomponent (&block)
@@ -74,7 +74,9 @@ module Lucid
           after_initialize do
             nests[name] = case over
             when Symbol then CollectionNest.new(name, self, over, &block)
-            else ComponentNest.new(name, self, &block)
+            when Enumerable then CollectionNest.new(name, self, over, &block)
+            when NilClass then ComponentNest.new(name, self, &block)
+            else raise ArgumentError, "Invalid enumerable"
             end
             nests[name].install(nested_state(name))
           end
@@ -149,6 +151,13 @@ module Lucid
       # Abstract base class for nesting subcomponents.
       # 
       class Nest
+        attr_reader :parent, :name
+
+        def initialize (name, parent)
+          @parent = parent
+          @name   = name
+        end
+
         #
         # If a nest block returned a component class instead of a PropsBinding,
         # then wrap that class in a PropsBinding.
@@ -184,14 +193,21 @@ module Lucid
       # 
       class ComponentNest < Nest
         def initialize (name, parent, &block)
-          @name   = name
-          @parent = parent
-          @field  = Field.new(@parent, &block)
+          super(name, parent)
+          @field = Field.new(@parent, &block)
           @field.attach(self) { update }
         end
 
         def content
           @component
+        end
+
+        def component (index = :ignored)
+          @component
+        end
+        
+        def collection?
+          false
         end
 
         def install (state)
@@ -222,26 +238,37 @@ module Lucid
       # 
       class CollectionNest < Nest
         def initialize (name, parent, over, &block)
-          @name       = name
-          @parent     = parent
-          @enumerable = parent.field(over).value
+          super(name, parent)
+          @enumerable = case over
+          when Symbol then parent.field(over).value
+          when Enumerable then over # Static collection
+          else raise ArgumentError, "Unsupported collection nesting: #{over.class}"
+          end
           @map_f      = block
           # Wrap the provided block in an enumerator function, and configure the
           # field to call it with the keywords expected by the mapping function.
           # So they can be passed through to the mapping function.
-          enum_f = enumerator(self, name, parent, over)
+          enum_f = enumerator(@enumerable, self, name, parent)
           exec   = Field::Execution.new(enum_f).set_keywords(from_block: @map_f)
           @field = Field.new(@parent, exec)
         end
 
         def content
-          @collection
+          Types.instance(Collection)[@collection]
         end
 
-        def enumerator (nest, name, parent, over)
+        def component (index)
+          @collection[index]
+        end
+        
+        def collection?
+          true
+        end
+
+        def enumerator (enumerable, nest, name, parent)
           # This block will be run in the context of the parent component.
           proc do |**kwargs|
-            parent[over].each_with_index.map do |element, index|
+            enumerable.each_with_index.map do |element, index|
               props_binding = nest.props_binding(element, index, **kwargs)
               # nested_state() isn't implemented for collections.
               props_binding.call({}, parent, name, is_collection_member: true)
@@ -252,7 +279,7 @@ module Lucid
         def install (state)
           # nested_state() isn't implemented for collections. so ignore the
           # state for now.
-          @collection = @field.value
+          @collection = Collection.new(self, @field.value)
         end
 
         def update
@@ -260,12 +287,15 @@ module Lucid
         end
 
         # Build a single instance that can be used to render insertions.
-        def build (element, index, **kwargs)
-          props_binding(element, index, **kwargs).call({}, @parent, @name)
+        def build (element, index)
+          # Look up any other expected keyword params in the parent component.
+          params = Field::Execution.new(@map_f).keywords
+          kwargs = params.map { |k| [k, @parent.field(k).value] }.to_h
+          props_binding(element, index, **kwargs).call({}, @parent, @name, is_collection_member: true)
         end
 
         def props_binding (element, index, **kwargs)
-          normalize_binding(@map_f.call(element, index, **kwargs))
+          normalize_binding(@parent.instance_exec(element, index, **kwargs, &@map_f))
         end
       end
 
@@ -294,6 +324,18 @@ module Lucid
           @elements.map!(&block)
         end
 
+        def [] (key)
+          @elements[key]
+        end
+
+        def first
+          @elements.first
+        end
+
+        def last
+          @elements.last
+        end
+
         # Build a new subcomponent and append it to the collection.
         def append (model)
           build(model).tap do |subcomponent|
@@ -310,8 +352,8 @@ module Lucid
 
         # Remove subcomponents that match the given block.
         def remove (&block)
-          each do |subcomponent|
-            parent.delta.remove(subcomponent) if block.call(subcomponent)
+          each_with_index do |subcomponent, index|
+            parent.delta.remove(subcomponent) if block.call(subcomponent, index)
           end
         end
 
@@ -325,8 +367,8 @@ module Lucid
 
         private
 
-        def build (model)
-          @nest.build(model)
+        def build (model, index = @elements.size)
+          @nest.build(model, index)
         end
 
         def parent
