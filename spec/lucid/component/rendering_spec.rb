@@ -114,6 +114,30 @@ module Lucid
             expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
           end
         end
+
+        describe "template with anchor" do
+          class TestLink < Link
+
+          end
+
+          it "renders text links" do
+            view = Class.new(Component::Base) do
+              element do
+                link_to TestLink.new, "Anchor Text"
+              end
+            end.new({})
+            expect(view.render_full).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
+          end
+
+          it "renders link blocks" do
+            view = Class.new(Component::Base) do
+              element do
+                link_to(TestLink.new) { text "Anchor Text" }
+              end
+            end.new({})
+            expect(view.render_full).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
+          end
+        end
       end
     end
   end

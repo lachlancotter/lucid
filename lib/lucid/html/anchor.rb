@@ -1,10 +1,11 @@
 module Lucid
   module HTML
     class Anchor
-      def initialize (message, text:, &block)
+      def initialize (message, text = nil, **attrs, &block)
         @message = message
         @text    = text
         @block   = block
+        @attrs   = attrs
       end
 
       def template
@@ -17,19 +18,12 @@ module Lucid
       end
 
       def href
-        @message.url
+        case @message
+        when Message then @message.url
+        when String then @message
+        else raise ArgumentError, "Anchor received invalid message #{@message.class}"
+        end
       end
-
-      # def attrs
-      #   {
-      #      href: href,
-      #      data: {
-      #         lucid: {
-      #            state: JSON.encode(@location.state.to_h)
-      #         }
-      #      }
-      #   }
-      # end
     end
   end
 end
