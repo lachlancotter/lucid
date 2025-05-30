@@ -41,9 +41,13 @@ module Lucid
     # Entry point for handlers.
     # 
     def call
-      policy.apply(@message, &@handler)
+      if policy.permits_message?(@message)
+        instance_exec(@message, &@handler)
+      else
+        publish(PermissionDenied.new(message: @message))
+      end
     rescue StandardError => e
-      App::Logger.error(e.message)
+      App::Logger.exception(e)
       publish(HandlerRaised.new(error: e))
     end
 

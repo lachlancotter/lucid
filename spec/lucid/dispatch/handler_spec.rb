@@ -57,7 +57,8 @@ module Lucid
             end
           end
           handler_class = Class.new(Handler) { adopt(policy_class) }
-          container     = { message_bus: nil, session: nil }
+          message_bus = MessageBus.new(nil, nil, nil)
+          container   = { message_bus: message_bus, session: nil }
           handler       = handler_class.new(message_class.new, container) { called = true }
           handler.call
           expect(called).to eq(false)

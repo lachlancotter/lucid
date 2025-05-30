@@ -38,6 +38,7 @@ module Lucid
           end
           @request.yield_invalid do |params|
             Logger.error("Invalid command", params)
+            message_bus.publish(MessageInvalidated.new(params: params))
           end
         end
       end

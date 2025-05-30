@@ -59,13 +59,44 @@ module Lucid
   
   class ConfigError < ApplicationError
     def initialize (component, config, message)
-      super("Invalid props #{config} given to #{component}: #{message}")
+      super("Invalid props given to #{component}: #{message}")
     end
   end
   
   class StateError < ApplicationError
     def initialize (component, state, message)
       super("Invalid state #{state} applied to #{component}: #{message}")
+    end
+  end
+  
+  # ===================================================== #
+  #    System Events
+  # ===================================================== #
+
+  #
+  # Published when an invalid message is received.
+  # 
+  class MessageInvalidated < Event
+    validate do
+      required(:params).filled
+    end
+  end
+  
+  #
+  # Published when a handler cannot be run due to a policy.
+  # 
+  class PermissionDenied < Event
+    validate do
+      required(:message).filled
+    end
+  end
+
+  #
+  # Published when a handler raises an error.
+  # 
+  class HandlerRaised < Event
+    validate do
+      required(:error).filled
     end
   end
   

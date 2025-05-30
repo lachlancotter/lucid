@@ -84,7 +84,7 @@ module Lucid
           it "renders the other collection members" do
             child_component_class  = Class.new(Component::Base) do
               prop :count, Types.integer
-              key { count.value }
+              key { count }
               element do |count|
                 h1 { text "Count #{count}" }
               end
