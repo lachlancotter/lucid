@@ -14,10 +14,11 @@ module Lucid
       def template
         button_label = @label
         message      = @message
+        options      = @options
         Form.new(form_model) do |f|
-          emit f.submit(button_label)
+          f.submit(button_label, **options)
           message.to_h.each do |key, value|
-            emit f.hidden(key, value: value)
+            f.hidden(key, value: value)
           end
         end.template
       end

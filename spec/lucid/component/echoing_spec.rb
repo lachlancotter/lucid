@@ -43,7 +43,7 @@ module Lucid
             echo :foo_form, TestCommand
             element do |foo_form|
               form_for foo_form do |f|
-                emit f.text(:foo)
+                f.text(:foo)
               end
             end
           end
@@ -60,7 +60,7 @@ module Lucid
             echo :foo_form, TestCommand
             element do |foo_form|
               form_for foo_form do |f|
-                emit f.text(:foo)
+                f.text(:foo)
               end
             end
           end
