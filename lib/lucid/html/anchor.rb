@@ -8,7 +8,12 @@ module Lucid
       end
 
       def template
-        "<a href='#{href}'>#{@text}</a>"
+        Papercraft.html do |href, link_text, attrs, block|
+          a(attrs.merge(href: href)) do
+            text link_text unless block
+            block.call if block
+          end
+        end.apply(href, @text, @attrs, @block)
       end
 
       def href
