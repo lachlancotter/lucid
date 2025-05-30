@@ -33,7 +33,7 @@ module Lucid
         def prop(name, type = Types.string)
           props_class.attribute(name, Types.normalize(type))
           after_initialize { fields[name] = Field.new(self) { props[name] } }
-          define_method(name) { fields[name] }
+          define_method(name) { fields[name].value }
         end
 
         def props_class

@@ -24,12 +24,9 @@ module Lucid
 
       def normalize_constraint (type, *keys, **maps, &block)
         case type
-        when Constraint
-          type
-        when -> (k) { k <= Event }
-          Constraint.new(type, *keys, **maps, &block)
-        else
-          raise ArgumentError, "Invalid message filter: #{type.inspect}"
+        when Constraint then type
+        when -> (k) { k <= Event } then Constraint.new(type, *keys, **maps, &block)
+        else raise ArgumentError, "Invalid message filter: #{type.inspect}"
         end
       end
 
