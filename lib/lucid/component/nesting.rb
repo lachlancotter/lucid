@@ -47,15 +47,14 @@ module Lucid
       end
 
       def component_name
-        if props.collection_member
-          "#{props.name}-#{collection_key}"
-        else
-          props.name
+        case props.collection_index
+        when NilClass then props.name
+        else "#{props.name}-#{collection_key}"
         end
       end
 
       def collection_key
-        raise "You must define a collection_key method to use collections."
+        props.collection_index
       end
 
       #
@@ -117,8 +116,8 @@ module Lucid
           @props           = Types.hash[props]
         end
 
-        def call (state, parent, name, is_collection_member: false)
-          @component_class.new(state, **build_props(parent, name, is_collection_member))
+        def call (state, parent, name, collection_index: nil)
+          @component_class.new(state, **build_props(parent, name, collection_index))
         end
 
         def update (component)
@@ -129,18 +128,18 @@ module Lucid
 
         private
 
-        def build_props (parent, name, is_collection_member)
-          base_props(parent, name, is_collection_member).merge(@props)
+        def build_props (parent, name, collection_index)
+          base_props(parent, name, collection_index).merge(@props)
         end
 
-        def base_props (parent, name, is_collection_member)
+        def base_props (parent, name, collection_index)
           {
-             parent:            parent,
-             app_root:          parent.props.app_root,
-             session:           parent.props.session,
-             container:         parent.props.container,
-             name:              name,
-             collection_member: is_collection_member
+             parent:           parent,
+             app_root:         parent.props.app_root,
+             session:          parent.props.session,
+             container:        parent.props.container,
+             name:             name,
+             collection_index: collection_index
           }
         end
       end
@@ -202,8 +201,13 @@ module Lucid
         def with_component (index = :ignored, retry_on_error: false, &block)
           block.call(@component)
         rescue StandardError => error
+          App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
           block.call(@component) if retry_on_error
+        end
+        
+        def deep_state
+          @component.deep_state
         end
 
         def collection?
@@ -215,6 +219,7 @@ module Lucid
             @component = binding.call(state, @parent, @name)
           end
         rescue StandardError => error
+          App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
         end
 
@@ -269,11 +274,20 @@ module Lucid
           end
         end
 
-        def with_component (index = :ignored, retry_on_error: false, &block)
-          block.call(@collection[index])
+        def with_component (index, retry_on_error: false, &block)
+          yield @collection[index]
         rescue StandardError => error
-          @collection[index] = ErrorPage.new({}, error: error)
-          block.call(@collection[index]) if retry_on_error
+          App::Logger.exception(error)
+          @collection[index] = ErrorPage.new({}, error: error, collection_key: index)
+          yield @collection[index] if retry_on_error
+        end
+        
+        def deep_state
+          {}.tap do |result|
+            each_component do |component|
+              result[component.collection_key] = component.deep_state
+            end
+          end
         end
 
         def collection?
@@ -287,9 +301,10 @@ module Lucid
               begin
                 props_binding = nest.props_binding(element, index, **kwargs)
                 # nested_state() isn't implemented for collections.
-                props_binding.call({}, parent, name, is_collection_member: true)
+                props_binding.call({}, parent, name, collection_index: index)
               rescue StandardError => error
-                ErrorPage.new({}, error: error)
+                App::Logger.exception(error)
+                ErrorPage.new({}, error: error, collection_key: index)
               end
             end
           end
@@ -310,7 +325,7 @@ module Lucid
           # Look up any other expected keyword params in the parent component.
           params = Field::Execution.new(@map_f).keywords
           kwargs = params.map { |k| [k, @parent.field(k).value] }.to_h
-          props_binding(element, index, **kwargs).call({}, @parent, @name, is_collection_member: true)
+          props_binding(element, index, **kwargs).call({}, @parent, @name, collection_index: index)
         end
 
         def props_binding (element, index, **kwargs)
@@ -345,6 +360,10 @@ module Lucid
 
         def [] (key)
           @elements[key]
+        end
+
+        def []= (key, value)
+          @elements[key] = value
         end
 
         def first

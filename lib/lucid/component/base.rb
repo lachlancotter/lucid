@@ -49,7 +49,7 @@ module Lucid
       #
       # Whether this component is a member of a collection.
       #
-      prop :collection_member, Types.bool.default(false)
+      prop :collection_index, Types.integer.optional.default(nil)
 
       def initialize (state, **props)
         initialize_state(state)
@@ -74,7 +74,7 @@ module Lucid
       # given configuration.
       #
       def self.[] (**props)
-        PropsBinding.new(self, props)
+        PropsBinding.new(self, **props)
       end
 
       def inspect

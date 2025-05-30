@@ -23,18 +23,9 @@ module Lucid
       # The state for this and all nested components.
       #
       def deep_state
-        subcomponents.inject(state.to_h) do |hash, (name, sub)|
-          case sub
-          when Component::Base
-            hash.merge(name => sub.deep_state)
-          when Nesting::Collection
-            hash.merge(
-               name => sub.map do |e|
-                 { e.collection_key => e.deep_state }
-               end
-            )
-          else
-            raise "Unexpected subcomponent type: #{sub.class}"
+        state.to_h.tap do |result|
+          nests.each do |(name, nest)|
+            result[name] = nest.deep_state
           end
         end
       end
