@@ -44,26 +44,28 @@ module Lucid
       # ensure that components are addressable by ID.
       #
       class Wrapper
-        def initialize (component, attrs)
-          @component = Types.component[component]
-          @attrs     = Types.hash[attrs]
-        end
-
-        def wrap
-          if @component.root?
+        # Wrap the component block in the component tag, unless this
+        # is the root component.
+        def self.component (comp, attrs = {}, &block)
+          if comp.root?
             yield
           else
-            "<#{tag}#{attrs}>#{yield}</#{tag}>"
+            "<#{comp.tag}#{format_attrs(attrs)}>#{yield}</#{comp.tag}>"
           end
         end
 
-        def tag
-          @component.tag
+        # Wrap the component block for an HTMX oob response.
+        def self.htmx (oob:, **attrs, &block)
+          if oob
+            "<div#{format_attrs(HTMX.oob(**attrs))}>#{yield}</div>"
+          else
+            yield
+          end
         end
 
-        def attrs
-          if @attrs.any?
-            " " + @attrs.map { |k, v| "#{k}=\"#{v}\"" }.join(" ")
+        def self.format_attrs (attrs)
+          if attrs.any?
+            " " + attrs.map { |k, v| "#{k}=\"#{v}\"" }.join(" ")
           else
             ""
           end
@@ -93,7 +95,7 @@ module Lucid
         end
 
         def link_to (message, text = nil, **opts, &block)
-          emit Anchor.new(normalize_message(message), text: text, **opts, &block).template
+          emit Anchor.new(normalize_message(message), text, **opts, &block).template
         end
 
         def button_to (message, text = nil, **opts)
@@ -142,7 +144,7 @@ module Lucid
         #   instead of using method_missing? This makes the interface muddy
         #   and may have performance implications for Papercraft.
         def method_missing(sym, *args, **opts, &block)
-          if @renderable.has_helper?(sym)
+          if @renderable && @renderable.has_helper?(sym)
             @renderable.send(sym, *args, **opts, &block)
           else
             super
@@ -162,9 +164,10 @@ module Lucid
         def normalize_message (message)
           case message
           when Message then message
+          when String then message
           when Symbol then @renderable.link_to(message)
           # when Types.subclass(HTTP::Message) then message.new
-          else raise ArgumentError, "Message or Symbol expected: #{message.inspect}"
+          else raise ArgumentError, "Message, String or Symbol expected: #{message.inspect}"
           end
         end
       end

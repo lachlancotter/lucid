@@ -18,7 +18,7 @@ module Lucid
       def replace?
         any? { |change| change.is_a?(Replace) }
       end
-      
+
       def delete?
         any? { |change| change.is_a?(Delete) }
       end
@@ -29,7 +29,7 @@ module Lucid
         # Replace update is discarded.
         tap { @changes = [Replace.new(@component)] unless delete? }
       end
-      
+
       def delete
         # If a component is deleted, that overrides any other updates.
         tap { @changes = [Delete.new(@component)] }
@@ -42,11 +42,11 @@ module Lucid
       def prepend (subcomponent, to: "")
         tap { add_change Prepend.new(subcomponent, to: selector(nest: to)) }
       end
-      
+
       def remove (subcomponent)
         tap { subcomponent.delta.delete }
       end
-      
+
       def selector (nest: "")
         [@component.element_id, nest].reject(&:empty?).join(" ")
       end
@@ -128,10 +128,14 @@ module Lucid
         private
 
         def wrap (oob:, &block)
-          HTML::Template::Wrapper.new(@component, wrapper_attrs(oob: oob)).wrap(&block)
+          HTML::Template::Wrapper.component(@component, wrapper_attrs(oob: oob), &block)
         end
 
         def wrapper_attrs (oob:)
+          component_attrs
+        end
+
+        def component_attrs
           { id: @component.element_id, class: @component.css_class_name }
         end
 
@@ -162,7 +166,7 @@ module Lucid
         private
 
         def wrapper_attrs (oob:)
-          super.merge(oob ? HTMX.oob(swap => target) : {})
+          component_attrs.merge(oob ? HTMX.oob(swap => target) : {})
         end
       end
 
@@ -189,7 +193,7 @@ module Lucid
         private
 
         def wrapper_attrs (oob:)
-          super.merge(oob ? HTMX.oob(swap => target) : {})
+          component_attrs.merge(oob ? HTMX.oob(swap => target) : {})
         end
       end
 
@@ -206,10 +210,10 @@ module Lucid
           @selector
         end
 
-        private
-
-        def wrapper_attrs (oob:)
-          super.merge(oob ? HTMX.oob(swap => target) : {})
+        def wrap (oob:, &block)
+          HTML::Template::Wrapper.htmx(oob: oob, swap => target) do
+            HTML::Template::Wrapper.component(@component, component_attrs, &block)
+          end
         end
       end
 

@@ -179,18 +179,15 @@ module Lucid
 
       describe "#prepend" do
         let(:view) do
-          Class.new(Component::Base) do
-            prop :subview_class, Types.Instance(Class)
-            element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| props.subview_class[foo: i] }
-          end.new({}, subview_class: subview_class)
-        end
-        let(:subview_class) do
-          Class.new(Component::Base) do
+          subview_class = Class.new(Component::Base) do
             prop :foo, Types.integer
             key { props.foo }
             element { |foo| p { text "Item #{foo}" } }
           end
+          Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+          end.new({})
         end
 
         it "adds an prepend action" do
@@ -199,6 +196,7 @@ module Lucid
           expect(view.changes.first).to be_a(ChangeSet::Prepend)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
+          puts view.changes.to_s
         end
 
         it "is cumulative" do
