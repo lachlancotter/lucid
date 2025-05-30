@@ -101,6 +101,22 @@ module Lucid
         end
       end
 
+      context "when reset" do
+        it "provides the default params to the form" do
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Component::Base) do
+            echo(:foo_form, message_class) do |form|
+              form.or_default({ foo: "default" })
+            end
+          end
+          env             = mock_post_params("/", :foo_form, { foo: "value" })
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
+          component.reset :foo_form
+          expect(component.forms[:foo_form].to_h).to eq({ foo: "default" })
+        end
+      end
+
       context "GET message" do
         it "provides the GET params" do
           message_class   = Class.new(Lucid::Link)
