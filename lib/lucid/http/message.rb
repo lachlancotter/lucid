@@ -30,7 +30,7 @@ module Lucid
 
       class << self
         def url (message_params)
-          URL.new(self, build_query(message_params)).to_s
+          URL.new(self, build_query(message_params), base: Message.url_base).to_s
         end
 
         def build_query (message_params)
@@ -73,6 +73,18 @@ module Lucid
 
         def current_state
           @current_state || {}
+        end
+
+        def with_url_base (base, &block)
+          old_url_base = @url_base
+          @url_base    = base
+          block.call
+        ensure
+          @url_base = old_url_base
+        end
+
+        def url_base
+          @url_base || ""
         end
 
         private

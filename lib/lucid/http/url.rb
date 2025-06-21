@@ -4,9 +4,10 @@ module Lucid
     # Encodes a message as a URL.
     #
     class URL
-      def initialize (message_type, message_params)
+      def initialize (message_type, message_params, base: "")
         @message_type   = Types.subclass(Message)[message_type]
         @message_params = parse_params(message_params)
+        @base           = base
       end
 
       def to_s
@@ -14,7 +15,7 @@ module Lucid
       end
 
       def path
-        "/@/#{@message_type.message_name}"
+        "#{@base}/@/#{@message_type.message_name}"
       end
 
       def query_string

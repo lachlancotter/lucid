@@ -10,11 +10,11 @@ module Lucid
             env     = {
                "REQUEST_METHOD" => "GET",
                "PATH_INFO"      => "/store/guitars-basses",
-               "QUERY_STRING"   => "",
+               "QUERY_STRING"   => "",  
                "rack.input"     => StringIO.new("")
             }
             adaptor = RequestAdaptor.new(Rack::Request.new(env))
-            reader  = adaptor.state_reader(app_root: "/")
+            reader  = adaptor.state_reader
             map     = State::Map.new.tap do |map|
               map.path(:step)
               map.path(:category_slug)
@@ -33,7 +33,7 @@ module Lucid
                  "rack.input"     => StringIO.new("")
               }
               adaptor = RequestAdaptor.new(Rack::Request.new(env))
-              reader  = adaptor.state_reader(app_root: "/")
+              reader  = adaptor.state_reader
               map     = State::Map.new.tap do |map|
                 map.path(:step)
                 map.path(:category_slug)
@@ -53,7 +53,7 @@ module Lucid
                  "HTTP_HX_CURRENT_URL" => "http://test.com/store/pianos-keyboards"
               }
               adaptor = RequestAdaptor.new(Rack::Request.new(env))
-              reader  = adaptor.state_reader(app_root: "/")
+              reader  = adaptor.state_reader
               map     = State::Map.new.tap do |map|
                 map.path(:step)
                 map.path(:category_slug)
@@ -63,33 +63,7 @@ module Lucid
           end
         end
       end
-
-      describe ".normalize_path" do
-        context "empty path" do
-          it "eq /" do
-            expect(RequestAdaptor.normalize_path("/", "/")).to eq("/")
-          end
-        end
-
-        context "with app root" do
-          it "removes the app root" do
-            expect(RequestAdaptor.normalize_path("/a/b/c/d", "/a/b/c")).to eq("/d")
-          end
-        end
-
-        context "with hostname" do
-          it "removes the hostname" do
-            expect(RequestAdaptor.normalize_path("http://test.com/a/b/c/d", "/a/b/c")).to eq("/d")
-          end
-        end
-
-        context "with params" do
-          it "includes the params" do
-            expect(RequestAdaptor.normalize_path("/a/b/c/d?foo=bar", "/a/b/c")).to eq("/d?foo=bar")
-          end
-        end
-      end
-
+      
       describe ".htmx?" do
         context "without an HTMX header" do
           it "is false" do

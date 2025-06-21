@@ -7,46 +7,40 @@ module Lucid
     # for parsing the request and extracting component params
     # and messages.
     #
-    class RequestAdaptor < SimpleDelegator
-      def state_reader (app_root: "/")
+    class RequestAdaptor
+      extend Forwardable
+
+      def initialize (request, url_base: "/")
+        @request  = request
+        @url_base = url_base
+      end
+
+      def_delegators :@request,
+         :env, :request_method, :fullpath, :get_header, :post?, :GET, :POST
+
+      def state_reader
         Types.reader[
            case [has_message?, htmx?]
-           when [true, true] then state_from_hx_current_url(app_root)
+           when [true, true] then state_from_hx_current_url
            when [true, false] then state_from_message_params
-           else state_from_fullpath(app_root)
+           else state_from_fullpath
            end
         ]
       end
 
-      def state_from_fullpath (app_root)
-        state_string = RequestAdaptor.normalize_path(fullpath, app_root)
+      def state_from_fullpath
+        state_string = Endpoint.relative(fullpath, base: @url_base)
         State::Reader.new(state_string)
       end
 
-      def state_from_hx_current_url (app_root)
+      def state_from_hx_current_url
         current_url  = get_header("HTTP_HX_CURRENT_URL")
-        state_string = RequestAdaptor.normalize_path(current_url, app_root)
+        state_string = Endpoint.relative(current_url, base: @url_base)
         State::Reader.new(state_string)
       end
 
       def state_from_message_params
         State::HashReader.new(state_params)
-      end
-
-      def self.normalize_path (url, app_root)
-        case url
-        when "" then "/"
-        when "/" then "/"
-        when String
-          uri     = URI.parse(url)
-          pattern = app_root.sub(/\/$/, "")
-          uri.path.sub(pattern, "").tap do |path|
-            query = uri.query || ""
-            path << "?" + query if query != ""
-          end
-        else
-          raise ArgumentError, "Invalid URL: #{url.inspect}"
-        end
       end
 
       def htmx?
@@ -60,7 +54,7 @@ module Lucid
       def yield_command (&block)
         form_model.yield_command(&block)
       end
-      
+
       def yield_invalid (&block)
         form_model.yield_invalid(&block)
       end
@@ -70,11 +64,15 @@ module Lucid
       end
 
       def has_message?
-        MessageName.valid?(fullpath)
+        MessageName.valid?(message_path)
       end
 
       def message_class
-        MessageName.to_class(fullpath)
+        MessageName.to_class(message_path)
+      end
+      
+      def message_path
+        Endpoint.relative(fullpath, base: @url_base)
       end
 
       def state_params

@@ -5,7 +5,7 @@ module Lucid
     #
     class Cycle
       attr_reader :request, :response
-      
+
       def initialize (request, response, container)
         @request   = request
         @response  = response
@@ -30,16 +30,21 @@ module Lucid
 
       def command
         run_with_context do
+          component # Build the tree before dispatching the command.
           @request.yield_command do |command|
-            component # Build the tree before dispatching the command.
             Logger.command(command)
             message_bus.dispatch(command)
-            @response.send_delta(component, htmx: @request.htmx?)
           end
-          @request.yield_invalid do |params|
+          @request.yield_invalid do |params, errors|
             Logger.error("Invalid command", params)
-            message_bus.publish(MessageInvalidated.new(params: params))
+            message_bus.publish(
+               MessageInvalidated.new(
+                  params: params,
+                  errors: errors
+               )
+            )
           end
+          @response.send_delta(component, htmx: @request.htmx?)
         end
       end
 
@@ -59,7 +64,9 @@ module Lucid
 
       def run_with_context (&block)
         Logger.cycle(self) do
-          HTTP::Message.with_state(state_for_messages, &block)
+          HTTP::Message.with_url_base(@container[:app_root]) do
+            HTTP::Message.with_state(state_for_messages, &block)
+          end
         end
       rescue Dry::Types::CoercionError => e
         Logger.exception(e)
