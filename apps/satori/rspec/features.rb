@@ -1,5 +1,0 @@
-require_relative "../../../lib/lucid"
-require_relative "server"
-require_relative "capybara"
-require_relative "screenshots"
-require_relative "../app/loader"
