@@ -4,31 +4,22 @@ module Lucid
   # configures a Zeitwerk loader to load code from those directories.
   #
   class DirectoryLayout
-    def initialize (root_path, namespace)
-      @root_path = File.expand_path(root_path)
-      @namespace = namespace
+    def initialize (root_path, namespace, &block)
+      @root_path    = File.expand_path(root_path)
+      @namespace    = namespace
+      @code_dirs    = []
+      @config_files = []
+      yield self if block_given?
     end
+
+    attr_reader :code_dirs, :config_files
 
     def configure (zeitwerk_loader)
       config_files.each { |f| require_file(f) }
       code_dirs.each { |dir| autoload_directory(dir, zeitwerk_loader) }
     end
 
-    def code_dirs
-      self.class.const_get(:CODE_DIRS)
-    end
-
-    def config_files
-      self.class.const_get(:CONFIG_FILES)
-    end
-
-    def config_file (filename)
-      "#{@root_path}/#{filename}"
-    end
-
-    def full_directory_path (directory_path)
-      "#{@root_path}/#{directory_path}"
-    end
+    private
 
     def require_file (filename)
       # puts "Require file: #{config_file(filename)}"
@@ -44,12 +35,22 @@ module Lucid
       end
     end
 
+    def config_file (filename)
+      "#{@root_path}/#{filename}"
+    end
+
+    def full_directory_path (directory_path)
+      "#{@root_path}/#{directory_path}"
+    end
+
     #
     # Project directory loads code from core, and feature directories.
     #
     class Project < DirectoryLayout
-      CONFIG_FILES = %w[]
-      CODE_DIRS = %w[config]
+      def initialize(root_path, namespace, &block)
+        super
+        code_dirs << "config" if File.directory?("#{root_path}/config")
+      end
 
       def configure (zeitwerk_loader)
         super
@@ -59,12 +60,12 @@ module Lucid
       end
 
       def core_layout
-        DirectoryLayout::Core.new("#{@root_path}/core", @namespace)
+        CoreDir.new("#{@root_path}/core", @namespace)
       end
 
       def feature_layouts
         feature_directories.map do |name|
-          DirectoryLayout::Feature.new(feature_root(name), feature_class(name))
+          FeatureDir.new(feature_root(name), feature_class(name))
         end
       end
 
@@ -100,26 +101,39 @@ module Lucid
     #
     # Feature modules load code from data, models, services, and views directories.
     #
-    class Feature < DirectoryLayout
-      CONFIG_FILES = %w[]
-      CODE_DIRS    = %w[data models services views handlers policies]
-      
-      def configure (zeitwerk_loader)
-        require feature_file
+    class FeatureDir < DirectoryLayout
+      def initialize(root_path, namespace, &block)
         super
+        Dir.children(root_path).each do |entry|
+          code_dirs << entry if load_dir?(entry)
+        end
       end
-      
-      def feature_file
-        "#{@root_path}.rb"
+
+      private
+
+      def load_dir?(entry)
+        File.directory?("#{@root_path}/#{entry}") &&
+           !entry.start_with?(".") &&
+           !["css", "js", "data"].include?(entry)
       end
     end
 
     #
     # The Core module loads code from lib.
     #
-    class Core < DirectoryLayout
-      CONFIG_FILES = %w[]
-      CODE_DIRS    = %w[models]
+    class CoreDir < DirectoryLayout
+      def initialize(root_path, namespace, &block)
+        super
+        Dir.children(root_path).each do |entry|
+          code_dirs << entry if load_dir?("#{root_path}/#{entry}")
+        end
+      end
+
+      private
+
+      def load_dir?(entry)
+        File.directory?(entry) && !entry.start_with?(".")
+      end
     end
   end
 end
