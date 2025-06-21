@@ -13,9 +13,9 @@ module MusicStore
             div(class: "dialog") {
               h2 "Login"
               form_for(credentials) { |f|
-                emit f.label(:email, "Email")
-                emit f.text(:email, placeholder: "Email")
-                emit f.submit("Login")
+                f.label(:email, "Email")
+                f.text(:email, placeholder: "Email")
+                f.submit("Login")
               }
             }
           }

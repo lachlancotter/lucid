@@ -36,7 +36,7 @@ module MusicStore
         h2 "Checkout"
         subview(:cart_view)
         form_for(shipping_address) { |f|
-          emit f.hidden(:cart_id)
+          f.hidden(:cart_id)
           f.scoped(:address) { |a|
             fragment(:form_field, a, :name)
             fragment(:form_field, a, :street)
@@ -44,14 +44,14 @@ module MusicStore
             fragment(:form_field, a, :state)
             fragment(:form_field, a, :zip)
           }
-          emit f.submit("Continue")
+          f.submit("Continue")
         }
       end
 
       template :form_field do |form, field|
         p(class: form.errors(field).any? ? "error" : nil) {
-          emit form.label(field, field.capitalize)
-          emit form.text(field)
+          form.label(field, field.capitalize)
+          form.text(field)
           form.errors(field).each { |error| span(error, class: "error") }
         }
       end
