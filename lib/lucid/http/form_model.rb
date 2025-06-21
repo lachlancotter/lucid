@@ -41,7 +41,7 @@ module Lucid
       end
 
       def yield_invalid
-        tap { yield to_h unless valid? }
+        tap { yield to_h, errors unless valid? }
       end
 
       def to_message

@@ -1,6 +1,6 @@
 require "zeitwerk"
 require "pathname"
-require "awesome_print"
+# require "awesome_print"
 require "forwardable"
 require "rack"
 
@@ -79,6 +79,7 @@ module Lucid
   class MessageInvalidated < Event
     validate do
       required(:params).filled
+      required(:errors).filled
     end
   end
   
