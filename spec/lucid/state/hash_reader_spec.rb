@@ -22,7 +22,7 @@ module Lucid
       context "multiple path components" do
         it "sets the hash keys" do
           reader = HashReader.new({ foo: "foo", bar: "bar" })
-          map    = Map.build { path :foo, :bar }
+          map    = Map.build { path :foo; path :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "bar")
         end
@@ -31,7 +31,7 @@ module Lucid
       context "literal path components" do
         it "skips literals" do
           reader = HashReader.new(foo: "foo")
-          map    = Map.build { path "lit", :foo }
+          map    = Map.build { path "lit"; path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
         end
@@ -49,7 +49,7 @@ module Lucid
       context "multiple query params" do
         it "sets the hash keys" do
           reader = HashReader.new(foo: "bar", baz: "qux")
-          map    = Map.build { query :foo, :baz }
+          map    = Map.build { query :foo; query :baz }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar", baz: "qux")
         end

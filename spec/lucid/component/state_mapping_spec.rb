@@ -11,6 +11,24 @@ module Lucid
         end
       end
 
+      it "maps params to query params" do
+        component_class = Class.new(Component::Base) do
+          param :foo, Types.string
+          param :bar, Types.string
+        end
+        instance        = component_class.new({ foo: "first", bar: "second" })
+        expect(instance.url).to eq("/?foo=first&bar=second")
+      end
+
+      it "omits default values" do
+        component_class = Class.new(Component::Base) do
+          param :foo, Types.string.default("first".freeze)
+          param :bar, Types.string
+        end
+        instance        = component_class.new({ foo: "first", bar: "second" })
+        expect(instance.url).to eq("/?bar=second")
+      end
+
       it "maps params to path segments" do
         component_class = Class.new(Component::Base) do
           route ":foo/:bar"

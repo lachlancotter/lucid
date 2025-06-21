@@ -23,16 +23,14 @@ module Lucid
         @config[:component_class] || Lucid::Component::Base
       end
 
-      def app_root
-        @config[:app_root] || "/"
-      end
-
+      provide(:app_root) { @config[:app_root] || "/" }
+      
       provide(:request) do
-        HTTP::RequestAdaptor.new(Rack::Request.new(@env))
+        HTTP::RequestAdaptor.new(Rack::Request.new(@env), url_base: app_root)
       end
 
       provide(:response) do
-        HTTP::ResponseAdaptor.new(Rack::Response.new(@env))
+        HTTP::ResponseAdaptor.new(Rack::Response.new(@env), url_base: app_root)
       end
 
       provide(:session) do
@@ -52,9 +50,7 @@ module Lucid
         )
       end
 
-      provide(:state) do
-        request.state_reader(app_root: app_root)
-      end
+      provide(:state) { request.state_reader }
     end
   end
 end

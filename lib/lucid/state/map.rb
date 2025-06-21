@@ -16,8 +16,8 @@ module Lucid
         rules << Path.new(key, path_count)
       end
 
-      def param (key)
-        rules << Param.new(key)
+      def param (key, type)
+        rules << Param.new(key, type)
       end
 
       def path? (key)
@@ -37,7 +37,7 @@ module Lucid
         Map.new.tap do |map|
           @rules.each do |rule|
             if rule.is_a?(Path)
-              map.rules << Param.new(rule.key) if rule.key.is_a?(Symbol)
+              map.rules << Param.new(rule.key, Types.string) if rule.key.is_a?(Symbol)
             else
               map.rules << rule
             end
@@ -61,8 +61,9 @@ module Lucid
       # Base class for rules.
       #
       class Rule
-        def initialize (key)
-          @key = Types.union(String, Symbol)[key]
+        def initialize (key, type)
+          @key  = (Types.string | Types.symbol)[key]
+          @type = type
         end
 
         attr_reader :key
@@ -74,14 +75,18 @@ module Lucid
         def fetch_from (state)
           state.fetch(@key) { raise MissingValue.new(@key) }
         end
+
+        def default_value? (value)
+          @type.default? && @type[] == value
+        end
       end
 
       #
       # Rule for a single path component of a URL.
       #
       class Path < Rule
-        def initialize(key, index)
-          super(key)
+        def initialize(key, index, type = Types.string)
+          super(key, type)
           @index = index
         end
 
@@ -92,8 +97,9 @@ module Lucid
 
         def decode (reader, state)
           reader.read_path_segment(@index).tap do |segment|
-            if segment.is_a?(String) && @key.is_a?(Symbol)
-              state[@key] = segment
+            case @key
+            when String then MismatchedPath.check(@key, segment)
+            when Symbol then state[@key] = segment if segment.is_a?(String)
             end
           end
         end
@@ -104,7 +110,10 @@ module Lucid
       #
       class Param < Rule
         def encode (state, buffer)
-          buffer.write_param(@key, fetch_from(state))
+          value = fetch_from(state)
+          # If the value matches the default for the type, we skip encoding it
+          # to avoid unnecessary query parameters in the URL.
+          buffer.write_param(@key, value) unless default_value?(value)
         end
 
         def decode (reader, state)
@@ -117,6 +126,16 @@ module Lucid
       class MissingValue < StandardError
         def initialize(key)
           super("missing value for key: #{key}")
+        end
+      end
+
+      class MismatchedPath < StandardError
+        def self.check(expected, actual)
+          raise new(expected, actual) unless expected == actual
+        end
+
+        def initialize(expected, actual)
+          super("expected path segment '#{expected}' but got '#{actual}'")
         end
       end
 
@@ -133,17 +152,13 @@ module Lucid
           @path_index = 0
         end
 
-        def path (*keys)
-          keys.each do |key|
-            @rules << Path.new(key, @path_index)
-            @path_index += 1
-          end
+        def path (key, type = Types.string)
+          @rules << Path.new(key, @path_index, type)
+          @path_index += 1
         end
 
-        def param (*keys)
-          keys.each do |key|
-            @rules << Param.new(key)
-          end
+        def param (key, type = Types.string)
+          @rules << Param.new(key, type)
         end
 
         def query (*keys)

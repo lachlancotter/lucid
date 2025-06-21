@@ -25,7 +25,7 @@ module Lucid
       context "multiple path components" do
         it "sets the hash keys" do
           reader = Reader.new("/foo/bar")
-          map    = Map.build { path :foo, :bar }
+          map    = Map.build { path :foo; path :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "bar")
         end
@@ -34,9 +34,17 @@ module Lucid
       context "literal path components" do
         it "skips literals" do
           reader = Reader.new("/lit/foo")
-          map    = Map.build { path "lit", :foo }
+          map    = Map.build { path "lit"; path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
+        end
+      end
+
+      context "literal component mismatch" do
+        it "raises an error" do
+          reader = Reader.new("/foo/bar")
+          map    = Map.build { path "baz"; path :bar }
+          expect { reader.read(map) }.to raise_error(Map::MismatchedPath)
         end
       end
 
@@ -52,7 +60,7 @@ module Lucid
       context "multiple query params" do
         it "sets the hash keys" do
           reader = Reader.new("?foo=bar&baz=qux")
-          map    = Map.build { query :foo, :baz }
+          map    = Map.build { query :foo; query :baz }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar", baz: "qux")
         end

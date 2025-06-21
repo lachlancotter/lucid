@@ -28,7 +28,7 @@ module Lucid
         it "sets the hash keys" do
           data   = { foo: "foo", bar: "bar" }
           writer = Writer.new(data)
-          map    = Map.build { path :foo, :bar }
+          map    = Map.build { path :foo; path :bar }
           writer.write_state(map)
           expect(writer.to_s).to eq("/foo/bar")
         end
@@ -38,7 +38,7 @@ module Lucid
         it "adds literals to the path" do
           data   = { foo: "foo" }
           writer = Writer.new(data)
-          map    = Map.build { path "lit", :foo }
+          map    = Map.build { path "lit"; path :foo }
           writer.write_state(map)
           expect(writer.to_s).to eq("/lit/foo")
         end
@@ -58,7 +58,7 @@ module Lucid
         it "sets the hash keys" do
           data   = { foo: "bar", baz: "qux" }
           writer = Writer.new(data)
-          map    = Map.build { query :foo, :baz }
+          map    = Map.build { query :foo; query :baz }
           writer.write_state(map)
           expect(writer.to_s).to eq("/?foo=bar&baz=qux")
         end
