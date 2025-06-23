@@ -27,7 +27,7 @@ module Lucid
 
       def form_model
         HTTP::FormModel.new(@message.class, @message.to_h,
-           component_id: "", form_name: :button
+           component_id: "", form_name: :button, csrf_token: @options[:csrf_token],
         )
       end
     end

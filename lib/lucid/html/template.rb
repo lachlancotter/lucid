@@ -99,7 +99,8 @@ module Lucid
         end
 
         def button_to (message, text = nil, **opts)
-          emit Button.new(normalize_message(message), text, **opts).template
+          button_opts = { csrf_token: @renderable.container[:csrf_token] }.merge(opts)
+          emit Button.new(normalize_message(message), text, **button_opts).template
         end
 
         def form_for (form_model, **opts, &block)
