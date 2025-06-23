@@ -5,13 +5,14 @@ module Lucid
     # validation messages. Also used to extract a message from an HTTP request.
     #
     class FormModel
-      attr_reader :component_id, :form_name, :message_type, :message_params
+      attr_reader :component_id, :form_name, :message_type, :message_params, :csrf_token
 
-      def initialize (message_type, message_params, component_id: "", form_name: :nil_form)
+      def initialize (message_type, message_params, component_id: "", form_name: :nil_form, csrf_token: nil)
         @component_id   = Types.string[component_id]
         @form_name      = Types.symbol[form_name]
         @message_type   = Types.subclass(Message)[message_type]
         @message_params = parse_params(message_params)
+        @csrf_token     = Types.string.optional[csrf_token]
       end
 
       #
@@ -21,7 +22,9 @@ module Lucid
       def or_default (default_params)
         if @message_params.empty?
           FormModel.new(@message_type, default_params,
-             component_id: @component_id, form_name: @form_name
+             component_id: @component_id,
+             form_name:    @form_name,
+             csrf_token:   @csrf_token
           )
         else
           self

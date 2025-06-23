@@ -34,8 +34,7 @@ module Lucid
         # 
         def echo (name, message_class, except: [], &block)
           after_initialize do
-            request      = props.container[:request]
-            echos[name]  = Echo.new(request, self, name, message_class, filter: except, &block)
+            echos[name]  = Echo.new(self, name, message_class, filter: except, &block)
             forms[name]  = echos[name].to_form_model
             fields[name] = Field.new(self) { forms[name] }
           end
@@ -49,8 +48,7 @@ module Lucid
       # be 'echoed' back to the view.
       # 
       class Echo
-        def initialize (request, component, form_name, message_class, filter: [], &block)
-          @request       = Types.instance(HTTP::RequestAdaptor)[request]
+        def initialize (component, form_name, message_class, filter: [], &block)
           @component     = Types.component[component]
           @form_name     = Types.symbol[form_name]
           @message_class = Types.subclass(Message)[message_class]
@@ -60,7 +58,7 @@ module Lucid
         end
 
         def to_form_model
-          model_options = { component_id: @component.path.to_s, form_name: @form_name }
+          model_options = { component_id: @component.path.to_s, form_name: @form_name, csrf_token: csrf_token }
           model         = HTTP::FormModel.new(@message_class, to_h, **model_options)
           model         = @component.instance_exec(model, &@config_block) if @config_block
           model
@@ -92,7 +90,11 @@ module Lucid
         end
 
         def message_params
-          @request.message_params(filter: @param_filter)
+          @component.container[:request].message_params(filter: @param_filter)
+        end
+
+        def csrf_token
+          @component.container[:csrf_token]
         end
       end
 

@@ -24,7 +24,8 @@ module Lucid
       end
 
       provide(:app_root) { @config[:app_root] || "/" }
-      
+      provide(:csrf_token) { @config[:csrf_token] }
+
       provide(:request) do
         HTTP::RequestAdaptor.new(Rack::Request.new(@env), url_base: app_root)
       end

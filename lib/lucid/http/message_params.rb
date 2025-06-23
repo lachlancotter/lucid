@@ -11,7 +11,8 @@ module Lucid
       FORM_NAME_PARAM_KEY      = :form
       COMPONENT_PATH_PARAM_KEY = :component
       STATE_HASH_PARAM_KEY     = :state
-      SPECIAL_PARAMS           = [FORM_NAME_PARAM_KEY, COMPONENT_PATH_PARAM_KEY].freeze
+      CSRF_TOKEN_PARAM_KEY     = :_csrf_token
+      SPECIAL_PARAMS           = [FORM_NAME_PARAM_KEY, COMPONENT_PATH_PARAM_KEY, CSRF_TOKEN_PARAM_KEY].freeze
 
       def initialize (raw, filter: [])
         @raw    = deep_symbolize_keys(Types.hash[raw])

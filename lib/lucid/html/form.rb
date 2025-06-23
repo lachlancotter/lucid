@@ -20,6 +20,7 @@ module Lucid
             form action: form_model.form_action, method: form_model.http_method do
               builder.hidden(HTTP::MessageParams::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
               builder.hidden(HTTP::MessageParams::FORM_NAME_PARAM_KEY, value: form_model.form_name)
+              builder.hidden(HTTP::MessageParams::CSRF_TOKEN_PARAM_KEY, value: form_model.csrf_token) if form_model.csrf_token
               emit_yield builder
             end
           end
