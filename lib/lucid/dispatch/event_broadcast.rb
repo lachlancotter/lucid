@@ -42,11 +42,11 @@ module Lucid
       recruited_broadcasters.each { |recruit| recruit.each_subscriber(event_class, &block) }
     end
 
-    def publish (event, context)
+    def publish (event, container = {})
       InvalidEvent.check(event)
       App::Logger.event(event)
       each_subscriber(event.class) do |klass, handler_block|
-        klass.new(event, context, &handler_block).call
+        klass.new(event, container, &handler_block).call
       end
     end
 
