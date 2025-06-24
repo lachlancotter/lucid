@@ -19,12 +19,12 @@ module Lucid
       end
 
       def [] (key)
-        @session_hash[key]
+        @session_hash[key.to_s]
       end
 
       def put (data)
         @state = @state.new(data) # Validation.
-        @session_hash.merge!(@state.to_h)
+        data.each { |key, value| @session_hash[key.to_s] = value }
         data.keys.each { |key| field(key).invalidate if field?(key) }
       end
 
