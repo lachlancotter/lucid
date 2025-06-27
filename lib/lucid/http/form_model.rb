@@ -30,6 +30,14 @@ module Lucid
           self
         end
       end
+      
+      def merge_default (default_params)
+        FormModel.new(@message_type, default_params.merge(@message_params.to_h),
+           component_id: @component_id,
+           form_name:    @form_name,
+           csrf_token:   @csrf_token
+        )
+      end
 
       # ===================================================== #
       #    Requests
