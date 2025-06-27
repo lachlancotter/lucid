@@ -219,7 +219,7 @@ module Lucid
             @component = binding.call(state, @parent, @name)
           end
         rescue StandardError => error
-          App::Logger.exception(error)
+          # App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
         end
 
@@ -233,6 +233,9 @@ module Lucid
               @component.delta.replace
             end
           end
+        rescue StandardError => error
+          @component = ErrorPage.new({}, error: error, parent: @parent, name: @name)
+          @component.delta.replace
         end
 
         def props_binding

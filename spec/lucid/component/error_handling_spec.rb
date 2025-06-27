@@ -39,7 +39,7 @@ module Lucid
           end
         end
 
-        context "in a child component" do
+        context "in a child component, at build" do
           it "renders an error page" do
             child_component_class  = Class.new(Component::Base) do
               def permitted?
@@ -51,6 +51,36 @@ module Lucid
               element { subview(:child) }
             end
             parent_component       = parent_component_class.new({})
+            expect(parent_component.render_full).to match /Permission Denied/
+          end
+        end
+
+        context "in a child component, on message" do
+          it "renders an error page" do
+            denied_component_class    = Class.new(Component::Base) do
+              def permitted?
+                false
+              end
+            end
+            permitted_component_class = Class.new(Component::Base) do
+              def permitted?
+                true
+              end
+              element { text "Granted" }
+            end
+            parent_component_class    = Class.new(Component::Base) do
+              param :permit, Types.bool.default(true)
+              nest(:child) do |permit|
+                case permit
+                when TrueClass then permitted_component_class
+                else denied_component_class
+                end
+              end
+              element { subview(:child) }
+            end
+            parent_component          = parent_component_class.new({})
+            expect(parent_component.render_full).to match /Granted/
+            parent_component.update(permit: false)
             expect(parent_component.render_full).to match /Permission Denied/
           end
         end
