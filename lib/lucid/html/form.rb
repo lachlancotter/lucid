@@ -100,6 +100,16 @@ module Lucid
           @renderer.tag(:input, input_attrs)
         end
 
+        def password (key, value: nil, **attrs)
+          input_attrs = {
+             type:  :password,
+             name:  field_name(key),
+             value: value || field_value(key),
+             id:    field_id(key)
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
         def textarea (key, value: nil, **attrs)
           textarea_attrs = { name: field_name(key), id: field_id(key) }.merge(attrs)
           textarea_value = value || field_value(key)
