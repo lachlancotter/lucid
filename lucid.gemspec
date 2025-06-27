@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.description   = "Lucid is a component-based framework for building reactive, hypermedia applications in Ruby. " +
                        "It provides a set of tools and abstractions to create modular, reusable components that can be " +
                        "easily composed to build complex user interfaces."
-  spec.homepage      = "https://lucid.dev"
+  spec.homepage      = "https://github.com/lachlancotter/lucid"
   spec.license       = "MIT"
   spec.files         = Dir["lib/**/*", "README.md"]
   spec.require_paths = ["lib"]
