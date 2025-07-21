@@ -73,6 +73,22 @@ module Lucid
           expect(render).to include("name=\"form\"")
           expect(render).to include("value=\"foo_form\"")
         end
+
+        it "emits custom form attributes" do
+          component_class = Class.new(Component::Base) do
+            echo :foo_form, TestCommand
+            element do |foo_form|
+              form_for foo_form, "data-controller": "foo" do |f|
+                f.text(:foo)
+              end
+            end
+          end
+          env             = mock_post_params("/", :foo_form, { foo: "bar" })
+          container       = App::Container.new({}, env)
+          component       = component_class.new({}, container: container)
+          render          = component.render_full
+          expect(render).to include("data-controller=\"foo\"")
+        end
       end
 
       context "with default params" do

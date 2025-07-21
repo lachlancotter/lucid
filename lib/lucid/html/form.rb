@@ -15,16 +15,16 @@ module Lucid
       end
 
       def template
-        Papercraft.html do |form_model|
+        Papercraft.html do |form_model, form_options|
           Builder.new(self, form_model).tap do |builder|
-            form action: form_model.form_action, method: form_model.http_method do
+            form({ action: form_model.form_action, method: form_model.http_method }.merge(form_options)) do
               builder.hidden(HTTP::MessageParams::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
               builder.hidden(HTTP::MessageParams::FORM_NAME_PARAM_KEY, value: form_model.form_name)
               builder.hidden(HTTP::MessageParams::CSRF_TOKEN_PARAM_KEY, value: form_model.csrf_token) if form_model.csrf_token
               emit_yield builder
             end
           end
-        end.apply(@form_model, &@block)
+        end.apply(@form_model, @options, &@block)
       end
 
       class Builder
