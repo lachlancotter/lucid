@@ -31,7 +31,7 @@ module Lucid
 
       it "inherits values from the session" do
         session_class = Class.new(App::Session) { key :foo }
-        session       = session_class.new(foo: "bar")
+        session       = session_class.new("foo" => "bar")
         view_class    = Class.new(Component::Base) { use :foo, from: :session }
         view          = view_class.new({}, session: session)
         expect(view.foo).to eq("bar")
@@ -45,7 +45,7 @@ module Lucid
               use :foo
             }
           end
-        end.new(foo: "bar")
+        end.new({ foo: "bar" })
         expect(view.child.foo).to eq("bar")
       end
 

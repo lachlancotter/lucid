@@ -13,8 +13,8 @@ module Lucid
       include Fields
 
       def initialize (session_hash)
-        @session_hash = session_hash
-        @state        = self.class.state_class.new(session_hash.to_h)
+        @session_hash = session_hash || {}
+        @state        = map_state(@session_hash)
         run_callbacks(:after_initialize)
       end
 
@@ -26,6 +26,18 @@ module Lucid
         @state = @state.new(data) # Validation.
         data.each { |key, value| @session_hash[key.to_s] = value }
         data.keys.each { |key| field(key).invalidate if field?(key) }
+      end
+
+      private
+
+      def map_state(session_hash)
+        self.class.state_class.new(
+           Hash[
+              session_hash.map do |key, value|
+                [key.to_sym, value]
+              end
+           ]
+        )
       end
 
       class << self

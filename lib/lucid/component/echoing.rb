@@ -35,10 +35,10 @@ module Lucid
         def echo (name, message_class, except: [], &block)
           after_initialize do
             echos[name]  = Echo.new(self, name, message_class, filter: except, &block)
-            forms[name]  = echos[name].to_form_model
-            fields[name] = Field.new(self) { forms[name] }
+            # forms[name]  = echos[name].to_form_model
+            fields[name] = Field.new(self) { echos[name].to_form_model }
           end
-          define_method(name) { forms[name] }
+          define_method(name) { fields[name] }
           after_build { fields[name].notify if echos[name].active_form? }
         end
       end

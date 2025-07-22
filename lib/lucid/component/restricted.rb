@@ -30,7 +30,7 @@ module Lucid
       # DSL.
       # 
       module ClassMethods
-        def adopt (policy_class, resource_name)
+        def adopt (policy_class, resource_name = nil)
           define_method(:policy) do
             @policy_context ||= PolicyContext.new(
                policy_class.new(self), resource_name, self
@@ -52,6 +52,10 @@ module Lucid
 
         def permits_view?
           @policy.permits_view?(resource)
+        end
+        
+        def permits_message?(message)
+          @policy.permits_message?(message)
         end
 
         def resource

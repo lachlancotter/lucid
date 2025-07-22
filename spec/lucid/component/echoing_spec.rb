@@ -31,8 +31,8 @@ module Lucid
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           component       = component_class.new({}, env: env)
-          expect(component.forms[:foo_form]).to be_a(HTTP::FormModel)
-          expect(component.forms[:foo_form].message_type).to eq(message_class)
+          expect(component.fields[:foo_form].value).to be_a(HTTP::FormModel)
+          expect(component.fields[:foo_form].value.message_type).to eq(message_class)
         end
 
         # Message needs to have a constant name.
@@ -102,7 +102,7 @@ module Lucid
           env             = mock_post_params("/", nil, {})
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:foo_form].to_h).to eq({ foo: "default" })
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "default" })
         end
       end
 
@@ -113,7 +113,7 @@ module Lucid
           env             = mock_post_params("/", :credentials, { email: "foo", password: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:credentials].to_h).to eq({ email: "foo" })
+          expect(component.fields[:credentials].value.to_h).to eq({ email: "foo" })
         end
       end
 
@@ -129,7 +129,7 @@ module Lucid
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
           component.reset :foo_form
-          expect(component.forms[:foo_form].to_h).to eq({ foo: "default" })
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "default" })
         end
       end
 
@@ -140,7 +140,7 @@ module Lucid
           env             = mock_get_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "bar" })
         end
       end
 
@@ -151,7 +151,7 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "bar" })
         end
       end
 
@@ -162,7 +162,7 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:foo_form].to_h).to eq({ foo: "bar" })
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "bar" })
         end
 
         it "triggers form dependencies" do
@@ -186,7 +186,7 @@ module Lucid
           env             = mock_post_params("/", :other_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          expect(component.forms[:foo_form].to_h).to eq({})
+          expect(component.fields[:foo_form].value.to_h).to eq({})
         end
 
         it "does not trigger form dependencies" do
@@ -216,8 +216,8 @@ module Lucid
           root_component       = root_component_class.new({}, container: container)
           source_component     = root_component.component1
           other_component      = root_component.component2
-          expect(source_component.forms[:foo_form].to_h).to eq({ foo: "bar" })
-          expect(other_component.forms[:foo_form].to_h).to eq({})
+          expect(source_component.fields[:foo_form].value.to_h).to eq({ foo: "bar" })
+          expect(other_component.fields[:foo_form].value.to_h).to eq({})
         end
 
         it "does not trigger form dependencies" do

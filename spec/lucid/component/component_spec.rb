@@ -13,7 +13,7 @@ module Lucid
           view = Class.new(Component::Base) do
             param :name
             element { div { text "Hello, #{state[:name]}" } }
-          end.new(name: "World")
+          end.new({ name: "World" })
           expect(view.render_full).to eq("<div>Hello, World</div>")
         end
       end

@@ -4,7 +4,7 @@ module Lucid
       describe "attributes" do
         it "defines attributes" do
           session_class = Class.new(Session) { key :foo }
-          session       = session_class.new(foo: "bar")
+          session       = session_class.new("foo" => "bar")
           expect(session.foo).to eq("bar")
         end
       end
@@ -26,7 +26,7 @@ module Lucid
           session_class = Class.new(Session) { key :foo, Types.string.default("".freeze) }
           session       = session_class.new(hash)
           session.put(foo: "bar")
-          expect(hash[:foo]).to eq("bar")
+          expect(hash["foo"]).to eq("bar")
         end
 
         it "raises when invalid" do
@@ -42,7 +42,8 @@ module Lucid
             key :foo
             let(:bar) { |foo| foo.upcase }
           end
-          session       = session_class.new(foo: "bar")
+          session       = session_class.new("foo" => "bar")
+          expect(session.foo).to eq("bar")
           expect(session.bar).to eq("BAR")
         end
       end
@@ -50,7 +51,7 @@ module Lucid
       describe "notification" do
         it "notifies when fields are changed" do
           session_class  = Class.new(Session) { key :foo }
-          session        = session_class.new(foo: "bar")
+          session        = session_class.new("foo" => "bar")
           observed_value = nil
           session.watch(:foo) { observed_value = session[:foo] }
           session.put(foo: "baz")

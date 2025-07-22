@@ -31,7 +31,7 @@ module Lucid
           view      = Class.new(Component::Base) do
             param :val
             nest(:foo) { foo_class[bar: 1] }
-          end.new(foo: { bar: 0 }, val: "a")
+          end.new({ foo: { bar: 0 }, val: "a" })
           
           expect(view.foo.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
@@ -45,7 +45,7 @@ module Lucid
             param :val
             nest(:foo) { |val| foo_class[bar: val] }
           end
-          view        = base_class.new(val: "1")
+          view        = base_class.new({ val: "1" })
           nested_view = view.foo
           view.update(val: "2")
           expect(view.foo.props.bar).to eq("2")
