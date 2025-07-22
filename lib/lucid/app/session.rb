@@ -33,7 +33,7 @@ module Lucid
       def map_state(session_hash)
         self.class.state_class.new(
            Hash[
-              session_hash.map do |key, value|
+              session_hash.to_h.map do |key, value|
                 [key.to_sym, value]
               end
            ]
