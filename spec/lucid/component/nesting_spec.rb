@@ -134,6 +134,19 @@ module Lucid
         end.new({}, nested: nested)
         expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><p>Nested content</p></div></div>')
       end
+
+      it "passes through a nest" do
+        variable = Class.new(Component::Base) { element { p "Nested content" } }
+        slotted  = Class.new(Component::Base) do
+          slot :variable
+          element { subview(:variable) }
+        end
+        base     = Class.new(Component::Base) do
+          nest(:nested) { slotted[variable: variable] }
+          element { div(class: "wrapper") { subview(:nested) } }
+        end.new({})
+        expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><div id="nested-variable" class="anon"><p>Nested content</p></div></div></div>')
+      end
     end
 
   end

@@ -26,9 +26,10 @@ module Lucid
         raise ConfigError.new(self, props_hash, e.message)
       end
 
+      # If we expected a Field but got a value, then wrap it in a Field.
       def normalise_prop (key, value)
         return value if value.is_a?(Field)
-        if self.class.props_class.schema.key(key).try(value).success?
+        if self.class.props_class.schema.key(key).valid?(value)
           value
         else
           Field.new(self) { value }
@@ -51,19 +52,28 @@ module Lucid
       module ClassMethods
         # Define a signal property, passed by reference.
         def prop(name, type = Types.string.default("".freeze))
-          # The default field returns the default value of the type.
-          type       = Types.normalize(type)
-          field_type = if type.default?
-            Types.instance(Field).default { Field.new(self) { type[] } }
-          else
-            Types.instance(Field)
-          end
-          props_class.attribute(name, field_type)
+          props_class.attribute(name, Helper.field_type(type))
           after_initialize { fields[name] = props[name] }
           define_method(name) do
+            # Fields are evaluated lazily, so we can't check the type of the argument
+            # at initialization time. Defer the type check until the field is accessed.
             type[fields[name].value]
           rescue Dry::Types::CoercionError => e
             raise ConfigError.new(self, { name => fields[name].value }, e.message)
+          end
+        end
+
+        class Helper
+          # If the type has a default value, then construct a new
+          # type for the Field that holds that type, where the default
+          # value is a Field returning the default value of the original type.
+          def self.field_type (type)
+            normalized = Types.normalize(type)
+            if normalized.default?
+              Types.instance(Field).default { Field.new(self) { normalized[] } }
+            else
+              Types.instance(Field)
+            end
           end
         end
 

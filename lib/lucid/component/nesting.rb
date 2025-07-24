@@ -113,9 +113,9 @@ module Lucid
         # Defines a slot for a nested component provided as a prop.
         #
         def slot (name)
-          static name, Types.subclass(Component::Base)
-          nest(name) { props[name] }
-          watch(name) { nests[name].update_component(nested_state(name)) }
+          prop name, Types.subclass(Component::Base)
+          nest(name) { props[name].value }
+          # watch(name) { nests[name].update_component(nested_state(name)) }
         end
 
         def key (&block)
@@ -252,7 +252,6 @@ module Lucid
         attr_reader :component_class
 
         def call (state, parent, name)
-          puts "building #{@component_class} for #{parent} with name #{name}"
           props_binding(parent).call(state, parent, name)
         end
 
