@@ -379,9 +379,7 @@ module Lucid
 
         def update
           props_binding.tap do |binding|
-            if @component.is_a?(binding.component_class)
-              binding.update(@component)
-            else
+            unless @component.is_a?(binding.component_class)
               # Should we propagate the state to the new component here; or reset it?
               @component = binding.call(@component.state.to_h, @parent, @name)
               @component.delta.replace
