@@ -7,13 +7,13 @@ module Lucid
         let(:item_class) do
           Class.new(Component::Base) do
             prop :foo, Types.string
-            key { props.foo }
+            key { foo }
             element { |foo| p { text "Item #{foo}" } }
           end
         end
         let(:base_class) do
           Class.new(Component::Base) do
-            prop :item_class, Types.Instance(Class)
+            static :item_class, Types.Instance(Class)
             nest(:a) { Class.new(Component::Base) { element { h1 "Component A" } } }
             nest(:b) { Class.new(Component::Base) { element { h1 "Component B" } } }
             nest(:item_views, over: []) { |i| props.item_class[foo: i] }
@@ -133,7 +133,7 @@ module Lucid
       describe "#append" do
         let(:view) do
           Class.new(Component::Base) do
-            prop :subview_class, Types.Instance(Class)
+            static :subview_class, Types.Instance(Class)
             element { h1 { text "Hello, World" } }
             nest(:item_views, over: []) { |i| props.subview_class[foo: i] }
           end.new({}, subview_class: subview_class)
@@ -142,7 +142,7 @@ module Lucid
           Class.new(Component::Base) do
             prop :foo, Types.integer
             element { |foo| p { text "Item #{foo}" } }
-            key { props.foo }
+            key { foo }
           end
         end
 
@@ -181,7 +181,7 @@ module Lucid
         let(:view) do
           subview_class = Class.new(Component::Base) do
             prop :foo, Types.integer
-            key { props.foo }
+            key { foo }
             element { |foo| p { text "Item #{foo}" } }
           end
           Class.new(Component::Base) do
@@ -225,7 +225,7 @@ module Lucid
       describe "#remove" do
         let(:view) do
           Class.new(Component::Base) do
-            prop :subview_class, Types.subclass(Component::Base)
+            static :subview_class, Types.subclass(Component::Base)
             element { h1 { text "Hello, World" } }
             nest :item_views, over: [1, 2, 3] do |i, subview_class:|
               subview_class[index: i]
@@ -236,7 +236,7 @@ module Lucid
           Class.new(Component::Base) do
             prop :index, Types.integer
             element { |index| p { text "Item #{index}" } }
-            key { props.index }
+            key { index }
           end
         end
 

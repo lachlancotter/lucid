@@ -35,7 +35,7 @@ module Lucid
       end
 
       def root?
-        props.parent.nil?
+        props&.parent.nil? || false
       end
 
       def path
@@ -65,6 +65,31 @@ module Lucid
       end
 
       module ClassMethods
+        #
+        # Define a builder for a nested component.
+        # 
+        # def build (klass, *signals, **signal_map)
+        #   builders[klass] = Builder.new(klass, SignalMap.new(*signals, **signal_map))
+        # end
+        #
+        # def builders
+        #   @builders ||= {}
+        # end
+
+        #
+        # Define a nested component.
+        # 
+        def static_nest (name, klass = nil, *signals, **signal_map, &block)
+          after_initialize do
+            nests[name] = case klass
+            when NilClass then DynamicNest.new(self, name, &block)
+            else StaticNest.new(self, name, klass, *signals, **signal_map)
+            end
+            nests[name].install(nested_state(name))
+          end
+          define_method(name) { nests[name].content }
+        end
+
         # 
         # Defines a nested component.
         # name - The name of the nested component in the parent.
@@ -88,7 +113,7 @@ module Lucid
         # Defines a slot for a nested component provided as a prop.
         #
         def slot (name)
-          prop name, Types.subclass(Component::Base)
+          static name, Types.subclass(Component::Base)
           nest(name) { props[name] }
           watch(name) { nests[name].update_component(nested_state(name)) }
         end
@@ -111,35 +136,37 @@ module Lucid
       class PropsBinding
         attr_reader :component_class
 
-        def initialize (component_class, **props)
+        def initialize (component_class, *list, **map)
           @component_class = Types.subclass(Component::Base)[component_class]
-          @props           = Types.hash[props]
+          @signal_map      = SignalMap.new(*list, **map)
         end
 
         def call (state, parent, name, collection_index: nil)
           @component_class.new(state, **build_props(parent, name, collection_index))
         end
 
-        def update (component)
-          if component.is_a?(@component_class)
-            component.update_props(@props)
-          end
-        end
+        # def update (component)
+        #   if component.is_a?(@component_class)
+        #     component.update_props(@props)
+        #   end
+        # end
 
         private
 
         def build_props (parent, name, collection_index)
-          base_props(parent, name, collection_index).merge(@props)
+          config(parent, name, collection_index).merge(
+             @signal_map.apply(parent, index: collection_index)
+          )
         end
 
-        def base_props (parent, name, collection_index)
+        def config (parent, name, collection_index)
           {
              parent:           parent,
+             name:             name,
+             collection_index: collection_index,
              app_root:         parent.props.app_root,
              session:          parent.props.session,
              container:        parent.props.container,
-             name:             name,
-             collection_index: collection_index
           }
         end
       end
@@ -177,6 +204,134 @@ module Lucid
       end
 
       #
+      # Map a list of component fields to the fields in a parent component, 
+      # so they can be passed by reference to a nested component.
+      # 
+      class SignalMap
+        def initialize (*list, **map)
+          @list = Types.array(Types.symbol)[list]
+          @map  = Types.hash[map]
+        end
+
+        def apply (component, index: nil)
+          Hash[
+             @list.map do |name|
+               [name, component.field(name)]
+             end + @map.map do |dest, source|
+               [dest, signal(component, source, index)]
+             end
+          ]
+        end
+
+        def signal (component, source, index)
+          case source
+          when Symbol then component.field(source)
+          when Array then element(component, source.first, index)
+          else literal(component, source)
+          end
+        end
+
+        def literal (component, value)
+          Field.new(component) { value }
+        end
+
+        def element (component, source, index)
+          Field.new(component) { component.field(source).value[index] }
+        end
+      end
+
+      #
+      # Instantiates and configures a nested component.
+      # 
+      class Builder
+        def initialize (klass, signal_map)
+          @component_class = Types.subclass(Component::Base)[klass]
+          @signal_map      = signal_map
+        end
+
+        attr_reader :component_class
+
+        def call (state, parent, name)
+          puts "building #{@component_class} for #{parent} with name #{name}"
+          props_binding(parent).call(state, parent, name)
+        end
+
+        def props_binding (parent)
+          PropsBinding.new(@component_class, **@signal_map.apply(parent))
+        end
+      end
+
+      #
+      # Dynamically selects the component class to instantiate based on the
+      # block passed to the nest method.
+      # 
+      class DynamicNest < Nest
+        def initialize (parent, name, &block)
+          super(name, parent)
+          @field = Field.new(@parent, &block)
+          @field.attach(self) do
+            unless builder.component_class == @component.class
+              install(@parent.send :nested_state, @name)
+            end
+          end
+        end
+
+        def install (state)
+          @component = builder.call(state, @parent, @name)
+        rescue StandardError => error
+          @component = ErrorPage.new({}, error: error)
+        end
+
+        def builder
+          @parent.class.builders.fetch(@field.value) do
+            raise ArgumentError, "No builder for nested component: #{@field.value}"
+          end
+        end
+
+        def content
+          @component
+        end
+      end
+
+      #
+      # Instantiates a subcomponent of the given class, passing in signals
+      # from the parent component.
+      # 
+      class StaticNest < Nest
+        def initialize (parent, name, klass, *signals, **signal_map)
+          super(name, parent)
+          @klass      = Types.subclass(Component::Base)[klass]
+          @signal_map = SignalMap.new(*signals, **signal_map)
+        end
+
+        def install (state)
+          @component = builder.call(state, @parent, @name)
+        rescue StandardError => error
+          @component = ErrorPage.new({}, error: error)
+        end
+
+        def builder
+          Builder.new(@klass, @signal_map)
+        end
+
+        def with_component (index = :ignored, retry_on_error: false, &block)
+          block.call(@component)
+        rescue StandardError => error
+          App::Logger.exception(error)
+          @component = ErrorPage.new({}, error: error)
+          block.call(@component) if retry_on_error
+        end
+
+        def content
+          @component
+        end
+
+        def deep_state
+          @component.deep_state
+        end
+      end
+
+      #
       # Housing for an individual subcomponent.
       # 
       class ComponentNest < Nest
@@ -205,7 +360,7 @@ module Lucid
           @component = ErrorPage.new({}, error: error)
           block.call(@component) if retry_on_error
         end
-        
+
         def deep_state
           @component.deep_state
         end
@@ -219,7 +374,7 @@ module Lucid
             @component = binding.call(state, @parent, @name)
           end
         rescue StandardError => error
-          # App::Logger.exception(error)
+          App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
         end
 
@@ -281,10 +436,10 @@ module Lucid
           yield @collection[index]
         rescue StandardError => error
           App::Logger.exception(error)
-          @collection[index] = ErrorPage.new({}, error: error, collection_key: index)
+          @collection[index] = ErrorPage.new({}, error: error, collection_index: index)
           yield @collection[index] if retry_on_error
         end
-        
+
         def deep_state
           {}.tap do |result|
             each_component do |component|

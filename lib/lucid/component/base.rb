@@ -24,32 +24,32 @@ module Lucid
       # Used to encode URLs for the webserver. Useful if you want to
       # nest your application under a subdirectory.
       #
-      prop :app_root, Types.Constructor(Path).default { |path| path["/"] }
+      static :app_root, Types.Constructor(Path).default { |path| path["/"] }
 
       #
       # Access to the environment for the current request.
       # 
-      prop :container, Types.container.optional.default { App::Container.new({}, {}) }
+      static :container, Types.container.optional.default { App::Container.new({}, {}) }
 
       #
       # Access to the Session for the current request.
       #
-      prop :session, Types.instance(App::Session).optional.default(nil)
+      static :session, Types.instance(App::Session).optional.default(nil)
 
       #
       # This component's parent in the component tree.
       #
-      prop :parent, Types.component.optional.default(nil)
+      static :parent, Types.component.optional.default(nil)
 
       #
       # The name of this component in the parent.
       #
-      prop :name, Types.symbol.default("root".freeze)
+      static :name, Types.symbol.default("root".freeze)
 
       #
       # Whether this component is a member of a collection.
       #
-      prop :collection_index, Types.integer.optional.default(nil)
+      static :collection_index, Types.integer.optional.default(nil)
 
       def initialize (state, **props)
         initialize_state(state)
@@ -73,8 +73,8 @@ module Lucid
       # Return a Factory for building components of the receiver class with the
       # given configuration.
       #
-      def self.[] (**props)
-        PropsBinding.new(self, **props)
+      def self.[] (*list, **map)
+        PropsBinding.new(self, *list, **map)
       end
 
       def inspect
@@ -88,7 +88,7 @@ module Lucid
           path.to_s.gsub("/", "-").gsub(/^-/, "")
         end
       end
-      
+
       def css_class_name
         class_name = self.class.name
         case class_name

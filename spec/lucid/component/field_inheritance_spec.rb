@@ -53,9 +53,7 @@ module Lucid
         view = Class.new(Component::Base) do
           prop :foo
           nest :child do
-            Class.new(Component::Base) {
-              use :foo
-            }
+            Class.new(Component::Base) { use :foo }
           end
         end.new({}, foo: "bar")
         expect(view.child.foo).to eq("bar")

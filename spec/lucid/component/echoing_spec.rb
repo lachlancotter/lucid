@@ -30,7 +30,7 @@ module Lucid
           message_class   = Class.new(Lucid::Command)
           component_class = Class.new(Component::Base) { echo :foo_form, message_class }
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
-          component       = component_class.new({}, env: env)
+          component       = component_class.new({})
           expect(component.fields[:foo_form].value).to be_a(HTTP::FormModel)
           expect(component.fields[:foo_form].value.message_type).to eq(message_class)
         end

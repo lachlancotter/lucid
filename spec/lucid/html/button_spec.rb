@@ -15,7 +15,7 @@ module Lucid
         message = TestMessage.new(foo: "bar")
         button  = Button.new(message, "Submit")
         HTTP::Message.with_state(baz: "qux") do
-          expect(button.to_s).to include("state[baz]=qux")
+          expect(button.to_s).to include("state%5Bbaz%5D=qux")
         end
       end
     end

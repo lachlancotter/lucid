@@ -46,8 +46,7 @@ module Lucid
         component_class.new(state,
            app_root:  app_root,
            container: self,
-           session:   session,
-           path:      Path.new
+           session:   session
         )
       end
 

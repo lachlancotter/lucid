@@ -4,7 +4,7 @@ module Lucid
   # the ErrorPage component is returned instead. 
   # 
   class ErrorPage < Component::Base
-    prop :error, StandardError
+    static :error, StandardError
 
     def template (name = :ignored)
       self.class.template(props.error.class).bind(self)

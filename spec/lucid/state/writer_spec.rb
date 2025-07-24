@@ -82,7 +82,7 @@ module Lucid
           writer.with_scope(:foo) do
             writer.write_state(nested)
           end
-          expect(writer.to_s).to eq("/?foo[bar]=baz")
+          expect(writer.to_s).to eq("/?foo%5Bbar%5D=baz")
         end
       end
 
@@ -96,7 +96,7 @@ module Lucid
           writer.write_state(top_map)
           writer.with_scope(:foo) { writer.write_state(foo_map) }
           writer.with_scope(:qux) { writer.write_state(qux_map) }
-          expect(writer.to_s).to eq("/?foo[bar]=baz&qux[duck]=corge")
+          expect(writer.to_s).to eq("/?foo%5Bbar%5D=baz&qux%5Bduck%5D=corge")
         end
       end
 
@@ -108,7 +108,7 @@ module Lucid
           qux_map = Map.build { path :kiln ; path "literal" }
           writer.with_scope(:foo) { writer.write_state foo_map }
           writer.with_scope(:qux) { writer.write_state qux_map.off_route }
-          expect(writer.to_s).to eq("/baz?qux[kiln]=corge")
+          expect(writer.to_s).to eq("/baz?qux%5Bkiln%5D=corge")
         end
       end
 

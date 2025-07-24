@@ -10,7 +10,7 @@ module Lucid
 
       it "builds the component" do
         component_class = Class.new(Lucid::Component::Base) {}
-        config          = { component_class: component_class, }
+        config          = { component_class: component_class }
         container       = Container.new(config, {})
         component       = container[:component]
         expect(component).to be_a(component_class)

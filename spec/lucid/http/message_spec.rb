@@ -38,7 +38,7 @@ module Lucid
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
               HTTP::Message.with_state(cycle.send(:state_for_messages)) do
-                expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state[baz]=qux")
+                expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state%5Bbaz%5D=qux")
               end
             end
           end
@@ -74,7 +74,7 @@ module Lucid
               cycle   = build_cycle(request)
               HTTP::Message.with_url_base("/base/url") do
                 HTTP::Message.with_state(cycle.send(:state_for_messages)) do
-                  expect(message_class.url(foo: "bar")).to eq("/base/url/@/test/message?foo=bar&state[baz]=qux")
+                  expect(message_class.url(foo: "bar")).to eq("/base/url/@/test/message?foo=bar&state%5Bbaz%5D=qux")
                 end
               end
             end
@@ -106,7 +106,7 @@ module Lucid
               request = RequestAdaptor.new(Rack::Request.new(env))
               cycle   = build_cycle(request)
               HTTP::Message.with_state(cycle.send(:state_for_messages)) do
-                expect(message_class.url(foo: "bar")).to eq("/@/test/message?state[baz]=qux")
+                expect(message_class.url(foo: "bar")).to eq("/@/test/message?state%5Bbaz%5D=qux")
               end
             end
           end

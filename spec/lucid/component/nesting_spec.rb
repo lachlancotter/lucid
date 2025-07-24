@@ -18,41 +18,42 @@ module Lucid
             end
           end
           state      = { foo: { bar: "baz" }, val: "a" }
-          view       = view_class.new(state, prop: "prop")
+          view       = view_class.new(state)
 
           expect(view.foo).to be_a(class_a)
           expect(view.foo.state.to_h).to eq(bar: "baz")
         end
 
-        it "configures the nested instance" do
+        it "configures the nested component" do
           foo_class = Class.new(Component::Base) do
             prop :bar, Types.integer
           end
           view      = Class.new(Component::Base) do
             param :val
             nest(:foo) { foo_class[bar: 1] }
-          end.new({ foo: { bar: 0 }, val: "a" })
-          
+          end.new({ val: "a" })
+
+          expect(view.foo.parent).to eq(view)
           expect(view.foo.path).to eq("/foo")
           expect(view.foo.props.app_root).to eq("/")
           expect(view.foo.props.parent).to eq(view)
-          expect(view.foo.props.bar).to eq(1)
+          expect(view.foo.bar).to eq(1)
         end
 
-        it "propagates updates to the nested instance" do
+        it "propagates updates to the nested component" do
           foo_class   = Class.new(Component::Base) { prop :bar }
           base_class  = Class.new(Component::Base) do
             param :val
-            nest(:foo) { |val| foo_class[bar: val] }
+            nest(:foo) { foo_class[bar: :val] }
           end
           view        = base_class.new({ val: "1" })
           nested_view = view.foo
           view.update(val: "2")
-          expect(view.foo.props.bar).to eq("2")
+          expect(view.foo.bar).to eq("2")
           expect(nested_view).to eq(view.foo)
         end
 
-        it "replaces the nested instance with a new class" do
+        it "replaces the nested component on param change" do
           foo_class   = Class.new(Component::Base) { element {} }
           bar_class   = Class.new(Component::Base) { element {} }
           base_class  = Class.new(Component::Base) do
@@ -68,40 +69,29 @@ module Lucid
           view        = base_class.new({ val: "a" }, ignore: "this")
           nested_view = view.foo
           view.update(val: "b")
+          expect(nested_view).to be_a(foo_class)
           expect(view.foo).to be_a(bar_class)
           expect(view.foo).not_to eq(nested_view)
         end
 
-        it "iterates over a collection with a block" do
-          foo_class = Class.new(Component::Base) { prop :bar }
-          view      = Class.new(Component::Base) do
-            param :val
-            let(:bar) { %w[english spanish] }
-            nest(:foo, over: :bar) { |e| foo_class[bar: e] }
-          end.new({ val: "a" })
-
-          expect(view.foo[0]).to be_a(foo_class)
-          expect(view.foo[0].props.bar).to eq("english")
-        end
-
         it "iterates over a collection with a key" do
-          foo_class = Class.new(Component::Base) { prop :bar }
+          foo_class = Class.new(Component::Base) { prop :lang }
           view      = Class.new(Component::Base) do
             param :val
-            let(:bar) { %w[english spanish] }
-            nest(:foo, over: :bar) { |e| foo_class[bar: e] }
+            let(:items) { %w[english spanish] }
+            nest(:foo, over: :items) { foo_class[lang: [:items]] }
           end.new({ val: "a" })
 
           expect(view.foo[0]).to be_a(foo_class)
-          expect(view.foo[0].props.bar).to eq("english")
+          expect(view.foo[0].lang).to eq("english")
         end
       end
 
       context "named constructor" do
         class NamedNestedComponent < Component::Base
           prop :var, Types.string.default("default".freeze)
-          prop :index, Types.integer
-          key { props.index }
+          # prop :index, Types.integer
+          key { props.collection_index }
           element { |var| text "Nested #{var}" }
         end
 
@@ -115,19 +105,19 @@ module Lucid
         it "nests a child component over an array" do
           view = Class.new(Component::Base) do
             let(:bar) { %w[english spanish] }
-            nest(:foo, over: :bar) { |e, i| NamedNestedComponent[var: e, index: i] }
+            nest(:foo, over: :bar) { NamedNestedComponent[var: [:bar]] }
           end.new({}, app_root: "/app/root")
 
           expect(view.foo[0]).to be_a(Component::Base)
-          expect(view.foo[0].props.var).to eq("english")
-          expect(view.foo[0].props.index).to eq(0)
+          expect(view.foo[0].var).to eq("english")
+          expect(view.foo[0].props.collection_index).to eq(0)
           expect(view.foo[0].render_full).to match /Nested english/
           expect(view.foo[0].props.app_root).to eq("/app/root")
           expect(view.foo[0].path.to_s).to eq("/foo-0")
 
           expect(view.foo[1]).to be_a(Component::Base)
-          expect(view.foo[1].props.var).to eq("spanish")
-          expect(view.foo[1].props.index).to eq(1)
+          expect(view.foo[1].var).to eq("spanish")
+          expect(view.foo[1].props.collection_index).to eq(1)
           expect(view.foo[1].render_full).to match /Nested spanish/
           expect(view.foo[1].props.app_root).to eq("/app/root")
           expect(view.foo[1].path).to eq("/foo-1")
