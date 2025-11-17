@@ -72,7 +72,8 @@ module Lucid
         case obj
         when Hash
           obj.each_with_object({}) do |(k, v), result|
-            result[k.to_sym] = deep_symbolize_keys(v)
+            key         = k.is_a?(Integer) ? k : k.to_sym
+            result[key] = deep_symbolize_keys(v)
           end
         when Array
           obj.map { |e| deep_symbolize_keys(e) }

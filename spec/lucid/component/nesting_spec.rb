@@ -40,7 +40,7 @@ module Lucid
           expect(view.foo.bar).to eq(1)
         end
 
-        it "propagates updates to the nested component" do
+        it "propagates param updates to the nested component" do
           foo_class   = Class.new(Component::Base) { prop :bar }
           base_class  = Class.new(Component::Base) do
             param :val
@@ -50,6 +50,20 @@ module Lucid
           nested_view = view.foo
           view.update(val: "2")
           expect(view.foo.bar).to eq("2")
+          expect(nested_view).to eq(view.foo)
+        end
+
+        it "propagates let updates to the nested component" do
+          foo_class   = Class.new(Component::Base) { prop :bar, Types.integer }
+          base_class  = Class.new(Component::Base) do
+            let(:val) { @transient || 1 }
+            nest(:foo) { foo_class[bar: :val] }
+          end
+          view        = base_class.new({})
+          nested_view = view.foo
+          view.instance_variable_set(:@transient, 2)
+          view.invalidate :val
+          expect(view.foo.bar).to eq(2)
           expect(nested_view).to eq(view.foo)
         end
 
