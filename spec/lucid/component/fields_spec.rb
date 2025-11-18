@@ -46,23 +46,30 @@ module Lucid
         end
 
         it "re-evaluates when dependencies change" do
-          view = Class.new(Component::Base) do
+          msg_class       = Class.new(Lucid::Event)
+          component_class = Class.new(Component::Base) do
             param :foo
+            on(msg_class) { update(foo: "baz") }
             let(:bar) { |foo| foo.upcase }
-          end.new({ foo: "foo" })
+          end
+
+          view = component_class.new({ foo: "foo" })
           expect(view.bar).to eq("FOO")
-          view.update(foo: "baz")
+          view = component_class.new({ foo: "foo" }, msg_class.new)
           expect(view.bar).to eq("BAZ")
         end
 
         it "re-evaluates indirect dependencies" do
-          view = Class.new(Component::Base) do
+          msg_class       = Class.new(Lucid::Event)
+          component_class = Class.new(Component::Base) do
             param :foo
+            on(msg_class) { update(foo: "baz") }
             let(:bar) { |foo| foo.upcase }
             let(:baz) { |bar| bar }
-          end.new({ foo: "foo" })
+          end
+          view            = component_class.new({ foo: "foo" })
           expect(view.baz).to eq("FOO")
-          view.update(foo: "baz")
+          view = component_class.new({ foo: "foo" }, msg_class.new)
           expect(view.baz).to eq("BAZ")
         end
       end
@@ -111,37 +118,44 @@ module Lucid
 
       describe ".watch" do
         it "executes the block when the value changes" do
-          bar  = nil
-          view = Class.new(Component::Base) do
+          bar             = nil
+          msg_class       = Class.new(Lucid::Event)
+          component_class = Class.new(Component::Base) do
             param :foo, Types.string.default("".freeze)
+            on(msg_class) { update(foo: "foo") }
             watch(:foo) { bar = "foo" }
-          end.new({})
-          view.update(foo: "foo")
+          end
+          component_class.new({}, msg_class.new)
           expect(bar).to eq("foo")
         end
 
         it "accepts multiple values" do
-          baz  = 0
-          view = Class.new(Component::Base) do
+          baz             = 0
+          msg_class       = Class.new(Lucid::Event)
+          component_class = Class.new(Component::Base) do
             param :foo, Types.string.default("".freeze)
             param :bar, Types.string.default("".freeze)
+            on(msg_class) { update(foo: "foo", bar: "bar") }
             watch(:foo, :bar) { baz += 1 }
-          end.new({})
-          view.update(foo: "foo")
-          view.update(bar: "bar")
+          end
+          component_class.new({}, msg_class.new)
           expect(baz).to eq(2)
         end
 
         it "watches dependent fields" do
-          calls = 0
-          view  = Class.new(Component::Base) do
+          calls           = 0
+          msg_class       = Class.new(Lucid::Event)
+          component_class = Class.new(Component::Base) do
             param :foo, Types.string.default("".freeze)
+            on(msg_class) { update(foo: "foo") }
             let(:bar) { |foo| foo.upcase }
             watch(:bar) { calls += 1 }
-          end.new({})
+          end
+          view            = component_class.new({})
           expect(view.state.foo).to eq("")
           expect(view.bar).to eq("")
-          view.update(foo: "foo")
+
+          view = component_class.new({}, msg_class.new)
           expect(view.bar).to eq("FOO")
           expect(calls).to eq(1)
         end

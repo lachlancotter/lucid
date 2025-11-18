@@ -14,8 +14,13 @@ module Lucid
       @context   = context
       @value     = nil
       @evaluated = false
+      @changed   = false
       @exec      = exec ? Types.instance(Execution)[exec] : Execution.new(block)
       watch_dependencies
+    end
+
+    def changed?
+      @changed
     end
 
     def value
@@ -28,6 +33,7 @@ module Lucid
 
     def invalidate
       @evaluated = false
+      @changed   = true
       notify
     end
 

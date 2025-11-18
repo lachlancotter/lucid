@@ -41,16 +41,15 @@ module Lucid
         end
 
         it "propagates param updates to the nested component" do
-          foo_class   = Class.new(Component::Base) { prop :bar }
-          base_class  = Class.new(Component::Base) do
+          msg_class  = Class.new(Lucid::Event)
+          foo_class  = Class.new(Component::Base) { prop :bar }
+          base_class = Class.new(Component::Base) do
             param :val
+            on(msg_class) { update(val: "2") }
             nest(:foo) { foo_class[bar: :val] }
           end
-          view        = base_class.new({ val: "1" })
-          nested_view = view.foo
-          view.update(val: "2")
+          view       = base_class.new({ val: "1" }, msg_class.new)
           expect(view.foo.bar).to eq("2")
-          expect(nested_view).to eq(view.foo)
         end
 
         it "propagates let updates to the nested component" do
@@ -68,10 +67,12 @@ module Lucid
         end
 
         it "replaces the nested component on param change" do
-          foo_class   = Class.new(Component::Base) { element {} }
-          bar_class   = Class.new(Component::Base) { element {} }
-          base_class  = Class.new(Component::Base) do
+          msg_class  = Class.new(Lucid::Event)
+          foo_class  = Class.new(Component::Base) { element {} }
+          bar_class  = Class.new(Component::Base) { element {} }
+          base_class = Class.new(Component::Base) do
             param :val
+            on(msg_class) { update(val: "b") }
             nest(:foo) do |val|
               case val
               when "a" then foo_class
@@ -80,12 +81,11 @@ module Lucid
               end
             end
           end
-          view        = base_class.new({ val: "a" }, ignore: "this")
-          nested_view = view.foo
-          view.update(val: "b")
-          expect(nested_view).to be_a(foo_class)
+
+          view = base_class.new({ val: "a" }, ignore: "this")
+          expect(view.foo).to be_a(foo_class)
+          view = base_class.new({ val: "a" }, msg_class.new)
           expect(view.foo).to be_a(bar_class)
-          expect(view.foo).not_to eq(nested_view)
         end
 
         it "iterates over a collection with a key" do

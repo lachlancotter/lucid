@@ -300,44 +300,48 @@ module Lucid
         end
 
         it "is true when template state dependencies change" do
-          view = Class.new(Component::Base) do
+          msg_type = Class.new(Lucid::Event)
+          view     = Class.new(Component::Base) do
             param :foo
+            on(msg_type) { update(foo: "bar") }
             element { |foo| h1 { text foo } }
-          end.new({ foo: "foo" })
-          view.update(foo: "bar")
+          end.new({ foo: "foo" }, msg_type.new)
           expect(view.changes.any?).to be(true)
         end
 
         it "is true when template let dependencies change" do
-          view = Class.new(Component::Base) do
+          msg_type = Class.new(Lucid::Event)
+          view     = Class.new(Component::Base) do
             param :foo
+            on(msg_type) { update(foo: "bar") }
             let(:bar) { |foo| foo.upcase }
             element { |bar| h1 { text bar } }
-          end.new({ foo: "foo" })
-          view.update(foo: "bar")
+          end.new({ foo: "foo" }, msg_type.new)
           expect(view.changes.any?).to be(true)
         end
 
         it "is true when template use dependencies change" do
-          view = Class.new(Component::Base) do
+          msg_type = Class.new(Lucid::Event)
+          view     = Class.new(Component::Base) do
             param :foo
+            on(msg_type) { update(foo: "bar") }
             nest :bar do
               Class.new(Component::Base) {
                 use :foo
                 element { |foo| h1 { text foo } }
               }
             end
-          end.new({ foo: "foo" })
-          view.update(foo: "bar")
+          end.new({ foo: "foo" }, msg_type.new)
           expect(view.bar.changes.any?).to be(true)
         end
 
         it "is false when template dependencies are unchanged" do
-          view = Class.new(Component::Base) do
+          msg_type = Class.new(Lucid::Event)
+          view     = Class.new(Component::Base) do
             param :foo
+            on(msg_type) { update(foo: "bar") }
             element { h1 { "Test" } }
-          end.new({ foo: "foo" })
-          view.update(foo: "bar")
+          end.new({ foo: "foo" }, msg_type.new)
           expect(view.delta.any?).to be(false)
         end
       end
@@ -360,36 +364,40 @@ module Lucid
 
         context "when changed" do
           it "contains the root component render" do
-            view = Class.new(Component::Base) do
+            msg_type = Class.new(Lucid::Event)
+            view     = Class.new(Component::Base) do
               param :foo
+              on(msg_type) { update(foo: "bar") }
               element { |foo| h1 { text foo } }
-            end.new({})
-            view.update(foo: "bar")
+            end.new({}, msg_type.new)
             expect(view.changes.map(&:component)).to eq([view])
           end
         end
 
         context "when child changed" do
           it "contains the child component render" do
-            view = Class.new(Component::Base) do
+            msg_type = Class.new(Lucid::Event)
+            view     = Class.new(Component::Base) do
               nest :bar do
                 Class.new(Component::Base) {
                   param :baz
+                  on(msg_type) { update(baz: "qux") }
                   element { |baz| h1 { text baz } }
                 }
               end
-            end.new({})
-            view.bar.update(baz: "qux")
+            end.new({}, msg_type.new)
             expect(view.changes.map(&:component)).to eq([view.bar])
           end
         end
 
         context "when multiple children changed" do
           it "contains multiple child branches" do
-            view = Class.new(Component::Base) do
+            msg_type = Class.new(Lucid::Event)
+            view     = Class.new(Component::Base) do
               nest :a do
                 Class.new(Component::Base) {
                   param :foo
+                  on(msg_type) { update(foo: "baz") }
                   element { |foo| h1 { text foo } }
                 }
               end
@@ -397,6 +405,7 @@ module Lucid
               nest :b do
                 Class.new(Component::Base) {
                   param :bar
+                  on(msg_type) { update(bar: "qux") }
                   element { |bar| h1 { text bar } }
                 }
               end
@@ -406,9 +415,7 @@ module Lucid
                 subview :a
                 subview :b
               end
-            end.new({})
-            view.a.update(foo: "baz")
-            view.b.update(bar: "qux")
+            end.new({}, msg_type.new)
             expect(view.changes.map(&:component)).not_to include(view)
             expect(view.changes.map(&:component)).to include(view.a)
             expect(view.changes.map(&:component)).to include(view.b)

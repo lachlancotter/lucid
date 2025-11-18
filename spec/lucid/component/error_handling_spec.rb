@@ -69,8 +69,10 @@ module Lucid
 
               element { text "Granted" }
             end
+            msg_class = Class.new(Event)
             parent_component_class    = Class.new(Component::Base) do
               param :permit, Types.bool.default(true)
+              on(msg_class) { update(permit: false) }
               nest(:child) do |permit|
                 case permit
                 when TrueClass then permitted_component_class
@@ -79,10 +81,8 @@ module Lucid
               end
               element { subview(:child) }
             end
-            parent_component          = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Granted/
-            parent_component.update(permit: false)
-            expect(parent_component.render_full).to match /Permission Denied/
+            expect(parent_component_class.new({}).render_full).to match /Granted/
+            expect(parent_component_class.new({}, msg_class.new).render_full).to match /Permission Denied/
           end
         end
       end

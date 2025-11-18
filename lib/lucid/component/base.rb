@@ -57,6 +57,7 @@ module Lucid
         run_callbacks(:after_initialize)
         apply_message(message)
         run_callbacks(:after_application)
+        # build_children
         run_callbacks(:after_build)
       end
 
@@ -74,7 +75,7 @@ module Lucid
       # Update a value in the state, and trigger invalidation of
       # dependent fields.
       #
-      def update (data)
+      protected def update (data)
         @state = @state.new(data)
         data.keys.each { |key| field(key).invalidate if field?(key) }
       rescue Dry::Struct::Error => e

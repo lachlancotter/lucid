@@ -59,7 +59,8 @@ module Lucid
 
         def call (component, link)
           data = delta(link)
-          component.update(data) if data.any?
+          # component.update(data) if data.any?
+          component.instance_exec { update(data) } if data.any?
           component.instance_exec(link, &@block) if @block
         end
 

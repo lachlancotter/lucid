@@ -29,6 +29,9 @@ module Lucid
             else raise ArgumentError, "Invalid field source: #{from}"
             end
           end
+          after_application do
+            fields[name].notify if fields[name].changed?
+          end
           define_method(name) { fields[name].value }
         end
       end

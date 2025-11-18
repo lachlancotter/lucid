@@ -29,14 +29,15 @@ module Lucid
 
     it "invalidates signals via state" do
       called          = false
+      msg_class       = Class.new(Lucid::Event)
       component_class = Class.new(Component::Base) do
         param :foo, Types.string
+        on(msg_class) { update(foo: "bar") }
         let(:bar) { |foo| called = true; foo.upcase }
         element { |bar| text bar }
       end
-      component       = component_class.new({ foo: "foo" })
-      component.update(foo: "bar")
-      expect(called).to be false
+      component       = component_class.new({ foo: "foo" }, msg_class.new)
+      expect(called).to be(false)
       expect(component.render_full).to match /BAR/
     end
   end
