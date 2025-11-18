@@ -54,10 +54,12 @@ module Lucid
       def initialize (state, message = nil, **props)
         initialize_state(state)
         initialize_props(props)
-        run_callbacks(:after_initialize)
+        run_callbacks(:after_initialize) # Setup fields/props
+        # If any changed fields were inherited from parent, trigger dependencies.
+        fields.values.each { |f| f.notify if f.changed? }
         apply_message(message)
-        run_callbacks(:after_application)
-        # build_children
+        run_callbacks(:after_application) # includes building children
+        # maybe build children should be explicit here
         run_callbacks(:after_build)
       end
 

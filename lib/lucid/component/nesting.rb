@@ -104,6 +104,7 @@ module Lucid
             when NilClass then ComponentNest.new(name, self, &block)
             else raise ArgumentError, "Invalid enumerable"
             end
+            # Refactor so that @message is yielded to the callback block.
             nests[name].install(nested_state(name), @message)
           end
           define_method(name) { nests[name].content }

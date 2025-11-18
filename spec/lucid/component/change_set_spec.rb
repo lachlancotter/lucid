@@ -34,8 +34,6 @@ module Lucid
           before do
             view.item_views.append("One")
             view.item_views.append("Two")
-            # view.delta.append(view.item_views.build("One"))
-            # view.delta.append(view.item_views.build("Two"))
           end
 
           describe "first change" do

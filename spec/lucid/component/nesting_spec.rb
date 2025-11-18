@@ -66,6 +66,37 @@ module Lucid
           expect(nested_view).to eq(view.foo)
         end
 
+        it "triggers re-renders of dependent components" do
+          msg_class              = Class.new(Link)
+          nested_component_class = Class.new(Component::Base) do
+            prop :bar
+            element { |bar| text "Nested bar is #{bar}" }
+          end
+          base_component_class   = Class.new(Component::Base) do
+            param :foo, Types.string
+            to(msg_class) { update(foo: "b") }
+            nest(:child) { nested_component_class[bar: :foo] }
+          end
+
+          view = base_component_class.new({ foo: "a" }, msg_class.new)
+          expect(view.child.delta.replace?).to be(true)
+        end
+
+        it "does not trigger unnecessary re-rendering" do
+          msg_class              = Class.new(Link)
+          nested_component_class = Class.new(Component::Base) do
+            element { text "Not Effected" }
+          end
+          base_component_class   = Class.new(Component::Base) do
+            param :foo, Types.string
+            to(msg_class) { update(foo: "b") }
+            nest(:child) { nested_component_class }
+          end
+
+          view = base_component_class.new({ foo: "a" }, msg_class.new)
+          expect(view.child.delta.replace?).to be(false)
+        end
+
         it "replaces the nested component on param change" do
           msg_class  = Class.new(Lucid::Event)
           foo_class  = Class.new(Component::Base) { element {} }
