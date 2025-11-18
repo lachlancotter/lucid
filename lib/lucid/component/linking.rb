@@ -14,10 +14,10 @@ module Lucid
       # state, and return the transformed state. Used to resolve the
       # href for global links.
       #
-      def visit (link)
+      private def visit (link)
         Types.instance(Link)[link]
         visitors[link.key].call(self, link) if visitors.key?(link.key)
-        each_subcomponent { |sub| sub.visit(link) }
+        # each_subcomponent { |sub| sub.visit(link) }
       end
 
       def visitors

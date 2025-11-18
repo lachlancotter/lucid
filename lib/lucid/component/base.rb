@@ -51,11 +51,23 @@ module Lucid
       #
       static :collection_index, Types.integer.optional.default(nil)
 
-      def initialize (state, **props)
+      def initialize (state, message = nil, **props)
         initialize_state(state)
         initialize_props(props)
         run_callbacks(:after_initialize)
+        apply_message(message)
+        run_callbacks(:after_application)
         run_callbacks(:after_build)
+      end
+
+      def apply_message (message)
+        @message = message
+        case message
+        when Event then apply(message)
+        when Link then visit(message)
+        when NilClass then nil
+        else raise ArgumentError, "Unsupported message type: #{message.class}"
+        end
       end
 
       #

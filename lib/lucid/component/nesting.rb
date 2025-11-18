@@ -97,14 +97,14 @@ module Lucid
         # block - Function returning a PropsBinding instance for building the component.
         # 
         def nest (name, over: nil, &block)
-          after_initialize do
+          after_application do
             nests[name] = case over
             when Symbol then CollectionNest.new(name, self, over, &block)
             when Enumerable then CollectionNest.new(name, self, over, &block)
             when NilClass then ComponentNest.new(name, self, &block)
             else raise ArgumentError, "Invalid enumerable"
             end
-            nests[name].install(nested_state(name))
+            nests[name].install(nested_state(name), @message)
           end
           define_method(name) { nests[name].content }
         end
@@ -141,8 +141,9 @@ module Lucid
           @signal_map      = SignalMap.new(*list, **map)
         end
 
-        def call (state, parent, name, collection_index: nil)
-          @component_class.new(state, **build_props(parent, name, collection_index))
+        def call (state, message, parent, name, collection_index: nil)
+          Types.instance(Message).optional[message]
+          @component_class.new(state, message, **build_props(parent, name, collection_index))
         end
 
         # def update (component)
@@ -368,9 +369,9 @@ module Lucid
           false
         end
 
-        def install (state)
+        def install (state, message)
           props_binding.tap do |binding|
-            @component = binding.call(state, @parent, @name)
+            @component = binding.call(state, message, @parent, @name)
           end
         rescue StandardError => error
           App::Logger.exception(error)
@@ -381,7 +382,7 @@ module Lucid
           props_binding.tap do |binding|
             unless @component.is_a?(binding.component_class)
               # Should we propagate the state to the new component here; or reset it?
-              @component = binding.call(@component.state.to_h, @parent, @name)
+              @component = binding.call(@component.state.to_h, nil, @parent, @name)
               @component.delta.replace
             end
           end
@@ -456,7 +457,7 @@ module Lucid
               begin
                 props_binding = nest.props_binding(element, index, **kwargs)
                 # nested_state() isn't implemented for collections.
-                props_binding.call({}, parent, name, collection_index: index)
+                props_binding.call({}, nil, parent, name, collection_index: index)
               rescue StandardError => error
                 App::Logger.exception(error)
                 ErrorPage.new({}, error: error, collection_key: index)
@@ -465,7 +466,7 @@ module Lucid
           end
         end
 
-        def install (state)
+        def install (state, message)
           # nested_state() isn't implemented for collections. so ignore the
           # state for now.
           @collection = Collection.new(self, @field.value)
@@ -480,7 +481,7 @@ module Lucid
           # Look up any other expected keyword params in the parent component.
           params = Field::Execution.new(@map_f).keywords
           kwargs = params.map { |k| [k, @parent.field(k).value] }.to_h
-          props_binding(element, index, **kwargs).call({}, @parent, @name, collection_index: index)
+          props_binding(element, index, **kwargs).call({}, nil, @parent, @name, collection_index: index)
         end
 
         def props_binding (element, index, **kwargs)

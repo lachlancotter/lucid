@@ -66,6 +66,7 @@ module Lucid
               def permitted?
                 true
               end
+
               element { text "Granted" }
             end
             parent_component_class    = Class.new(Component::Base) do
@@ -143,8 +144,7 @@ module Lucid
               element { h1 { text "Success" } }
               to(message_class) { update(foo: "invalid") }
             end
-            component       = component_class.new({})
-            expect { component.visit(message_class.new) }.to raise_error(StateError)
+            expect { component_class.new({}, message_class.new) }.to raise_error(StateError)
           end
         end
 
@@ -160,8 +160,8 @@ module Lucid
               nest(:child) { child_component_class }
               element { subview(:child) }
             end
-            component              = parent_component_class.new({})
-            component.visit(message_class.new)
+            component              = parent_component_class.new({}, message_class.new)
+            # component.visit(message_class.new)
             expect(component.render_full).to match /Invalid State/
           end
         end
@@ -176,8 +176,7 @@ module Lucid
               element { h1 { text "Success" } }
               on(message_class) { update(foo: "invalid") }
             end
-            component       = component_class.new({})
-            expect { component.apply(message_class.new) }.to raise_error(StateError)
+            expect { component_class.new({}, message_class.new) }.to raise_error(StateError)
           end
         end
 
@@ -193,8 +192,7 @@ module Lucid
               nest(:child) { child_component_class }
               element { subview(:child) }
             end
-            component              = parent_component_class.new({})
-            component.apply(message_class.new)
+            component              = parent_component_class.new({}, message_class.new)
             expect(component.render_full).to match /Invalid State/
           end
         end

@@ -34,23 +34,27 @@ module Lucid
         HTTP::ResponseAdaptor.new(Rack::Response.new(@env), url_base: app_root)
       end
 
-      provide(:session) do
-        session_class.new(@env['rack.session'])
-      end
+      provide(:session) { session_class.new(@env['rack.session']) }
 
-      provide(:message_bus) do
-        MessageBus.new(component, handler_class, self)
-      end
+      provide(:message_bus) { MessageBus.new(handler_class, self) }
 
-      provide(:component) do
-        component_class.new(state,
-           app_root:  app_root,
-           container: self,
-           session:   session
-        )
-      end
+      # provide(:component) do
+      #   component_class.new(
+      #      state,
+      #      message,
+      #      app_root:  app_root,
+      #      container: self,
+      #      session:   session
+      #   )
+      # end
+      
+      # provide(:message) do
+      #   message = nil
+      #   request.yield_link { |link| message = link } if request&.has_message?
+      #   message || message_bus.published.first
+      # end
 
-      provide(:state) { request.state_reader }
+      # provide(:state) { request.state_reader }
     end
   end
 end

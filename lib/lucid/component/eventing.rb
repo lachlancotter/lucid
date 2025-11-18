@@ -8,9 +8,9 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      def apply (event)
+      private def apply (event)
         self.class.event_handlers.call(event, self)
-        each_subcomponent { |sub| sub.apply(event) }
+        # each_subcomponent { |sub| sub.apply(event) }
       end
 
       private

@@ -13,38 +13,41 @@ module Lucid
       end
 
       def state
-        run_with_context do
-          @response.send_state(component)
+        view = component(nil)
+        run_with_context(view) do
+          @response.send_state(view)
         end
       end
 
       def link
-        run_with_context do
-          @request.yield_link do |link|
+        @request.yield_link do |link|
+          view = component(link)
+          puts view.deep_state
+          run_with_context(view) do
             Logger.link(link)
-            component.visit(link)
-            @response.send_delta(component, htmx: @request.htmx?)
+            @response.send_delta(view, htmx: @request.htmx?)
           end
         end
       end
 
       def command
-        run_with_context do
-          component # Build the tree before dispatching the command.
-          @request.yield_command do |command|
-            Logger.command(command)
-            message_bus.dispatch(command)
-          end
-          @request.yield_invalid do |params, errors|
-            Logger.error("Invalid command", params)
-            message_bus.publish(
-               MessageInvalidated.new(
-                  params: params,
-                  errors: errors
-               )
-            )
-          end
-          @response.send_delta(component, htmx: @request.htmx?)
+        @request.yield_command do |command|
+          Logger.command(command)
+          message_bus.dispatch(command)
+        end
+        @request.yield_invalid do |params, errors|
+          Logger.error("Invalid command", params)
+          message_bus.publish(
+             MessageInvalidated.new(
+                params: params,
+                errors: errors
+             )
+          )
+        end
+        message = message_bus.published.first
+        view    = component(message)
+        run_with_context(view) do
+          @response.send_delta(view, htmx: @request.htmx?)
         end
       end
 
@@ -54,18 +57,24 @@ module Lucid
         @request.htmx?
       end
 
-      def component
-        @container[:component]
+      def component (message)
+        @container.component_class.new(
+           @request.state_reader,
+           message,
+           app_root:  @container[:app_root],
+           container: @container,
+           session:   @container[:session]
+        )
       end
 
       def message_bus
         @container[:message_bus]
       end
 
-      def run_with_context (&block)
+      def run_with_context (component, &block)
         Logger.cycle(self) do
           HTTP::Message.with_url_base(@container[:app_root]) do
-            HTTP::Message.with_state(state_for_messages, &block)
+            HTTP::Message.with_state(state_for_messages(component), &block)
           end
         end
       rescue Dry::Types::CoercionError => e
@@ -78,7 +87,7 @@ module Lucid
       # If HTMX is enabled for the request, the state is omitted as we will 
       # rely on the HX-Current-URL header to pass the state instead.
       #
-      def state_for_messages
+      def state_for_messages (component)
         htmx? ? {} : component.deep_state
       end
     end

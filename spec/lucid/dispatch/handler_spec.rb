@@ -7,7 +7,7 @@ module Lucid
         handler_class = Class.new(Handler) { perform(message_class) { raise StandardError } }
         block         = handler_class.handlers[message_class]
 
-        message_bus = MessageBus.new(nil, nil, nil)
+        message_bus = MessageBus.new(nil, nil)
         container   = { message_bus: message_bus, session: nil }
         handler     = handler_class.new(message_class.new, container, &block)
         expect(message_bus).to receive(:publish) do |event|
@@ -57,7 +57,7 @@ module Lucid
             end
           end
           handler_class = Class.new(Handler) { adopt(policy_class) }
-          message_bus = MessageBus.new(nil, nil, nil)
+          message_bus = MessageBus.new(nil, nil)
           container   = { message_bus: message_bus, session: nil }
           handler       = handler_class.new(message_class.new, container) { called = true }
           handler.call

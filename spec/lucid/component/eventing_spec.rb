@@ -10,9 +10,7 @@ module Lucid
               result = self
             end
           end
-          component       = component_class.new({})
-          event           = event_class.new
-          component.apply(event)
+          component       = component_class.new({}, event_class.new)
           expect(result).to be(component)
         end
       end
@@ -27,9 +25,7 @@ module Lucid
               result = self
             end
           end
-          component        = component_class.new({})
-          event            = event_class.new
-          component.apply(event)
+          component        = component_class.new({}, event_class.new)
           expect(result).to be(component)
         end
       end
@@ -45,9 +41,8 @@ module Lucid
                 result = event
               end
             end
-            component       = component_class.new({})
             event           = event_class.new(foo: "bar")
-            component.apply(event)
+            component       = component_class.new({}, event)
             expect(result).to be(event)
           end
 
@@ -60,9 +55,8 @@ module Lucid
                 result = event
               end
             end
-            component       = component_class.new({})
             event           = event_class.new(foo: "baz")
-            component.apply(event)
+            component       = component_class.new({}, event)
             expect(result).to be_nil
           end
         end
@@ -76,9 +70,8 @@ module Lucid
                 result = event
               end
             end
-            component       = component_class.new({})
             event           = event_class.new(foo: "bar")
-            component.apply(event)
+            component       = component_class.new({}, event)
             expect(result).to be(event)
           end
 
@@ -90,9 +83,8 @@ module Lucid
                 result = event
               end
             end
-            component       = component_class.new({})
             event           = event_class.new(foo: "baz")
-            component.apply(event)
+            component       = component_class.new({}, event)
             expect(result).to be_nil
           end
         end
