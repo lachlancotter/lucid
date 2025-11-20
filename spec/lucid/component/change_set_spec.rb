@@ -4,38 +4,44 @@ module Lucid
   module Component
     describe ChangeSet::Branches do
       describe "#to_s" do
-        let(:item_class) do
-          Class.new(Component::Base) do
-            prop :foo, Types.string
-            key { foo }
-            element { |foo| p { text "Item #{foo}" } }
-          end
-        end
         let(:base_class) do
           Class.new(Component::Base) do
-            static :item_class, Types.Instance(Class)
+            item_class = Class.new(Component::Base) do
+              prop :foo, Types.string
+              key { foo }
+              element { |foo| p { text "Item #{foo}" } }
+            end
             nest(:a) { Class.new(Component::Base) { element { h1 "Component A" } } }
             nest(:b) { Class.new(Component::Base) { element { h1 "Component B" } } }
-            nest(:item_views, over: []) { |i| props.item_class[foo: i] }
+            nest(:item_views, over: []) { |i| item_class[foo: i] }
           end
         end
-        let(:view) { base_class.new({}, item_class: item_class) }
+        let(:view) { base_class.new({}) }
 
         context "one change" do
           it "omits the OOB attribute" do
-            view.a.delta.replace
-            expect(view.a.changes.to_s).to match(/<h1>Component A<\/h1>/)
-            expect(view.a.changes.to_s).to match(/id="a"/)
-            expect(view.a.changes.to_s).not_to match(/hx-swap-oob/)
+            msg_class = Class.new(Lucid::Event)
+            view      = Class.new(Component::Base) do
+              element { h1 { text "Hello, World" } }
+              on(msg_class) { replace }
+            end.new({}, msg_class.new)
+            expect(view.changes.to_s).to match(/<h1>Hello, World<\/h1>/)
+            expect(view.changes.to_s).not_to match(/hx-swap-oob/)
           end
         end
 
         context "multiple changes" do
-          before do
-            view.item_views.append("One")
-            view.item_views.append("Two")
+          let(:view) do
+            msg_class = Class.new(Lucid::Event)
+            Class.new(base_class) do
+              on(msg_class) do
+                append "One", to: :item_views
+                append "Two", to: :item_views
+                # item_views.append("One")
+                # item_views.append("Two")
+              end
+            end.new({}, msg_class.new)
           end
-
           describe "first change" do
             subject { view.changes[0] }
             it "omits the OOB attribute" do
@@ -56,9 +62,22 @@ module Lucid
         end
 
         context "nested changes" do
-          before do
-            view.a.delta.replace
-            view.b.delta.replace
+          let(:view) do
+            msg_class = Class.new(Lucid::Event)
+            Class.new(Component::Base) do
+              nest(:a) do
+                Class.new(Component::Base) do
+                  on(msg_class) { replace }
+                  element { h1 "Component A" }
+                end
+              end
+              nest(:b) do
+                Class.new(Component::Base) do
+                  on(msg_class) { replace }
+                  element { h1 "Component B" }
+                end
+              end
+            end.new({}, msg_class.new)
           end
 
           describe "first change" do
@@ -88,36 +107,46 @@ module Lucid
       # ===================================================== #
 
       describe "#replace" do
-        let(:view) do
-          nested_class = Class.new(Component::Base) do
-            element { p { text "Item" } }
-            key { "foo" }
-          end
-          Class.new(Component::Base) do
-            element { h1 { text "Hello, World" } }
-            let(:list) { [] }
-            nest(:subviews, over: :list) { nested_class }
-          end.new({})
-        end
-
         it "sets a replace action" do
-          view.delta.replace
+          msg_class = Class.new(Lucid::Event)
+          view      = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            on(msg_class) { replace }
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
         end
 
         it "replaces any other changes" do
-          view.subviews.append({})
-          view.delta.replace
+          msg_class    = Class.new(Lucid::Event)
+          nested_class = Class.new(Component::Base) do
+            element { p { text "Item" } }
+            key { "foo" }
+          end
+          view         = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            let(:list) { [] }
+            nest(:subviews, over: :list) { nested_class }
+            on(msg_class) do
+              append({}, to: :subviews)
+              replace
+            end
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
         end
 
         it "is idempotent" do
-          view.delta.replace
-          view.delta.replace
+          msg_class = Class.new(Lucid::Event)
+          view      = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            on(msg_class) do
+              replace
+              replace
+            end
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -129,23 +158,19 @@ module Lucid
       # ===================================================== #
 
       describe "#append" do
-        let(:view) do
-          Class.new(Component::Base) do
-            static :subview_class, Types.Instance(Class)
-            element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| props.subview_class[foo: i] }
-          end.new({}, subview_class: subview_class)
-        end
-        let(:subview_class) do
-          Class.new(Component::Base) do
+        it "adds an append action" do
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
             prop :foo, Types.integer
             element { |foo| p { text "Item #{foo}" } }
             key { foo }
           end
-        end
-
-        it "adds an append action" do
-          view.item_views.append(0)
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            on(msg_class) { append 0, to: :item_views }
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Append)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -153,8 +178,21 @@ module Lucid
         end
 
         it "is cumulative" do
-          view.item_views.append(0)
-          view.item_views.append(1)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :foo, Types.integer
+            element { |foo| p { text "Item #{foo}" } }
+            key { foo }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            on(msg_class) do
+              append 0, to: :item_views
+              append 1, to: :item_views
+            end
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(2)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -163,8 +201,21 @@ module Lucid
         end
 
         it "defers to a replace action" do
-          view.delta.replace
-          view.item_views.append(0)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :foo, Types.integer
+            element { |foo| p { text "Item #{foo}" } }
+            key { foo }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            on(msg_class) do
+              replace
+              append 0, to: :item_views
+            end
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -176,20 +227,19 @@ module Lucid
       # ===================================================== #
 
       describe "#prepend" do
-        let(:view) do
+        it "adds an prepend action" do
+          msg_class     = Class.new(Lucid::Event)
           subview_class = Class.new(Component::Base) do
             prop :foo, Types.integer
-            key { foo }
             element { |foo| p { text "Item #{foo}" } }
+            key { foo }
           end
-          Class.new(Component::Base) do
+          view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
             nest(:item_views, over: []) { |i| subview_class[foo: i] }
-          end.new({})
-        end
-
-        it "adds an prepend action" do
-          view.item_views.prepend(0)
+            on(msg_class) { prepend 0, to: :item_views }
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Prepend)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -198,8 +248,21 @@ module Lucid
         end
 
         it "is cumulative" do
-          view.item_views.prepend(0)
-          view.item_views.prepend(1)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :foo, Types.integer
+            element { |foo| p { text "Item #{foo}" } }
+            key { foo }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            on(msg_class) do
+              prepend 0, to: :item_views
+              prepend 1, to: :item_views
+            end
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(2)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -208,8 +271,21 @@ module Lucid
         end
 
         it "defers to a replace action" do
-          view.delta.replace
-          view.item_views.prepend(0)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :foo, Types.integer
+            element { |foo| p { text "Item #{foo}" } }
+            key { foo }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            on(msg_class) do
+              replace
+              prepend 0, to: :item_views
+            end
+          end.new({}, msg_class.new)
+          
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -221,34 +297,40 @@ module Lucid
       # ===================================================== #
 
       describe "#remove" do
-        let(:view) do
-          Class.new(Component::Base) do
-            static :subview_class, Types.subclass(Component::Base)
-            element { h1 { text "Hello, World" } }
-            nest :item_views, over: [1, 2, 3] do |i, subview_class:|
-              subview_class[index: i]
-            end
-          end.new({}, subview_class: subview_class)
-        end
-        let(:subview_class) do
-          Class.new(Component::Base) do
+        it "adds a delete action for the subcomponent" do
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
             prop :index, Types.integer
             element { |index| p { text "Item #{index}" } }
             key { index }
           end
-        end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            on(msg_class) { remove(1, from: :item_views) }
+          end.new({}, msg_class.new)
 
-        it "adds a delete action for the subcomponent" do
-          view.delta.remove(view.item_views.first)
           expect(view.changes.count).to eq(1)
-          expect(view.changes.first).to be_a(ChangeSet::Delete)
+          expect(view.changes.first).to be_a(ChangeSet::Remove)
           expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
         end
 
         it "is cumulative" do
-          view.delta.remove(view.item_views.first)
-          view.delta.remove(view.item_views.last)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :index, Types.integer
+            element { |index| p { text "Item #{index}" } }
+            key { index }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            on(msg_class) do
+              remove(1, from: :item_views)
+              remove(3, from: :item_views)
+            end
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(2)
           expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
@@ -257,30 +339,59 @@ module Lucid
         end
 
         it "defers to a replace action" do
-          view.delta.replace
-          view.item_views.append(0)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :index, Types.integer
+            element { |index| p { text "Item #{index}" } }
+            key { index }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            on(msg_class) do
+              replace
+              append 0, to: :item_views
+            end
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
         end
 
         it "overrides changes on the removed component" do
-          subcomponent = view.item_views.first
-          subcomponent.delta.replace
-          view.delta.remove(subcomponent)
+          msg_class     = Class.new(Lucid::Event)
+          subview_class = Class.new(Component::Base) do
+            prop :index, Types.integer
+            element { |index| p { text "Item #{index}" } }
+            key { index }
+            on(msg_class) { replace }
+          end
+          view          = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            on(msg_class) { remove 1, from: :item_views }
+          end.new({}, msg_class.new)
+
           expect(view.changes.count).to eq(1)
-          expect(view.changes.first).to be_a(ChangeSet::Delete)
+          expect(view.changes.first).to be_a(ChangeSet::Remove)
           expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
         end
-
+      end
+      
+      describe "#delete" do
         it "override subsequent replace action" do
-          subcomponent = view.item_views.first
-          view.delta.remove(subcomponent)
-          subcomponent.delta.replace
+          msg_class = Class.new(Lucid::Event)
+          view      = Class.new(Component::Base) do
+            element { h1 { text "Hello, World" } }
+            on(msg_class) do
+              delete
+              replace
+            end
+          end.new({}, msg_class.new)
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Delete)
-          expect(view.changes.to_s).to match(/id="item_views-1"/)
+          # expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
         end
       end

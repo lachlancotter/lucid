@@ -22,7 +22,6 @@ module Lucid
       def link
         @request.yield_link do |link|
           view = component(link)
-          puts view.deep_state
           run_with_context(view) do
             Logger.link(link)
             @response.send_delta(view, htmx: @request.htmx?)

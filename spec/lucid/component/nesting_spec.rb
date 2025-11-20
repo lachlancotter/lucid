@@ -97,6 +97,21 @@ module Lucid
           expect(view.child.delta.replace?).to be(false)
         end
 
+        it "allows access to nests in message handler blocks" do
+          msg_class              = Class.new(Link)
+          nested_component_class = Class.new(Component::Base) do
+            prop :index, Types.integer
+            element { text "Index: #{index}" }
+          end
+          base_component_class   = Class.new(Component::Base) do
+            nest(:child, over: [0]) { |i| nested_component_class[index: i] }
+            to(msg_class) { append(1, to: :child) }
+          end
+
+          view = base_component_class.new({}, msg_class.new)
+          expect(view.delta.changes.first).to be_a(Component::ChangeSet::Append)
+        end
+
         it "replaces the nested component on param change" do
           msg_class  = Class.new(Lucid::Event)
           foo_class  = Class.new(Component::Base) { element {} }

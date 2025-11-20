@@ -44,7 +44,7 @@ module Lucid
       end
 
       def remove (subcomponent)
-        tap { subcomponent.delta.delete }
+        tap { add_change Remove.new(subcomponent) }
       end
 
       def selector (nest: "")
@@ -174,6 +174,35 @@ module Lucid
       # Delete the component element from the DOM.
       # 
       class Delete < Change
+        def initialize (component)
+          super(component)
+        end
+
+        def call (oob: false)
+          wrap(oob: oob) { "" }
+        end
+
+        def swap
+          :delete
+        end
+
+        def target
+          @component.element_id
+        end
+
+        private
+
+        def wrapper_attrs (oob:)
+          component_attrs.merge(oob ? HTMX.oob(swap => target) : {})
+        end
+      end
+
+      #
+      # Remove a child component element from the DOM. Does the same
+      # thing as a Delete action but will not override other changes.
+      # Intended for use with nested components.
+      # 
+      class Remove < Change
         def initialize (component)
           super(component)
         end

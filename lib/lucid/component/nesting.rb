@@ -97,13 +97,15 @@ module Lucid
         # block - Function returning a PropsBinding instance for building the component.
         # 
         def nest (name, over: nil, &block)
-          after_application do
+          after_initialize do
             nests[name] = case over
             when Symbol then CollectionNest.new(name, self, over, &block)
             when Enumerable then CollectionNest.new(name, self, over, &block)
             when NilClass then ComponentNest.new(name, self, &block)
             else raise ArgumentError, "Invalid enumerable"
             end
+          end
+          after_application do
             # Refactor so that @message is yielded to the callback block.
             nests[name].install(nested_state(name), @message)
           end
@@ -339,7 +341,7 @@ module Lucid
         def initialize (name, parent, &block)
           super(name, parent)
           @field = Field.new(@parent, &block)
-          @field.attach(self) { update }
+          # @field.attach(self) { update }
         end
 
         def content
@@ -371,26 +373,24 @@ module Lucid
         end
 
         def install (state, message)
-          props_binding.tap do |binding|
-            @component = binding.call(state, message, @parent, @name)
-          end
+          @component = props_binding.call(state, message, @parent, @name)
         rescue StandardError => error
           App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
         end
 
-        def update
-          props_binding.tap do |binding|
-            unless @component.is_a?(binding.component_class)
-              # Should we propagate the state to the new component here; or reset it?
-              @component = binding.call(@component.state.to_h, nil, @parent, @name)
-              @component.delta.replace
-            end
-          end
-        rescue StandardError => error
-          @component = ErrorPage.new({}, error: error, parent: @parent, name: @name)
-          @component.delta.replace
-        end
+        # def update
+        #   props_binding.tap do |binding|
+        #     unless @component.is_a?(binding.component_class)
+        #       # Should we propagate the state to the new component here; or reset it?
+        #       @component = binding.call(@component.state.to_h, nil, @parent, @name)
+        #       @component.delta.replace
+        #     end
+        #   end
+        # rescue StandardError => error
+        #   @component = ErrorPage.new({}, error: error, parent: @parent, name: @name)
+        #   @component.delta.replace
+        # end
 
         def props_binding
           normalize_binding(@field.value)
@@ -403,18 +403,56 @@ module Lucid
       class CollectionNest < Nest
         def initialize (name, parent, over, &block)
           super(name, parent)
-          @enumerable = case over
-          when Symbol then parent.field(over).value
-          when Enumerable then over # Static collection
-          else raise ArgumentError, "Unsupported collection nesting: #{over.class}"
-          end
+          @enumerable = enumerable(over)
           @map_f      = block
-          # Wrap the provided block in an enumerator function, and configure the
-          # field to call it with the keywords expected by the mapping function.
-          # So they can be passed through to the mapping function.
-          enum_f = enumerator(@enumerable, self, name, parent)
-          exec   = Field::Execution.new(enum_f).set_keywords(from_block: @map_f)
-          @field = Field.new(@parent, exec)
+          @field      = build_field(parent, block, @enumerable, @map_f)
+          # @editor     = Editor.new
+        end
+
+        def enumerable (source)
+          case source
+          when Symbol then parent.field(source).value
+          when Enumerable then source # Static collection
+          else raise ArgumentError, "Unsupported collection nesting: #{source.class}"
+          end
+        end
+
+        # 
+        # Wrap the provided block in an enumerator function, and configure the
+        # field to call it with the keywords expected by the mapping function.
+        # So they can be passed through to the mapping function.
+        # 
+        def build_field (parent, block, enumerable, map_f)
+          Field.new(parent,
+             Field::Execution.new(
+                enumerator(enumerable, self, name, parent)
+             ).set_keywords(from_block: map_f)
+          )
+        end
+
+        def append (model)
+          build(model, @enumerable.length).tap do |subcomponent|
+            parent.delta.append(subcomponent, to: collection_selector)
+          end
+        end
+
+        def prepend (model)
+          build(model, 0).tap do |subcomponent|
+            parent.delta.prepend(subcomponent, to: collection_selector)
+          end
+        end
+
+        def remove (model)
+          build(model, 0).tap do |subcomponent|
+            parent.delta.remove(subcomponent)
+          end
+          # @collection.each_with_index do |subcomponent, index|
+          #   parent.delta.remove(subcomponent) if block.call(subcomponent, index)
+          # end
+        end
+
+        def collection_selector
+          "." + parent.collection_classname(@name)
         end
 
         def content
@@ -471,11 +509,12 @@ module Lucid
           # nested_state() isn't implemented for collections. so ignore the
           # state for now.
           @collection = Collection.new(self, @field.value)
+          # @editor.edit(@collection)
         end
 
-        def update
-          raise "CollectionNest#update is not implemented"
-        end
+        # def update
+        #   raise "CollectionNest#update is not implemented"
+        # end
 
         # Build a single instance that can be used to render insertions.
         def build (element, index)
@@ -489,7 +528,7 @@ module Lucid
           normalize_binding(@parent.instance_exec(element, index, **kwargs, &@map_f))
         end
       end
-
+      
       # ===================================================== #
       #    Collection
       # ===================================================== #
@@ -532,43 +571,43 @@ module Lucid
         end
 
         # Build a new subcomponent and append it to the collection.
-        def append (model)
-          build(model).tap do |subcomponent|
-            parent.delta.append(subcomponent, to: collection_selector)
-          end
-        end
+        # def append (model)
+        #   build(model).tap do |subcomponent|
+        #     parent.delta.append(subcomponent, to: collection_selector)
+        #   end
+        # end
 
         # Build a new subcomponent and prepend it to the collection.
-        def prepend (model)
-          build(model).tap do |subcomponent|
-            parent.delta.prepend(subcomponent, to: collection_selector)
-          end
-        end
+        # def prepend (model)
+        #   build(model).tap do |subcomponent|
+        #     parent.delta.prepend(subcomponent, to: collection_selector)
+        #   end
+        # end
 
         # Remove subcomponents that match the given block.
-        def remove (&block)
-          each_with_index do |subcomponent, index|
-            parent.delta.remove(subcomponent) if block.call(subcomponent, index)
-          end
-        end
+        # def remove (&block)
+        #   each_with_index do |subcomponent, index|
+        #     parent.delta.remove(subcomponent) if block.call(subcomponent, index)
+        #   end
+        # end
 
-        def collection_selector
-          "." + parent.collection_classname(collection_name)
-        end
-
-        def collection_name
-          Types.symbol[@nest.name]
-        end
+        # def collection_selector
+        #   "." + parent.collection_classname(collection_name)
+        # end
+        #
+        # def collection_name
+        #   Types.symbol[@nest.name]
+        # end
 
         private
 
-        def build (model, index = @elements.size)
-          @nest.build(model, index)
-        end
-
-        def parent
-          @nest.parent
-        end
+        # def build (model, index = @elements.size)
+        #   @nest.build(model, index)
+        # end
+        #
+        # def parent
+        #   @nest.parent
+        # end
       end
 
     end
