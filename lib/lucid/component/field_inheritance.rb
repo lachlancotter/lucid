@@ -25,7 +25,7 @@ module Lucid
           after_initialize do
             fields[name] = case from
             when NilClass then field_in_ancestor(name)
-            when :session then props.session.field(name)
+            when :http_session then props.http_session.field(name)
             else raise ArgumentError, "Invalid field source: #{from}"
             end
           end

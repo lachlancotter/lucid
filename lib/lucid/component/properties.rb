@@ -23,7 +23,7 @@ module Lucid
            ]
         )
       rescue Dry::Struct::Error => e
-        raise ConfigError.new(self, props_hash, e.message)
+        raise ConfigError.new(self, props_hash, e.meta.inspect)
       end
 
       # If we expected a Field but got a value, then wrap it in a Field.
@@ -77,7 +77,10 @@ module Lucid
           end
         end
 
+        #
         # Define a value property, passed by value. Used internally by the framework.
+        # Is this still needed?
+        # 
         def static (name, type = Types.string)
           props_class.attribute(name, Types.normalize(type))
           after_initialize { fields[name] = Field.new(self) { props[name] } }

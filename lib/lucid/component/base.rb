@@ -8,6 +8,7 @@ module Lucid
       include Callbacks
       include StateMapping
       include Properties
+      include Temps
       include Nesting
       include Fields
       include FieldInheritance
@@ -35,7 +36,7 @@ module Lucid
       #
       # Access to the Session for the current request.
       #
-      static :session, Types.instance(App::Session).optional.default(nil)
+      static :http_session, Types.instance(App::Session).optional.default(nil)
 
       #
       # This component's parent in the component tree.

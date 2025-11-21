@@ -32,8 +32,8 @@ module Lucid
       it "inherits values from the session" do
         session_class = Class.new(App::Session) { key :foo }
         session       = session_class.new("foo" => "bar")
-        view_class    = Class.new(Component::Base) { use :foo, from: :session }
-        view          = view_class.new({}, session: session)
+        view_class    = Class.new(Component::Base) { use :foo, from: :http_session }
+        view          = view_class.new({}, http_session: session)
         expect(view.foo).to eq("bar")
       end
 

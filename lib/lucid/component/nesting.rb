@@ -169,7 +169,7 @@ module Lucid
              name:             name,
              collection_index: collection_index,
              app_root:         parent.props.app_root,
-             session:          parent.props.session,
+             http_session:     parent.props.http_session,
              container:        parent.props.container,
           }
         end
@@ -528,7 +528,7 @@ module Lucid
           normalize_binding(@parent.instance_exec(element, index, **kwargs, &@map_f))
         end
       end
-      
+
       # ===================================================== #
       #    Collection
       # ===================================================== #
