@@ -118,6 +118,7 @@ module Lucid
           # If the subcomponent raises an error during rendering, then the
           # nest will replace it with an error page. We retry the render after
           # the replacement.
+          raise ApplicationError, "No subcomponent named #{name}" unless nests.key?(name)
           nests[name].with_component(index, retry_on_error: true) do |sub|
             emit Component::ChangeSet::Replace.new(sub).call
           end

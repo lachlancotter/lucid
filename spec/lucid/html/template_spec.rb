@@ -49,6 +49,29 @@ module Lucid
           expect(template.render).to eq("<div>Hello, World</div>")
         end
       end
+
+      context "with nested component" do
+        it "renders the nested component" do
+          nested_component_class = Class.new(Component::Base) do
+            element { span { text "Nested Component" } }
+          end
+          base_component_class   = Class.new(Component::Base) do
+            nest(:nested) { nested_component_class }
+            element { subview(:nested) }
+          end
+          
+          view = base_component_class.new({})
+          expect(view.template.render).to include("Nested Component")
+        end
+      end
+
+      context "invalid nested component name" do
+        it "raises an exception" do
+          base_component_class   = Class.new(Component::Base) { element { subview(:invalid_name) } }
+          view = base_component_class.new({})
+          expect { view.template.render }.to raise_error(ApplicationError)
+        end
+      end
     end
   end
 end
