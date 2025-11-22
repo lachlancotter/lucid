@@ -80,5 +80,14 @@ module Lucid
         end
       end
     end
+
+    context "invalid message type" do
+      it "raises an exception" do
+        event_class = Class.new(Event)
+        expect {
+          Class.new(Component::Base) { to(event_class) {} }
+        }.to raise_error(ApplicationError)
+      end
+    end
   end
 end

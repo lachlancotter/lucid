@@ -90,6 +90,17 @@ module Lucid
         end
       end
 
+      context "link class" do
+        it "raises an exception" do
+          link_class = Class.new(Link)
+          expect {
+            Class.new(Component::Base) do
+              on(link_class) { 1 }
+            end
+          }.to raise_error(ApplicationError)
+        end
+      end
+
     end
   end
 end

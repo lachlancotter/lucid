@@ -95,12 +95,12 @@ module Lucid
         end
 
         def link_to (message, text = nil, **opts, &block)
-          emit Anchor.new(normalize_message(message), text, **opts, &block).template
+          emit Anchor.new(normalize_link(message), text, **opts, &block).template
         end
 
         def button_to (message, text = nil, **opts)
           button_opts = { csrf_token: @renderable.container[:csrf_token] }.merge(opts)
-          emit Button.new(normalize_message(message), text, **button_opts).template
+          emit Button.new(normalize_command(message), text, **button_opts).template
         end
 
         def form_for (form_model, **opts, &block)
@@ -163,7 +163,20 @@ module Lucid
           end
         end
 
-        def normalize_message (message)
+        def normalize_link (link)
+          case link
+          when Link then link
+          when String then link
+          when Command then
+            raise ApplicationError,
+               "Command message passed to link_to. Use button_to for Command messages: #{link.inspect}"
+          else
+            raise ArgumentError,
+               "Link or String expected: #{link.inspect}"
+          end
+        end
+
+        def normalize_command (message)
           case message
           when Message then message
           when String then message

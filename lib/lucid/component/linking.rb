@@ -40,10 +40,25 @@ module Lucid
         # link_key may be a Symbol or a Link subclass.
         #
         def to (link_key, *attrs, **map, &block)
-          after_initialize do
-            visitors[link_key] = Visit.new(*attrs, **map, &block)
+          with_invalid_link_type_checking(link_key) do
+            after_initialize do
+              visitors[link_key] = Visit.new(*attrs, **map, &block)
+            end
           end
         end
+
+        def with_invalid_link_type_checking (message_type, &block)
+          case message_type
+          when -> (k) { k <= Link } then yield
+          when -> (k) { k <= Event }
+            raise ApplicationError,
+               "Event messages cannot be handled with `to` handlers. Use `on` handlers instead: #{message_type.inspect}"
+          else
+            raise ArgumentError,
+               "Invalid event filter: #{message_type.inspect}"
+          end
+        end
+
       end
 
       #

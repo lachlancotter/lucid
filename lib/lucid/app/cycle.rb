@@ -60,9 +60,9 @@ module Lucid
         @container.component_class.new(
            @request.state_reader,
            message,
-           app_root:  @container[:app_root],
-           container: @container,
-           session:   @container[:session]
+           app_root:     @container[:app_root],
+           container:    @container,
+           http_session: @container[:session]
         )
       end
 

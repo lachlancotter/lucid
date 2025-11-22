@@ -59,7 +59,7 @@ module Lucid
             nest(:nested) { nested_component_class }
             element { subview(:nested) }
           end
-          
+
           view = base_component_class.new({})
           expect(view.template.render).to include("Nested Component")
         end
@@ -67,8 +67,18 @@ module Lucid
 
       context "invalid nested component name" do
         it "raises an exception" do
-          base_component_class   = Class.new(Component::Base) { element { subview(:invalid_name) } }
-          view = base_component_class.new({})
+          base_component_class = Class.new(Component::Base) { element { subview(:invalid_name) } }
+          view                 = base_component_class.new({})
+          expect { view.template.render }.to raise_error(ApplicationError)
+        end
+      end
+
+      context "command passed to link_to" do
+        it "raises an exception" do
+          msg_class = Class.new(Lucid::Command)
+          view      = Class.new(Component::Base) do
+            element { link_to msg_class.new, "Link" }
+          end.new({})
           expect { view.template.render }.to raise_error(ApplicationError)
         end
       end
