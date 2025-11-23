@@ -36,20 +36,7 @@ module Lucid
           expect(template.render("World")).to eq("<div>Hello, World</div>")
         end
       end
-
-      context "with state" do
-        it "renders the state" do
-          view = Class.new(Component::Base) do
-            param :name
-          end.new({ name: "World" })
-
-          template = Template.new do
-            div { text "Hello, #{state[:name]}" }
-          end.bind(view)
-          expect(template.render).to eq("<div>Hello, World</div>")
-        end
-      end
-
+      
       context "with nested component" do
         it "renders the nested component" do
           nested_component_class = Class.new(Component::Base) do

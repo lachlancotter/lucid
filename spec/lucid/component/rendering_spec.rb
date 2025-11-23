@@ -92,6 +92,7 @@ module Lucid
                 h1 { text "Hello, #{name}" }
               end
 
+              helper :name
               def name
                 "World"
               end

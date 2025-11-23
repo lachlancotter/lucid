@@ -78,6 +78,7 @@ module Lucid
       class RenderContext < Papercraft::HTMLRenderer
         def initialize(renderable, &block)
           @renderable = renderable
+          extend_helpers
           super(&block)
           # Ensure all HTML elements are defined as methods on the renderer.
           # Papercraft uses method_missing to define element methods on the fly.
@@ -85,7 +86,7 @@ module Lucid
           # to define all the HTML elements as methods on the renderer.
           define_tag_method("label") unless respond_to?(:label)
         end
-
+        
         #
         # Explicit access to the context is useful in cases where a helper name
         # conflicts with an HTML element name, and can't be involved implicitly.
@@ -115,12 +116,13 @@ module Lucid
         # Render a component in the template.
         # 
         def subview (name, index = nil)
-          # If the subcomponent raises an error during rendering, then the
-          # nest will replace it with an error page. We retry the render after
-          # the replacement.
-          raise ApplicationError, "No subcomponent named #{name}" unless nests.key?(name)
-          nests[name].with_component(index, retry_on_error: true) do |sub|
-            emit Component::ChangeSet::Replace.new(sub).call
+          with_valid_nest(name) do
+            # If the subcomponent raises an error during rendering, then the
+            # nest will replace it with an error page. We retry the render after
+            # the replacement.
+            @renderable.nests[name].with_component(index, retry_on_error: true) do |sub|
+              emit Component::ChangeSet::Replace.new(sub).call
+            end
           end
         end
 
@@ -142,18 +144,21 @@ module Lucid
           end
         end
 
-        # TODO maybe we should explicitly expose methods to the template 
-        #   instead of using method_missing? This makes the interface muddy
-        #   and may have performance implications for Papercraft.
-        def method_missing(sym, *args, **opts, &block)
-          if @renderable && @renderable.has_helper?(sym)
-            @renderable.send(sym, *args, **opts, &block)
-          else
-            super
-          end
+        private
+
+        def extend_helpers
+          return unless @renderable
+          return unless @renderable.class.respond_to?(:helper_module)
+          extend(@renderable.class.helper_module)
         end
 
-        private
+        def with_valid_nest (name, index = nil, &block)
+          if @renderable.nests.key?(name)
+            yield name, index
+          else
+            raise ApplicationError, "No subcomponent named #{name}"
+          end
+        end
 
         def normalize_subview (name_or_component)
           case name_or_component

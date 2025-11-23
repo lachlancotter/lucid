@@ -36,10 +36,6 @@ module Lucid
         self.class.instance_variable_get(:@tag) || :div
       end
 
-      def has_helper? (name)
-        respond_to?(name)
-      end
-
       module ClassMethods
         #
         # Define the base template for this component.

@@ -17,21 +17,21 @@ module Lucid
       }
     end
 
-    template PermissionError do
+    template PermissionError do |error|
       div(class: "error permission-error") {
         h1 { text "Permission Denied" }
         p { text "You do not have permission to access this resource." }
       }
     end
 
-    template ResourceError do
+    template ResourceError do |error|
       div(class: "error resource-error") {
         h1 { text "Resource Not Found" }
         p { text "The requested resource was not found." }
       }
     end
 
-    template ConfigError do
+    template ConfigError do |error|
       div(class: "error config-error") {
         h1 { text "Invalid Config" }
         p { text "The component was configured incorrectly. This is a bug." }
@@ -42,14 +42,14 @@ module Lucid
       }
     end
 
-    template StateError do
+    template StateError do |error|
       div(class: "error state-error") {
         h1 { text "Invalid State" }
         p { text "An invalid state was applied to this component. This is a bug." }
       }
     end
 
-    template StandardError do
+    template StandardError do |error|
       div(class: "error unknown-error") {
         h1 { text "Unknown Error" }
         p { text "Could not fulfil the request due to an unknown error." }
