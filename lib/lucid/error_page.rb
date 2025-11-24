@@ -10,10 +10,11 @@ module Lucid
       self.class.template(props.error.class).bind(self)
     end
 
-    template ParamError do
+    template ParamError do |error|
       div(class: "error param-error") {
         h1 { text "Invalid Request" }
         p { text "The request parameters are invalid." }
+        p { text error.message }
       }
     end
 
@@ -35,7 +36,7 @@ module Lucid
       div(class: "error config-error") {
         h1 { text "Invalid Config" }
         p { text "The component was configured incorrectly. This is a bug." }
-        # h2 { text props.error.message }
+        h2 { text error.message }
         # props.error.backtrace.each do |line|
         #   p { text line }
         # end
@@ -53,10 +54,12 @@ module Lucid
       div(class: "error unknown-error") {
         h1 { text "Unknown Error" }
         p { text "Could not fulfil the request due to an unknown error." }
-        h2 { text props.error.message }
-        props.error.backtrace.each do |line|
-          p { text line }
-        end
+        p { b { text error.message } }
+        # if props.error.backtrace
+        #   props.error.backtrace.each do |line|
+        #     p { text line }
+        #   end
+        # end
       }
     end
   end
