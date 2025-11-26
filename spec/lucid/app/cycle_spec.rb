@@ -1,10 +1,16 @@
 module Lucid
   class App
     describe Cycle do
-      let(:request) { HTTP::RequestAdaptor.new(Rack::Request.new(env)) }
-      let(:response) { HTTP::ResponseAdaptor.new(Rack::Response.new) }
-      let(:container) { App::Container.new({ component_class: component_class, handler_class: handler_class }, env) }
-      let(:cycle) { Cycle.new(request, response, container) }
+      let(:request) { container[:request] }
+      let(:response) { container[:response] }
+      let(:container) do
+        App::Container.new({ 
+           component_class: component_class, 
+           handler_class: handler_class }, 
+           env
+        )
+      end
+      let(:cycle) { Cycle.new(container) }
 
       class TestLink < Lucid::Link
 
@@ -38,7 +44,7 @@ module Lucid
         context "basic request" do
           it "propagates state" do
             cycle.state
-            expect(response.body).to include('href="//@/lucid/app/test-link?state%5Bfoo%5D=bar"')
+            expect(response.body).to include('href="/@/lucid/app/test-link?state%5Bfoo%5D=bar"')
           end
         end
 
@@ -53,7 +59,7 @@ module Lucid
           end
           it "omits state" do
             cycle.state
-            expect(response.body).to include('href="//@/lucid/app/test-link"')
+            expect(response.body).to include('href="/@/lucid/app/test-link"')
             expect(response.body).not_to include('state%5Bfoo%5D=bar')
           end
         end

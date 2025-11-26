@@ -23,19 +23,11 @@ module Lucid
         @config[:component_class] || Lucid::Component::Base
       end
 
-      provide(:app_root) { @config[:app_root] || "/" }
+      provide(:app_root) { @config[:app_root] || "" }
       provide(:csrf_token) { @config[:csrf_token] }
-
-      provide(:request) do
-        HTTP::RequestAdaptor.new(Rack::Request.new(@env), url_base: app_root)
-      end
-
-      provide(:response) do
-        HTTP::ResponseAdaptor.new(Rack::Response.new(@env), url_base: app_root)
-      end
-
+      provide(:request) { HTTP::RequestAdaptor.new(Rack::Request.new(@env), url_base: app_root) }
+      provide(:response) { HTTP::ResponseAdaptor.new(Rack::Response.new(@env), url_base: app_root) }
       provide(:session) { session_class.new(@env['rack.session']) }
-
       provide(:message_bus) { MessageBus.new(handler_class, self) }
 
       # provide(:component) do
