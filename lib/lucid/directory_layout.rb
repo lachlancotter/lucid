@@ -47,10 +47,10 @@ module Lucid
     # Project directory loads code from core, and feature directories.
     #
     class Project < DirectoryLayout
-      def initialize(root_path, namespace, &block)
-        super
-        code_dirs << "config" if File.directory?("#{root_path}/config")
-      end
+      # def initialize(root_path, namespace, &block)
+      #   super
+      #   code_dirs << "config" if File.directory?("#{root_path}/config")
+      # end
 
       def configure (zeitwerk_loader)
         super
