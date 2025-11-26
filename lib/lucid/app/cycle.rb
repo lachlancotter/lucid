@@ -6,9 +6,9 @@ module Lucid
     class Cycle
       attr_reader :request, :response
 
-      def initialize (request, response, container)
-        @request   = request
-        @response  = response
+      def initialize (container)
+        @request   = container[:request]
+        @response  = container[:response]
         @container = container
       end
 

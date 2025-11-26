@@ -1,10 +1,17 @@
 module Lucid
   class App
     describe Cycle do
-      let(:request) { HTTP::RequestAdaptor.new(Rack::Request.new(env)) }
-      let(:response) { HTTP::ResponseAdaptor.new(Rack::Response.new) }
-      let(:container) { App::Container.new({ component_class: component_class, handler_class: handler_class }, env) }
-      let(:cycle) { Cycle.new(request, response, container) }
+      let(:container) do
+        App::Container.new({
+           component_class: component_class,
+           handler_class:   handler_class,
+           request:         request,
+           response:        response
+        }, env)
+      end
+      let(:request) { Rack::Request.new(env) }
+      let(:response) { Rack::Response.new }
+      let(:cycle) { Cycle.new(container) }
 
       class TestLink < Lucid::Link
 
@@ -130,7 +137,7 @@ module Lucid
             perform(TestCommand) { publish TestEvent.new }
           end
         end
-        
+
         context "basic request" do
           let(:env) do
             {
