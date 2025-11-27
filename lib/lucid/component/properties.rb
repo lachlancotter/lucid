@@ -35,18 +35,7 @@ module Lucid
           Field.new(self) { value }
         end
       end
-
-      # Called internally by the change tracking system. You typically should
-      # not call this directly.
-      # Maybe this can be removed because changes can be propagated through
-      # signal props and don't have to be manually updated.
-      def update_props (changed_props)
-        @props = @props.new(changed_props)
-        changed_props.keys.each { |key| field(key).invalidate if field?(key) }
-      rescue Dry::Struct::Error => e
-        raise ConfigError.new(self, changed_props, e.message)
-      end
-
+      
       private
 
       module ClassMethods
