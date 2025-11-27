@@ -379,19 +379,6 @@ module Lucid
           @component = ErrorPage.new({}, error: error)
         end
 
-        # def update
-        #   props_binding.tap do |binding|
-        #     unless @component.is_a?(binding.component_class)
-        #       # Should we propagate the state to the new component here; or reset it?
-        #       @component = binding.call(@component.state.to_h, nil, @parent, @name)
-        #       @component.delta.replace
-        #     end
-        #   end
-        # rescue StandardError => error
-        #   @component = ErrorPage.new({}, error: error, parent: @parent, name: @name)
-        #   @component.delta.replace
-        # end
-
         def props_binding
           normalize_binding(@field.value)
         end
@@ -406,7 +393,6 @@ module Lucid
           @enumerable = enumerable(over)
           @map_f      = block
           @field      = build_field(parent, block, @enumerable, @map_f)
-          # @editor     = Editor.new
         end
 
         def enumerable (source)
@@ -509,12 +495,7 @@ module Lucid
           # nested_state() isn't implemented for collections. so ignore the
           # state for now.
           @collection = Collection.new(self, @field.value)
-          # @editor.edit(@collection)
         end
-
-        # def update
-        #   raise "CollectionNest#update is not implemented"
-        # end
 
         # Build a single instance that can be used to render insertions.
         def build (element, index)
@@ -534,9 +515,10 @@ module Lucid
       # ===================================================== #
 
       #
-      # An interface to access members of a nested component collection
-      # and to make insertions into the collection, triggering updates
-      # to the element ChangeSet.
+      # Wrapper around the elements in a CollectionNest. Originally
+      # intended as an API for manipulating the collection, but that 
+      # functionality has been refactored into CollectionNest itself.
+      # This is probably not needed anymore and should be removed.
       #
       class Collection
         include Enumerable
@@ -569,45 +551,6 @@ module Lucid
         def last
           @elements.last
         end
-
-        # Build a new subcomponent and append it to the collection.
-        # def append (model)
-        #   build(model).tap do |subcomponent|
-        #     parent.delta.append(subcomponent, to: collection_selector)
-        #   end
-        # end
-
-        # Build a new subcomponent and prepend it to the collection.
-        # def prepend (model)
-        #   build(model).tap do |subcomponent|
-        #     parent.delta.prepend(subcomponent, to: collection_selector)
-        #   end
-        # end
-
-        # Remove subcomponents that match the given block.
-        # def remove (&block)
-        #   each_with_index do |subcomponent, index|
-        #     parent.delta.remove(subcomponent) if block.call(subcomponent, index)
-        #   end
-        # end
-
-        # def collection_selector
-        #   "." + parent.collection_classname(collection_name)
-        # end
-        #
-        # def collection_name
-        #   Types.symbol[@nest.name]
-        # end
-
-        private
-
-        # def build (model, index = @elements.size)
-        #   @nest.build(model, index)
-        # end
-        #
-        # def parent
-        #   @nest.parent
-        # end
       end
 
     end
