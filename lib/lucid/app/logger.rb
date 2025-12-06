@@ -27,16 +27,11 @@ module Lucid
 
         def session (hash)
           puts("  📦 Session:")
-          hash.each do |key, value|
-            puts("        #{key}: #{value.inspect}")
-          end
+          log_data(hash)
         end
 
         def request (request)
           puts("#{request.request_method}: #{request.fullpath}")
-          # request.params.each do |key, value|
-          #   puts("        #{key}: #{value.inspect}")
-          # end
           request.env.each do |key, value|
             if key.start_with?("HTTP_HX") #|| key.start_with?("HTTP_COOKIE")
               puts("        #{key}: #{value.inspect}")
@@ -91,9 +86,46 @@ module Lucid
 
         private
 
+        SENSITIVE_KEYS = [
+          /password/i,
+          /(^|_)pw($|_)/i,
+          /(^|_)pwd($|_)/i,
+          /token/i,
+          /secret/i,
+          /\bkey\b/i,
+          /api[_-]?key/i,
+          /private[_-]?key/i,
+          /access[_-]?key/i,
+          /auth/i
+        ].freeze
+
+        def sensitive_key? (key)
+          key_string = key.to_s
+          SENSITIVE_KEYS.any? { |pattern| key_string.match?(pattern) }
+        end
+
+        def filter_value (key, value)
+          if sensitive_key?(key)
+            "[FILTERED]"
+          elsif value.is_a?(Hash)
+            filter_hash(value)
+          elsif value.is_a?(Array)
+            value.map { |item| item.is_a?(Hash) ? filter_hash(item) : item }
+          else
+            value
+          end
+        end
+
+        def filter_hash (hash)
+          hash.each_with_object({}) do |(key, value), acc|
+            acc[key] = filter_value(key, value)
+          end
+        end
+
         def log_data (data)
           data.each do |key, value|
-            puts("        #{key}: #{value.inspect}")
+            filtered_value = filter_value(key, value)
+            puts("        #{key}: #{filtered_value.inspect}")
           end
         end
 

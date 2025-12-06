@@ -5,8 +5,19 @@ module Types
 
   # Primitive types
 
-  %i[string integer float bool date time datetime hash symbol].each do |name|
+  %i[string float bool date time datetime hash symbol].each do |name|
     define_singleton_method(name) { Params.const_get(name.capitalize) }
+  end
+
+  def self.integer
+    # Coerce strings to integers where possible.
+    Params::Integer.constructor do |value|
+      case value
+      when String then Integer(value) rescue nil
+      when Integer then value
+      else nil
+      end
+    end
   end
 
   def self.array (type = Types::Any)
