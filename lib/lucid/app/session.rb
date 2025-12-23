@@ -21,6 +21,10 @@ module Lucid
       def [] (key)
         @session_hash[key.to_s]
       end
+      
+      def to_h
+        @session_hash.to_h
+      end
 
       def put (data)
         @state = @state.new(data) # Validation.
