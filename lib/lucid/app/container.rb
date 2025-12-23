@@ -11,6 +11,8 @@ module Lucid
         @env    = Types.hash[env]
       end
 
+      attr_reader :config, :env
+
       def session_class
         @config[:session_class] || Lucid::App::Session
       end
