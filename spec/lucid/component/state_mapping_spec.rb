@@ -67,7 +67,9 @@ module Lucid
         end
         state           = { foo: "foo", bar: { baz: "baz" }, not_on_path: { quox: "quox" } }
         instance        = component_class.new(state)
-        expect(instance.url).to eq("/foo/baz?not_on_path%5Bquox%5D=quox")
+        bar_reader      = State::HashReader.new(state)
+        cursor          = bar_reader.cursor.seek(0, :bar)
+        expect(instance.url).to eq("/foo/baz?quox.cd2=quox")
       end
 
       it "raises when segments are undefined" do

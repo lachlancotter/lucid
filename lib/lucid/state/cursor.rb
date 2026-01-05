@@ -7,30 +7,64 @@ module Lucid
     # position in the path and query string. Cursors are immutable.
     #
     class Cursor
-      def initialize (path_index = 0, param_path = Path.new)
-        @path_index = path_index
-        @param_path = param_path
+      def initialize (reader, path_index = 0, namespace = Namespace.new(""))
+        @reader     = Types.instance(Reader)[reader]
+        @path_index = Types.integer[path_index]
+        @namespace  = Types.instance(Namespace)[namespace]
       end
+      
+      # ===================================================== #
+      #    Moving the cursor
+      # ===================================================== #
 
+      def seek (path_index, namespace = @namespace)
+        advance(path_index).scope(namespace)
+      end
+      
       #
       # Return a new Cursor with the path offset applied.
       #
       def advance (path_offset = 1)
-        Cursor.new(@path_index + path_offset, @param_path)
+        Cursor.new(@reader, @path_index + path_offset, @namespace)
       end
 
       #
       # Return a new cursor with the param key appended to the scope.
       #
-      def scope (key)
-        Cursor.new(@path_index, @param_path.concat(key))
+      def scope (namespace)
+        Cursor.new(@reader, @path_index, namespace)
+      end
+      
+      # ===================================================== #
+      #    Reading at the cursor
+      # ===================================================== #
+
+      def read (map)
+        {}.tap do |state|
+          Types.instance(State::Map)[map].decode(self, state)
+        end
+      end
+
+      # 
+      # Callback from the state map
+      # 
+      def read_path_segment (index)
+        advance(index).segment
+      end
+
+      # 
+      # Callback from the state map
+      # 
+      def read_param (key)
+        param(key)
       end
 
       #
       # Return the path segment at the current index.
       #
-      def segment (path)
-        path[@path_index]
+      def segment
+        @reader.path_segments[@path_index]
+        # path[@path_index]
       end
 
       #
@@ -38,18 +72,9 @@ module Lucid
       # contain nested hashes. The key parameter is a symbol specifying
       # the key to extract from the data hash at the current param path.
       #
-      def param (data, key)
-        nested_hash_at_path(data).fetch(key) { nil }
-      end
-
-      private
-
-      #
-      # Fetch the nested hash at the current param path. If any intermediate
-      # keys are missing, an empty hash is returned.
-      #
-      def nested_hash_at_path (data)
-        @param_path.inject(data) { |d, k| d.fetch(k.to_sym) { Hash.new } }
+      def param (key)
+        @reader.query_params[@namespace.qualify(key).to_sym]
+        # data[@namespace.qualify(key).to_sym]
       end
     end
   end

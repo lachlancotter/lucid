@@ -3,7 +3,7 @@ module Lucid
     describe HashReader do
       context "empty query" do
         it "returns an empty hash" do
-          reader = HashReader.new({})
+          reader = HashReader.new({}).cursor
           map    = Map.build {}
           data   = reader.read(map)
           expect(data).to eq({})
@@ -12,7 +12,7 @@ module Lucid
 
       context "single path component" do
         it "sets the hash key" do
-          reader = HashReader.new({ foo: "foo" })
+          reader = HashReader.new({ foo: "foo" }).cursor
           map    = Map.build { path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -21,7 +21,7 @@ module Lucid
 
       context "multiple path components" do
         it "sets the hash keys" do
-          reader = HashReader.new({ foo: "foo", bar: "bar" })
+          reader = HashReader.new({ foo: "foo", bar: "bar" }).cursor
           map    = Map.build { path :foo; path :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "bar")
@@ -30,7 +30,7 @@ module Lucid
 
       context "literal path components" do
         it "skips literals" do
-          reader = HashReader.new(foo: "foo")
+          reader = HashReader.new(foo: "foo").cursor
           map    = Map.build { path "lit"; path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -39,7 +39,7 @@ module Lucid
 
       context "single query param" do
         it "sets the hash key" do
-          reader = HashReader.new(foo: "bar")
+          reader = HashReader.new(foo: "bar").cursor
           map    = Map.build { query :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar")
@@ -48,7 +48,7 @@ module Lucid
 
       context "multiple query params" do
         it "sets the hash keys" do
-          reader = HashReader.new(foo: "bar", baz: "qux")
+          reader = HashReader.new(foo: "bar", baz: "qux").cursor
           map    = Map.build { query :foo; query :baz }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar", baz: "qux")
@@ -57,7 +57,7 @@ module Lucid
 
       context "mixed parameter types" do
         it "reads path and query params" do
-          reader = HashReader.new(foo: "foo", bar: "baz")
+          reader = HashReader.new(foo: "foo", bar: "baz").cursor
           map    = Map.build { path :foo; query :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "baz")
@@ -66,17 +66,17 @@ module Lucid
 
       context "nested query params" do
         it "builds the nested structure" do
-          reader = HashReader.new(foo: { bar: "baz" })
+          reader = HashReader.new(foo: { bar: "baz" }).cursor
           map    = Map.build { query :foo }
           nested = Map.build { query :bar }
-          data   = reader.seek(0, :foo).read(nested)
+          data   = reader.seek(0, "foo").read(nested)
           expect(data).to eq(bar: "baz")
         end
       end
 
       context "multiple nested maps" do
         it "builds the nested structure" do
-          reader   = HashReader.new({ foo: "1", bar: { baz: "2" }, qux: { duck: "3" } })
+          reader   = HashReader.new({ foo: "1", bar: { baz: "2" }, qux: { duck: "3" } }).cursor
           bar_map  = Map.build { query :baz }
           qux_map  = Map.build { query :duck }
           top_map  = Map.build { query :foo }
@@ -89,7 +89,7 @@ module Lucid
 
       context "extra keys" do
         it "reads only the declared keys" do
-          reader = HashReader.new(foo: "1", bar: "2")
+          reader = HashReader.new(foo: "1", bar: "2").cursor
           map    = Map.build { param :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "1")

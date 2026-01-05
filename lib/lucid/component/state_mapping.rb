@@ -14,7 +14,7 @@ module Lucid
       # Encodes component state as a URL.
       #
       def url
-        State::Writer.new(deep_state).tap do |buffer|
+        State::Writer.new.tap do |buffer|
           buffer.write_component(self, on_route: true)
         end.to_s
       end
@@ -47,14 +47,21 @@ module Lucid
       # Read state for a nested component.
       #
       def nested_state (key)
-        Types.reader[@state_reader.seek(self.class.state_map.path_count, key)]
+        Types.reader[
+           @state_reader.seek(
+              self.class.state_map.path_count,
+              State::Namespace.from_path(path.concat(key))
+           )
+        ]
       end
 
       def validate_reader! (reader)
         case reader
-        when State::Reader then reader
-        when State::HashReader then reader
-        when Hash then State::HashReader.new(reader)
+        when State::Cursor then reader
+        when State::Reader then reader.cursor
+        when State::HashReader::Cursor then reader
+        when State::HashReader then reader.cursor
+        when Hash then State::HashReader.new(reader).cursor
         else raise ArgumentError, "Invalid state: #{reader}"
         end
       end
@@ -96,8 +103,8 @@ module Lucid
         #
         # Build an instance of the state class from the reader.
         # 
-        def build_state (reader)
-          data = reader.read(state_map)
+        def build_state (cursor)
+          data = cursor.read(state_map)
           state_class.new(data)
         rescue Dry::Struct::Error => e
           raise ParamError.new(self, data, e.message)

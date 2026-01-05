@@ -7,54 +7,21 @@ module Lucid
       #
       # URL param includes a path and query string.
       #
-      def initialize (url, cursor = Cursor.new)
-        @url    = Types.string.constrained(min_size: 1)[url]
-        @cursor = cursor
+      def initialize (url)
+        @url                 = Types.string.constrained(min_size: 1)[url]
+        @path, @query_string = @url.split("?")
       end
 
-      #
-      # Read a hash of values from the URL based on the mapping rules.
-      #
-      def read (map)
-        Types.instance(State::Map)[map]
-        {}.tap { |state| map.decode(self, state) }
-      end
-
-      #
-      # Returns a reader for the nested scope.
-      #
-      def seek (path_index, scope_key)
-        Reader.new(@url, @cursor.advance(path_index).scope(scope_key))
-      end
-
-      def read_path_segment (index)
-        @cursor.advance(index).segment(path_segments)
-      end
-
-      def read_param (key)
-        @cursor.param(query_params, Types.symbol[key])
-      end
-
-      def with_scope (key)
-        yield(
-           Reader.new(@url, @cursor.scope(key))
-        )
+      def cursor
+        Cursor.new(self)
       end
 
       def path_segments
-        parse_path(path)
+        @path_segments ||= parse_path(@path)
       end
 
       def query_params
-        parse_query(query_string)
-      end
-
-      def path
-        Types.string[@url.split("?").first]
-      end
-
-      def query_string
-        @url.split("?").last
+        @query_params ||= parse_query(@query_string)
       end
 
       private

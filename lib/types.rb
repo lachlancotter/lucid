@@ -80,6 +80,6 @@ module Types
   end
 
   def self.reader
-    union(Lucid::State::HashReader, Lucid::State::Reader)
+    union(Lucid::State::HashReader::Cursor, Lucid::State::Cursor)
   end
 end
