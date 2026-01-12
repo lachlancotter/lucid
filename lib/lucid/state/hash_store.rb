@@ -3,7 +3,7 @@ module Lucid
     #
     # Provides an uniform interface for reading state from a Hash.
     #
-    class HashReader
+    class HashStore
       attr_reader :hash
 
       def initialize (hash)

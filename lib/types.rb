@@ -82,8 +82,8 @@ module Types
   def self.reader
     Types.instance(Lucid::State::Store) |
        Types.instance(Lucid::State::Scope) |
-       Types.instance(Lucid::State::HashReader)
-       # Types.instance(Lucid::State::HashReader::Cursor)
-    # union(Lucid::State::HashReader::Cursor, Lucid::State::Cursor)
+       Types.instance(Lucid::State::HashStore)
+       # Types.instance(Lucid::State::HashStore::Cursor)
+    # union(Lucid::State::HashStore::Cursor, Lucid::State::Cursor)
   end
 end

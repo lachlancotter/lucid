@@ -42,7 +42,7 @@ module Lucid
       end
 
       def state_from_message_params
-        State::HashReader.new(state_params).scoped
+        State::HashStore.new(state_params).scoped
       end
 
       def htmx?

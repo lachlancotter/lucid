@@ -47,8 +47,8 @@ module Lucid
         case scope
         when State::Scope then scope
         when State::Store then scope.scoped
-        when State::HashReader then scope.scoped
-        when Hash then State::HashReader.new(scope).scoped
+        when State::HashStore then scope.scoped
+        when Hash then State::HashStore.new(scope).scoped
         else raise ArgumentError, "Invalid state: #{scope}"
         end
       end

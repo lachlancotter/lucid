@@ -1,9 +1,9 @@
 module Lucid
   module State
-    describe HashReader do
+    describe HashStore do
       context "empty query" do
         it "returns an empty hash" do
-          reader = HashReader.new({}).scoped
+          reader = HashStore.new({}).scoped
           map    = Map.build {}
           data   = reader.read(map)
           expect(data).to eq({})
@@ -12,7 +12,7 @@ module Lucid
 
       context "single path component" do
         it "sets the hash key" do
-          reader = HashReader.new({ foo: "foo" }).scoped
+          reader = HashStore.new({ foo: "foo" }).scoped
           map    = Map.build { path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -21,7 +21,7 @@ module Lucid
 
       context "multiple path components" do
         it "sets the hash keys" do
-          reader = HashReader.new({ foo: "foo", bar: "bar" }).scoped
+          reader = HashStore.new({ foo: "foo", bar: "bar" }).scoped
           map    = Map.build { path :foo; path :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "bar")
@@ -30,7 +30,7 @@ module Lucid
 
       context "literal path components" do
         it "skips literals" do
-          reader = HashReader.new(foo: "foo").scoped
+          reader = HashStore.new(foo: "foo").scoped
           map    = Map.build { path "lit"; path :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo")
@@ -39,7 +39,7 @@ module Lucid
 
       context "single query param" do
         it "sets the hash key" do
-          reader = HashReader.new(foo: "bar").scoped
+          reader = HashStore.new(foo: "bar").scoped
           map    = Map.build { query :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar")
@@ -48,7 +48,7 @@ module Lucid
 
       context "multiple query params" do
         it "sets the hash keys" do
-          reader = HashReader.new(foo: "bar", baz: "qux").scoped
+          reader = HashStore.new(foo: "bar", baz: "qux").scoped
           map    = Map.build { query :foo; query :baz }
           data   = reader.read(map)
           expect(data).to eq(foo: "bar", baz: "qux")
@@ -57,7 +57,7 @@ module Lucid
 
       context "mixed parameter types" do
         it "reads path and query params" do
-          reader = HashReader.new(foo: "foo", bar: "baz").scoped
+          reader = HashStore.new(foo: "foo", bar: "baz").scoped
           map    = Map.build { path :foo; query :bar }
           data   = reader.read(map)
           expect(data).to eq(foo: "foo", bar: "baz")
@@ -66,7 +66,7 @@ module Lucid
 
       context "nested query params" do
         it "builds the nested structure" do
-          reader = HashReader.new(foo: { bar: "baz" })
+          reader = HashStore.new(foo: { bar: "baz" })
           nested = Map.build { query :bar }
           data   = reader.scoped.descend(0, 0).read(nested)
           expect(data).to eq(bar: "baz")
@@ -75,7 +75,7 @@ module Lucid
 
       context "multiple nested maps" do
         it "builds the nested structure" do
-          reader   = HashReader.new({ foo: "1", bar: { baz: "2" }, qux: { duck: "3" } }).scoped
+          reader   = HashStore.new({ foo: "1", bar: { baz: "2" }, qux: { duck: "3" } }).scoped
           bar_map  = Map.build { query :baz }
           qux_map  = Map.build { query :duck }
           top_map  = Map.build { query :foo }
@@ -88,17 +88,17 @@ module Lucid
 
       context "extra keys" do
         it "reads only the declared keys" do
-          reader = HashReader.new(foo: "1", bar: "2").scoped
+          reader = HashStore.new(foo: "1", bar: "2").scoped
           map    = Map.build { param :foo }
           data   = reader.read(map)
           expect(data).to eq(foo: "1")
         end
       end
 
-      describe HashReader::CoordinateEnumerator do
+      describe HashStore::CoordinateEnumerator do
         it "enumerates flat hash with empty coordinates" do
           hash = { foo: "a", bar: "b" }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to contain_exactly(
@@ -114,7 +114,7 @@ module Lucid
               child_key: "child_value"
             }
           }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to contain_exactly(
@@ -129,7 +129,7 @@ module Lucid
             second: { nested: "b" },
             third: "c"
           }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to contain_exactly(
@@ -147,7 +147,7 @@ module Lucid
               }
             }
           }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to eq([
@@ -165,7 +165,7 @@ module Lucid
               child_c: "c"
             }
           }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to contain_exactly(
@@ -186,7 +186,7 @@ module Lucid
             },
             root3: "value4"
           }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           results = enumerator.to_a
 
           expect(results).to contain_exactly(
@@ -199,7 +199,7 @@ module Lucid
 
         it "works as an enumerable" do
           hash = { foo: "a", bar: "b" }
-          enumerator = HashReader::CoordinateEnumerator.new(hash)
+          enumerator = HashStore::CoordinateEnumerator.new(hash)
           
           keys = enumerator.map { |(coordinate, key, value)| key }
           expect(keys).to contain_exactly(:foo, :bar)
