@@ -9,8 +9,11 @@ module Lucid
           data   = {}
           map    = Map.build {}
           writer = Writer.new
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/")
         end
       end
 
@@ -18,9 +21,12 @@ module Lucid
         it "sets the hash key" do
           data   = { foo: "foo" }
           map    = Map.build { path :foo }
+          store  = Store.new
           writer = Writer.new
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/foo")
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/foo")
         end
       end
 
@@ -29,8 +35,11 @@ module Lucid
           data   = { foo: "foo", bar: "bar" }
           writer = Writer.new
           map    = Map.build { path :foo; path :bar }
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/foo/bar")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/foo/bar")
         end
       end
 
@@ -39,8 +48,11 @@ module Lucid
           data   = { foo: "foo" }
           writer = Writer.new
           map    = Map.build { path "lit"; path :foo }
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/lit/foo")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/lit/foo")
         end
       end
 
@@ -49,8 +61,11 @@ module Lucid
           data   = { foo: "bar" }
           writer = Writer.new
           map    = Map.build { query :foo }
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/?foo=bar")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/?foo=bar")
         end
       end
 
@@ -59,8 +74,11 @@ module Lucid
           data   = { foo: "bar", baz: "qux" }
           writer = Writer.new
           map    = Map.build { query :foo; query :baz }
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/?foo=bar&baz=qux")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/?foo=bar&baz=qux")
         end
       end
 
@@ -69,8 +87,11 @@ module Lucid
           data   = { foo: "foo", bar: "baz" }
           writer = Writer.new
           map    = Map.build { path :foo; query :bar }
-          writer.write_state(map, data)
-          expect(writer.to_s).to eq("/foo?bar=baz")
+          store  = Store.new
+          writer.with_scope(store.scoped) do 
+            writer.write_state(map, data)
+          end
+          expect(store.to_url).to eq("/foo?bar=baz")
         end
       end
 
@@ -79,10 +100,11 @@ module Lucid
           data   = { foo: { bar: "baz" } }
           nested = Map.build { query :bar }
           writer = Writer.new
-          writer.with_scope(Namespace.new("a")) do
+          store  = Store.new
+          writer.with_scope(store.scoped.descend(0, 0)) do
             writer.write_state(nested, data[:foo])
           end
-          expect(writer.to_s).to eq("/?bar.a=baz")
+          expect(store.to_url).to eq("/?bar.0=baz")
         end
       end
 
@@ -92,9 +114,14 @@ module Lucid
           writer  = Writer.new
           foo_map = Map.build { query :bar }
           qux_map = Map.build { query :duck }
-          writer.with_scope(Namespace.new("a")) { writer.write_state(foo_map, data[:foo]) }
-          writer.with_scope(Namespace.new("b")) { writer.write_state(qux_map, data[:qux]) }
-          expect(writer.to_s).to eq("/?bar.a=baz&duck.b=corge")
+          store   = Store.new
+          writer.with_scope(store.scoped.descend(0, 0)) do
+            writer.write_state(foo_map, data[:foo])  
+          end
+          writer.with_scope(store.scoped.descend(0, 1)) do
+            writer.write_state(qux_map, data[:qux])
+          end
+          expect(store.to_url).to eq("/?bar.0=baz&duck.1=corge")
         end
       end
 
@@ -103,21 +130,15 @@ module Lucid
           data    = { foo: { bar: "baz" }, qux: { kiln: "corge" } }
           writer  = Writer.new
           foo_map = Map.build { path :bar }
-          qux_map = Map.build { path :kiln ; path "literal" }
-          writer.with_scope(Namespace.new("a")) { writer.write_state foo_map, data[:foo] }
-          writer.with_scope(Namespace.new("b")) { writer.write_state qux_map.off_route, data[:qux] }
-          expect(writer.to_s).to eq("/baz?kiln.b=corge")
-        end
-      end
-
-      context "nested collection", skip: true do
-        it "maps collection elements" do
-          data = { foo: [{ bar: "baz" }, { bar: "qux" }] }
-          writer = Writer.new
-          map = Map.build { query :bar }
-          writer.with_scope(:foo, Namespace.new("")) do
-            writer.write_collection(map)
+          qux_map = Map.build { path :kiln; path "literal" }
+          store = Store.new
+          writer.with_scope(store.scoped.descend(0, 0)) do
+            writer.write_state foo_map, data[:foo]
           end
+          writer.with_scope(store.scoped.descend(0, 1)) do
+            writer.write_state qux_map.off_route, data[:qux]
+          end
+          expect(store.to_url).to eq("/baz?kiln.1=corge")
         end
       end
     end

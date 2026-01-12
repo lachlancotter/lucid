@@ -7,16 +7,13 @@ module Lucid
       attr_reader :hash
 
       def initialize (hash)
-        @hash = flatten_hash(Types.hash[hash], Path.new([]))
+        @segments = [] # Used when writing to the store.
+        @hash     = flatten_hash(Types.hash[hash], Path.new([]))
       end
 
       def scoped
         HashScope.new(self)
       end
-
-      # def cursor (namespace = Namespace.new(""))
-      #   Cursor.new(self, namespace)
-      # end
 
       def get_param (key)
         @hash[key.to_s]
@@ -24,6 +21,10 @@ module Lucid
 
       def set_param (key, value)
         @hash[key.to_s] = value
+      end
+
+      def set_segment (n, value)
+        @segments[n] = value
       end
 
       def key? (key)
@@ -62,7 +63,7 @@ module Lucid
           end
         end
       end
-      
+
       #
       # Enumerates all coordinates through a nested hash structure,
       # yielding [coordinate, key, value] tuples for each leaf node.

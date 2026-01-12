@@ -67,7 +67,7 @@ module Lucid
         end
         state           = { bar: { baz: "baz" }, not_on_path: { quox: "quox" }, foo: "foo" }
         instance        = component_class.new(state)
-        expect(instance.url).to eq("/foo/baz?quox.cd2=quox")
+        expect(instance.url).to eq("/foo/baz?quox.1=quox")
       end
 
       it "raises when segments are undefined" do

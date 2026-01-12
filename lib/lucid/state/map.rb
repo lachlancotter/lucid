@@ -92,7 +92,7 @@ module Lucid
 
         def encode (state, buffer)
           value = @key.is_a?(Symbol) ? fetch_from(state) : @key
-          buffer.write_path_segment(value)
+          buffer.write_path_segment(@index, value)
         end
 
         def decode (reader, state)

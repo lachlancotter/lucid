@@ -17,18 +17,29 @@ module Lucid
       end
 
       def initialize
-        @namespaces = [Namespace.new("")]
-        @segments   = []
-        @params     = {}
+        @store  = Store.new
+        @scopes = [@store.scoped]
       end
 
       def to_s
-        "/" + @segments.join("/") + (
-           if @params.any?
-             "?" + Rack::Utils.build_nested_query(@params)
-           else
-             ""
-           end
+        @store.to_url
+      end
+
+      def with_scope (scope)
+        @scopes << scope
+        yield @scopes.last
+      ensure
+        @scopes.pop
+      end
+
+      def scope
+        @scopes.last
+      end
+
+      def scope_for_nest (nest)
+        scope.descend(
+           nest.parent.class.state_map.path_count,
+           nest.ordinal
         )
       end
 
@@ -45,42 +56,18 @@ module Lucid
       end
 
       def write_state (map, hash)
-        map.encode(hash, self)
+        map.encode(hash, scope)
       end
 
       def write_nests (nests, on_route:)
         nests.each do |(name, nest)|
           # TODO handle state for collections
           unless nest.collection?
-            with_scope(Namespace.new(nest.component)) do
+            with_scope scope_for_nest(nest) do
               write_component(nest.component, on_route: nest.on_route? && on_route)
             end
           end
         end
-      end
-
-      def write_path_segment (segment)
-        @segments << segment
-      end
-
-      def write_param (key, value)
-        @params[namespace.qualify(key)] = value
-      end
-
-      def namespace
-        @namespaces.last
-      end
-
-      def write_message (message)
-        Types.http_message[message]
-        @params.base.merge!(message.query_params)
-      end
-
-      def with_scope (namespace)
-        @namespaces.push Types.instance(Namespace)[namespace]
-        yield self
-      ensure
-        @namespaces.pop
       end
 
     end

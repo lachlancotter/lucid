@@ -37,19 +37,19 @@ module Lucid
       private
 
       def initialize_state (state)
-        validate_reader!(state).tap do |reader|
-          @state_reader = reader
-          @state        = self.class.build_state(reader)
+        validate_state_scope!(state).tap do |scope|
+          @state_reader = scope
+          @state        = self.class.build_state(scope)
         end
       end
 
-      def validate_reader! (reader)
-        case reader
-        when State::Scope then reader
-        when State::Store then reader.scoped
-        when State::HashReader then reader.scoped
-        when Hash then State::HashReader.new(reader).scoped
-        else raise ArgumentError, "Invalid state: #{reader}"
+      def validate_state_scope! (scope)
+        case scope
+        when State::Scope then scope
+        when State::Store then scope.scoped
+        when State::HashReader then scope.scoped
+        when Hash then State::HashReader.new(scope).scoped
+        else raise ArgumentError, "Invalid state: #{scope}"
         end
       end
 
