@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lucid"
-  spec.version       = "0.1.6"
+  spec.version       = "0.1.7"
   spec.authors       = ["Lachlan Cotter"]
   spec.email         = ["lach@satoriapp.com"]
   spec.summary       = "Reactive, hypermedia components for Ruby"
