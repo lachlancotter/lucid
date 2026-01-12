@@ -10,8 +10,38 @@ module Lucid
         @hash = flatten_hash(Types.hash[hash], Path.new([]))
       end
 
-      def cursor (namespace = Namespace.new(""))
-        Cursor.new(self, namespace)
+      def scoped
+        HashScope.new(self)
+      end
+
+      # def cursor (namespace = Namespace.new(""))
+      #   Cursor.new(self, namespace)
+      # end
+
+      def get_param (key)
+        @hash[key.to_s]
+      end
+
+      def set_param (key, value)
+        @hash[key.to_s] = value
+      end
+
+      def key? (key)
+        @hash.key?(key.to_s)
+      end
+
+      class HashScope < Scope
+        # Map all params to the hash, not the path.
+        def read (map)
+          {}.tap do |result|
+            map.rules.each do |rule|
+              qualified_key = qualify_key(rule.key)
+              if @store.key?(qualified_key)
+                result[rule.key] = @store.get_param(qualified_key)
+              end
+            end
+          end
+        end
       end
 
       def to_h
@@ -21,79 +51,47 @@ module Lucid
       private
 
       def flatten_hash (hash, root_path)
-        PathEnumerator.new(hash, root_path).each_with_object({}) do |(path, key, value), result|
-          if path.root?
-            # Root level keys don't get namespaced
-            result[key.to_sym] = value
+        CoordinateEnumerator.new(hash).each_with_object({}) do |(coordinate, key, value), result|
+          if coordinate.empty?
+            # Root level keys don't get qualified
+            result[key.to_s] = value
           else
-            namespace                    = Namespace.from_path(path)
-            qualified_key                = namespace.qualify(key)
-            result[qualified_key.to_sym] = value
+            # Qualify with coordinate string representation
+            qualified_key         = "#{key}.#{coordinate.join}"
+            result[qualified_key] = value
           end
         end
       end
-
+      
       #
-      # Immutable cursor for reading from the hash with a specific namespace.
+      # Enumerates all coordinates through a nested hash structure,
+      # yielding [coordinate, key, value] tuples for each leaf node.
+      # Coordinates are arrays of integers representing the index of
+      # each hash key at each nesting level.
       #
-      class Cursor
-        def initialize (reader, namespace = Namespace.new(""))
-          @reader    = reader
-          @namespace = Types.instance(Namespace)[namespace]
-        end
-
-        attr_reader :namespace
-
-        def read (map)
-          Types.instance(State::Map)[map]
-          {}.tap do |result|
-            map.rules.each do |rule|
-              qualified_key = @namespace.qualify(rule.key).to_sym
-              if @reader.hash.key?(qualified_key)
-                result[rule.key] = @reader.hash[qualified_key]
-              end
-            end
-          end
-        end
-
-        def seek (index, namespace)
-          namespace_obj = case namespace
-          when Namespace then namespace
-          when Symbol, String then Namespace.from_path(Path.new(namespace))
-          else Types.instance(Namespace)[namespace]
-          end
-          Cursor.new(@reader, namespace_obj)
-        end
-      end
-
-      #
-      # Enumerates all paths through a nested hash structure,
-      # yielding [path, key, value] tuples for each leaf node.
-      #
-      class PathEnumerator
+      class CoordinateEnumerator
         include Enumerable
 
-        def initialize (hash, root_path)
-          @hash      = hash
-          @root_path = root_path
+        def initialize (hash)
+          @hash = hash
         end
 
         def each
           return enum_for(:each) unless block_given?
-          enumerate(@hash, @root_path) { |item| yield item }
+          enumerate(@hash, []) { |item| yield item }
         end
 
         private
 
-        def enumerate (hash, current_path, &block)
-          hash.each do |key, value|
+        def enumerate (hash, current_coordinate, &block)
+          hash.each_with_index do |(key, value), index|
             if value.is_a?(Hash)
-              # Recursively enumerate nested paths
-              nested_path = current_path.concat(key)
-              enumerate(value, nested_path, &block)
+              # Recursively enumerate nested coordinates
+              nested_coordinate = current_coordinate + [index]
+              enumerate(value, nested_coordinate, &block)
             else
-              # Yield the path, key, and value for leaf nodes
-              yield [current_path, key.to_sym, value]
+              # Yield the coordinate, key, and value for leaf nodes
+              yield [current_coordinate, key.to_sym, value]
             end
           end
         end

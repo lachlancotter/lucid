@@ -43,25 +43,12 @@ module Lucid
         end
       end
 
-      #
-      # Read state for a nested component.
-      #
-      def nested_state (key)
-        Types.reader[
-           @state_reader.seek(
-              self.class.state_map.path_count,
-              State::Namespace.from_path(path.concat(key))
-           )
-        ]
-      end
-
       def validate_reader! (reader)
         case reader
-        when State::Cursor then reader
-        when State::Reader then reader.cursor
-        when State::HashReader::Cursor then reader
-        when State::HashReader then reader.cursor
-        when Hash then State::HashReader.new(reader).cursor
+        when State::Scope then reader
+        when State::Store then reader.scoped
+        when State::HashReader then reader.scoped
+        when Hash then State::HashReader.new(reader).scoped
         else raise ArgumentError, "Invalid state: #{reader}"
         end
       end

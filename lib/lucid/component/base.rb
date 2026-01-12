@@ -48,6 +48,11 @@ module Lucid
       # The name of this component in the parent.
       #
       static :name, Types.symbol.default("root".freeze)
+      
+      #
+      # The definition order of this component in the parent. Nil for root.
+      # 
+      static :ordinal, Types.integer.optional.default(nil)
 
       #
       # Whether this component is a member of a collection.

@@ -244,7 +244,6 @@ module Lucid
           expect(view.changes.first).to be_a(ChangeSet::Prepend)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
-          puts view.changes.to_s
         end
 
         it "is cumulative" do

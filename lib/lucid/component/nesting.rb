@@ -46,6 +46,14 @@ module Lucid
         end
       end
 
+      def coordinate
+        if root?
+          []
+        else
+          props.parent.coordinate + [props.ordinal]
+        end
+      end
+
       def component_name
         case props.collection_index
         when NilClass then props.name
@@ -99,15 +107,20 @@ module Lucid
         def nest (name, over: nil, &block)
           after_initialize do
             nests[name] = case over
-            when Symbol then CollectionNest.new(name, self, over, &block)
-            when Enumerable then CollectionNest.new(name, self, over, &block)
-            when NilClass then ComponentNest.new(name, self, &block)
+            when Symbol then CollectionNest.new(name, nests.count, self, over, &block)
+            when Enumerable then CollectionNest.new(name, nests.count, self, over, &block)
+            when NilClass then ComponentNest.new(name, nests.count, self, &block)
             else raise ArgumentError, "Invalid enumerable"
             end
           end
           after_application do
             # Refactor so that @message is yielded to the callback block.
-            nests[name].install(nested_state(name), @message)
+            # nests[name].install(nested_state(name), @message)
+            nested_reader = @state_reader.descend(
+               self.class.state_map.path_count,
+               nests[name].ordinal
+            )
+            nests[name].install(nested_reader, @message)
           end
           define_method(name) { nests[name].content }
         end
@@ -144,9 +157,9 @@ module Lucid
           @signal_map      = SignalMap.new(*list, **map)
         end
 
-        def call (state, message, parent, name, collection_index: nil)
+        def call (state, message, parent, name, ordinal, collection_index: nil)
           Types.instance(Message).optional[message]
-          @component_class.new(state, message, **build_props(parent, name, collection_index))
+          @component_class.new(state, message, **build_props(parent, name, ordinal, collection_index))
         end
 
         # def update (component)
@@ -157,16 +170,17 @@ module Lucid
 
         private
 
-        def build_props (parent, name, collection_index)
-          config(parent, name, collection_index).merge(
+        def build_props (parent, name, ordinal, collection_index)
+          config(parent, name, ordinal, collection_index).merge(
              @signal_map.apply(parent, index: collection_index)
           )
         end
 
-        def config (parent, name, collection_index)
+        def config (parent, name, ordinal, collection_index)
           {
              parent:           parent,
              name:             name,
+             ordinal:          ordinal,
              collection_index: collection_index,
              app_root:         parent.props.app_root,
              http_session:     parent.props.http_session,
@@ -183,11 +197,12 @@ module Lucid
       # Abstract base class for nesting subcomponents.
       # 
       class Nest
-        attr_reader :parent, :name
+        attr_reader :parent, :name, :ordinal
 
-        def initialize (name, parent)
-          @parent = parent
-          @name   = name
+        def initialize (name, ordinal, parent)
+          @parent  = parent
+          @name    = Types.symbol[name]
+          @ordinal = Types.integer[ordinal]
         end
 
         #
@@ -255,8 +270,8 @@ module Lucid
 
         attr_reader :component_class
 
-        def call (state, parent, name)
-          props_binding(parent).call(state, parent, name)
+        def call (state, parent, name, ordinal)
+          props_binding(parent).call(state, parent, name, ordinal)
         end
 
         def props_binding (parent)
@@ -338,8 +353,8 @@ module Lucid
       # Housing for an individual subcomponent.
       # 
       class ComponentNest < Nest
-        def initialize (name, parent, &block)
-          super(name, parent)
+        def initialize (name, ordinal, parent, &block)
+          super(name, ordinal, parent)
           @field = Field.new(@parent, &block)
           # @field.attach(self) { update }
         end
@@ -373,7 +388,7 @@ module Lucid
         end
 
         def install (state, message)
-          @component = props_binding.call(state, message, @parent, @name)
+          @component = props_binding.call(state, message, @parent, @name, @ordinal)
         rescue StandardError => error
           App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
@@ -388,8 +403,8 @@ module Lucid
       # Housing for a collection of subcomponents mapped over an Enumerable.
       # 
       class CollectionNest < Nest
-        def initialize (name, parent, over, &block)
-          super(name, parent)
+        def initialize (name, ordinal, parent, over, &block)
+          super(name, ordinal, parent)
           @enumerable = enumerable(over)
           @map_f      = block
           @field      = build_field(parent, block, @enumerable, @map_f)
@@ -482,7 +497,7 @@ module Lucid
               begin
                 props_binding = nest.props_binding(element, index, **kwargs)
                 # nested_state() isn't implemented for collections.
-                props_binding.call({}, nil, parent, name, collection_index: index)
+                props_binding.call({}, nil, parent, name, ordinal, collection_index: index)
               rescue StandardError => error
                 App::Logger.exception(error)
                 ErrorPage.new({}, error: error, collection_key: index)
@@ -502,7 +517,7 @@ module Lucid
           # Look up any other expected keyword params in the parent component.
           params = Field::Execution.new(@map_f).keywords
           kwargs = params.map { |k| [k, @parent.field(k).value] }.to_h
-          props_binding(element, index, **kwargs).call({}, nil, @parent, @name, collection_index: index)
+          props_binding(element, index, **kwargs).call({}, nil, @parent, @name, @ordinal, collection_index: index)
         end
 
         def props_binding (element, index, **kwargs)

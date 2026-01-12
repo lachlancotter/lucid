@@ -5,7 +5,7 @@ module Lucid
       describe ".new" do
         context "defaults" do
           it "initializes default attribute values" do
-            buffer          = State::Reader.new("/")
+            buffer          = State::Store.from_url("/").scoped
             component_class = Class.new(Component::Base) { param :foo, Types.string.default("bar".freeze) }
             component       = component_class.new(buffer)
             expect(component.state.to_h).to eq(foo: "bar")
@@ -14,7 +14,8 @@ module Lucid
 
         context "root component" do
           it "parses the URL" do
-            buffer          = State::Reader.new("/foo/bar?baz=qux")
+            store           = State::Store.from_url("/foo/bar?baz=qux")
+            buffer          = store.scoped
             component_class = Class.new(Component::Base) do
               route "/:foo/:bar"
               param :foo
@@ -28,7 +29,7 @@ module Lucid
 
         context "nested component" do
           it "parses the URL" do
-            buffer          = State::Reader.new("/foo/bar")
+            buffer          = State::Store.from_url("/foo/bar").scoped
             component_class = Class.new(Component::Base) do
               route "/:foo", nest: :sub
               param :foo, Types.string

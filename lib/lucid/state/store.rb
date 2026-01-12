@@ -18,6 +18,10 @@ module Lucid
         @path   = Types.array[path]
         @params = Types.hash[params]
       end
+      
+      def scoped
+        Scope.new(self)
+      end
 
       def to_url
         url = '/' + encode_path(@path)

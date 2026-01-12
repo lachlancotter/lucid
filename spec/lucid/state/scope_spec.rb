@@ -6,7 +6,7 @@ module Lucid
     describe Scope do
 
       describe "#initialize" do
-        it "creates a scope with default depth and namespace" do
+        it "creates a scope with default depth and coordinate" do
           store = Store.new
           scope = Scope.new(store)
           expect(scope).to be_a(Scope)
@@ -18,9 +18,15 @@ module Lucid
           expect(scope).to be_a(Scope)
         end
 
-        it "creates a scope with custom namespace" do
+        it "creates a scope with custom coordinate" do
           store = Store.new
-          scope = Scope.new(store, 0, "custom")
+          scope = Scope.new(store, 0, [1, 2, 3])
+          expect(scope).to be_a(Scope)
+        end
+
+        it "defaults to empty coordinate array" do
+          store = Store.new
+          scope = Scope.new(store, 0)
           expect(scope).to be_a(Scope)
         end
       end
@@ -90,9 +96,9 @@ module Lucid
           expect(scope.get_param("foo")).to eq("bar")
         end
 
-        it "namespaces the parameter key" do
-          store = Store.new([], { "foo.abc" => "bar" })
-          scope = Scope.new(store, 0, "abc")
+        it "qualifies the parameter key with coordinate" do
+          store = Store.new([], { "foo.123" => "bar" })
+          scope = Scope.new(store, 0, [1, 2, 3])
           expect(scope.get_param("foo")).to eq("bar")
         end
 
@@ -102,15 +108,15 @@ module Lucid
           expect(scope.get_param("missing")).to be_nil
         end
 
-        it "does not namespace when namespace is nil" do
+        it "does not qualify when coordinate is empty" do
           store = Store.new([], { "foo" => "bar" })
-          scope = Scope.new(store, 0, nil)
+          scope = Scope.new(store, 0, [])
           expect(scope.get_param("foo")).to eq("bar")
         end
 
-        it "handles empty namespace string" do
-          store = Store.new([], { "foo" => "bar" })
-          scope = Scope.new(store, 0, "")
+        it "handles multi-digit coordinates" do
+          store = Store.new([], { "foo.10203" => "bar" })
+          scope = Scope.new(store, 0, [1, 0, 2, 0, 3])
           expect(scope.get_param("foo")).to eq("bar")
         end
       end
@@ -123,25 +129,25 @@ module Lucid
           expect(store.get_param("foo")).to eq("bar")
         end
 
-        it "namespaces the parameter key" do
+        it "qualifies the parameter key with coordinate" do
           store = Store.new
-          scope = Scope.new(store, 0, "abc")
+          scope = Scope.new(store, 0, [1, 2, 3])
           scope.set_param("foo", "bar")
-          expect(store.get_param("foo.abc")).to eq("bar")
+          expect(store.get_param("foo.123")).to eq("bar")
         end
 
-        it "does not namespace when namespace is nil" do
+        it "does not qualify when coordinate is empty" do
           store = Store.new
-          scope = Scope.new(store, 0, nil)
+          scope = Scope.new(store, 0, [])
           scope.set_param("foo", "bar")
           expect(store.get_param("foo")).to eq("bar")
         end
 
-        it "handles empty namespace string" do
+        it "handles multi-digit coordinates" do
           store = Store.new
-          scope = Scope.new(store, 0, "")
+          scope = Scope.new(store, 0, [1, 0, 2, 0, 3])
           scope.set_param("foo", "bar")
-          expect(store.get_param("foo")).to eq("bar")
+          expect(store.get_param("foo.10203")).to eq("bar")
         end
 
         it "can overwrite existing parameters" do
@@ -156,7 +162,7 @@ module Lucid
         it "returns a new scope with the same store" do
           store = Store.new(["a", "b", "c"])
           scope1 = Scope.new(store, 0)
-          scope2 = scope1.descend(1, "ns")
+          scope2 = scope1.descend(1, 0)
           
           expect(scope2).to be_a(Scope)
           expect(scope2).not_to eq(scope1)
@@ -165,7 +171,7 @@ module Lucid
         it "combines depths additively" do
           store = Store.new(["a", "b", "c", "d", "e"])
           scope1 = Scope.new(store, 1)
-          scope2 = scope1.descend(2, nil)
+          scope2 = scope1.descend(2, 0)
           
           # scope1 has depth 1, so get_segment(0) returns "b"
           expect(scope1.get_segment(0)).to eq("b")
@@ -174,32 +180,32 @@ module Lucid
           expect(scope2.get_segment(0)).to eq("d")
         end
 
-        it "sets a new namespace" do
-          store = Store.new([], { "foo.child" => "bar" })
-          scope1 = Scope.new(store, 0, "parent")
-          scope2 = scope1.descend(0, "child")
+        it "appends to the coordinate array" do
+          store = Store.new([], { "foo.123" => "bar" })
+          scope1 = Scope.new(store, 0, [1, 2])
+          scope2 = scope1.descend(0, 3)
           
           expect(scope2.get_param("foo")).to eq("bar")
         end
 
-        it "combines depth and namespace" do
-          store = Store.new(["a", "b", "c"], { "key.nested" => "value" })
-          scope1 = Scope.new(store, 0, "root")
-          scope2 = scope1.descend(1, "nested")
+        it "combines depth and coordinate" do
+          store = Store.new(["a", "b", "c"], { "key.01" => "value" })
+          scope1 = Scope.new(store, 0, [0])
+          scope2 = scope1.descend(1, 1)
           
           expect(scope2.get_segment(0)).to eq("b")
           expect(scope2.get_param("key")).to eq("value")
         end
 
-        it "allows descending from a scope that already has depth and namespace" do
-          store = Store.new(["a", "b", "c", "d"], { "x.n2" => "value" })
-          scope1 = Scope.new(store, 1, "n1")
-          scope2 = scope1.descend(1, "n2")
+        it "allows descending from a scope that already has depth and coordinate" do
+          store = Store.new(["a", "b", "c", "d"], { "x.012" => "value" })
+          scope1 = Scope.new(store, 1, [0, 1])
+          scope2 = scope1.descend(1, 2)
           
-          # scope1: depth=1, namespace="n1"
+          # scope1: depth=1, coordinate=[0, 1]
           expect(scope1.get_segment(0)).to eq("b")
           
-          # scope2: depth=2 (1+1), namespace="n2"
+          # scope2: depth=2 (1+1), coordinate=[0, 1, 2]
           expect(scope2.get_segment(0)).to eq("c")
           expect(scope2.get_param("x")).to eq("value")
         end
@@ -207,7 +213,7 @@ module Lucid
         it "shares the underlying store" do
           store = Store.new(["a", "b", "c"])
           scope1 = Scope.new(store, 0)
-          scope2 = scope1.descend(1, nil)
+          scope2 = scope1.descend(1, 0)
           
           scope2.set_segment(0, "changed")
           
@@ -217,29 +223,31 @@ module Lucid
         end
 
         it "allows descending with zero depth offset" do
-          store = Store.new(["a", "b"], { "foo.ns" => "bar" })
-          scope1 = Scope.new(store, 1)
-          scope2 = scope1.descend(0, "ns")
+          store = Store.new(["a", "b"], { "foo.12" => "bar" })
+          scope1 = Scope.new(store, 1, [1])
+          scope2 = scope1.descend(0, 2)
           
-          # Same depth as scope1
+          # Same depth as scope1, but extended coordinate
           expect(scope2.get_segment(0)).to eq("b")
           expect(scope2.get_param("foo")).to eq("bar")
         end
 
-        it "allows descending with nil namespace" do
-          store = Store.new(["a", "b", "c"], { "key" => "value" })
-          scope1 = Scope.new(store, 0, "old")
-          scope2 = scope1.descend(1, nil)
+        it "builds up nested coordinates" do
+          store = Store.new([], { "key.0123" => "value" })
+          scope1 = Scope.new(store, 0, [])
+          scope2 = scope1.descend(0, 0)
+          scope3 = scope2.descend(0, 1)
+          scope4 = scope3.descend(0, 2)
+          scope5 = scope4.descend(0, 3)
           
-          expect(scope2.get_segment(0)).to eq("b")
-          expect(scope2.get_param("key")).to eq("value")
+          expect(scope5.get_param("key")).to eq("value")
         end
       end
 
-      describe "combined depth and namespace" do
-        it "applies both depth offset and namespace" do
-          store = Store.new(["a", "b", "c"], { "foo.ns" => "bar" })
-          scope = Scope.new(store, 1, "ns")
+      describe "combined depth and coordinate" do
+        it "applies both depth offset and coordinate" do
+          store = Store.new(["a", "b", "c"], { "foo.12" => "bar" })
+          scope = Scope.new(store, 1, [1, 2])
 
           expect(scope.get_segment(0)).to eq("b")
           expect(scope.get_segment(1)).to eq("c")
@@ -247,9 +255,9 @@ module Lucid
         end
 
         it "maintains isolation from other scopes" do
-          store  = Store.new(["a", "b", "c"], { "key1" => "value1", "key2.ns" => "value2" })
-          scope1 = Scope.new(store, 0, nil)
-          scope2 = Scope.new(store, 1, "ns")
+          store  = Store.new(["a", "b", "c"], { "key1" => "value1", "key2.01" => "value2" })
+          scope1 = Scope.new(store, 0, [])
+          scope2 = Scope.new(store, 1, [0, 1])
 
           expect(scope1.get_segment(0)).to eq("a")
           expect(scope1.get_param("key1")).to eq("value1")

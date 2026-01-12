@@ -2,7 +2,7 @@ require "lucid/component/state_mapping"
 
 module Lucid
   describe Component::StateMapping do
-
+    
     describe ".url" do
       context "no path" do
         it "is the empty path" do
@@ -65,10 +65,8 @@ module Lucid
             end
           end
         end
-        state           = { foo: "foo", bar: { baz: "baz" }, not_on_path: { quox: "quox" } }
+        state           = { bar: { baz: "baz" }, not_on_path: { quox: "quox" }, foo: "foo" }
         instance        = component_class.new(state)
-        bar_reader      = State::HashReader.new(state)
-        cursor          = bar_reader.cursor.seek(0, :bar)
         expect(instance.url).to eq("/foo/baz?quox.cd2=quox")
       end
 

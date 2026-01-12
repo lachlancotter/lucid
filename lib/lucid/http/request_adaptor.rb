@@ -30,17 +30,19 @@ module Lucid
 
       def state_from_fullpath
         state_string = Endpoint.relative(fullpath, base: @url_base)
-        State::Reader.new(state_string).cursor
+        State::Store.from_url(state_string).scoped
+        # State::Reader.new(state_string).cursor
       end
 
       def state_from_hx_current_url
         current_url  = get_header("HTTP_HX_CURRENT_URL")
         state_string = Endpoint.relative(current_url, base: @url_base)
-        State::Reader.new(state_string).cursor
+        State::Store.from_url(state_string).scoped
+        # State::Reader.new(state_string).cursor
       end
 
       def state_from_message_params
-        State::HashReader.new(state_params).cursor
+        State::HashReader.new(state_params).scoped
       end
 
       def htmx?
