@@ -33,9 +33,9 @@ module Lucid
     #    Routing
     # ===================================================== #
 
-    get("/@/?*") { cycle(request, response).link }
-    post("/@/?*") { cycle(request, response).command }
-    get("/?*") { cycle(request, response).state }
+    get("/@/?*") { Cycle.new(container(request, response)).link }
+    post("/@/?*") { Cycle.new(container(request, response)).command }
+    get("/?*") { Cycle.new(container(request, response)).state }
 
     private
 
@@ -43,23 +43,14 @@ module Lucid
     #    Build and Dispatch
     # ===================================================== #
 
-    #
-    # Build a request/response cycle to dispatch.
-    # 
-    def cycle (request, response)
-      Cycle.new(
-         HTTP::RequestAdaptor.new(request), 
-         HTTP::ResponseAdaptor.new(response), 
-         container
-      )
-    end
-
-    def container
+    def container (request, response)
       settings.container_class.new({
          app_root:        settings.app_root,
          component_class: settings.component_class,
          handler_class:   settings.handler_class,
          session_class:   settings.session_class,
+         request:         request,
+         response:        response
       }, env)
     end
 
