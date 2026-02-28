@@ -102,7 +102,7 @@ module Lucid
             renderer     = Template::RenderContext.new(nil) {}
             builder      = Form::Builder.new(renderer, params)
             result       = builder.submit("Label", class: "foo-class")
-            expect(result).to match('<input')
+            expect(result).to match('<button')
             expect(result).to match('type="submit"')
             expect(result).to match('value="Label"')
             expect(result).to match('class="foo-class"')
