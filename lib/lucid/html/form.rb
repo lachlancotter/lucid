@@ -136,7 +136,7 @@ module Lucid
         end
 
         def submit (label, **attrs)
-          @renderer.tag(:button, { type: :submit }.merge(attrs)) { text label }
+          @renderer.tag(:button, { type: :submit, value: label }.merge(attrs)) { text label }
         end
 
         def radio_button (key, value, checked: false, **attrs)
