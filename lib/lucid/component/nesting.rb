@@ -137,6 +137,8 @@ module Lucid
         def key (&block)
           define_method(:collection_key) { instance_eval(&block) }
         end
+        
+        
       end
 
       # ===================================================== #
@@ -443,13 +445,12 @@ module Lucid
           end
         end
 
-        def remove (model)
-          build(model, 0).tap do |subcomponent|
-            parent.delta.remove(subcomponent)
-          end
-          # @collection.each_with_index do |subcomponent, index|
-          #   parent.delta.remove(subcomponent) if block.call(subcomponent, index)
-          # end
+        def remove (collection_key)
+          parent.delta.remove(
+             Component::Base.element_id(
+                parent.path.concat("#{name}-#{collection_key}")
+             )
+          )
         end
 
         def collection_selector

@@ -43,8 +43,8 @@ module Lucid
         tap { add_change Prepend.new(subcomponent, to: selector(nest: to)) }
       end
 
-      def remove (subcomponent)
-        tap { add_change Remove.new(subcomponent) }
+      def remove (subcomponent_id)
+        tap { add_change Remove.new(subcomponent_id) }
       end
 
       def selector (nest: "")
@@ -115,7 +115,7 @@ module Lucid
       #
       class Change
         def initialize (component)
-          @component = Types.component[component]
+          @component = (Types.component | Types.instance(Remove::NilComponent))[component]
           @template  = @component.template
         end
 
@@ -203,8 +203,37 @@ module Lucid
       # Intended for use with nested components.
       # 
       class Remove < Change
-        def initialize (component)
-          super(component)
+        #
+        # When removing a component from the client, we've often already
+        # deleted the associated data, so we can't instantiate the component
+        # class. This satisfies the Change interface for such a ghost.
+        # 
+        class NilComponent
+          def initialize (element_id)
+            @element_id = Types.string[element_id]
+          end
+
+          attr_reader :element_id
+
+          def css_class_name
+            ""
+          end
+
+          def template
+            nil
+          end
+          
+          def root?
+            false
+          end
+
+          def tag
+            :div
+          end
+        end
+
+        def initialize (component_id)
+          super(NilComponent.new(component_id))
         end
 
         def call (oob: false)

@@ -23,8 +23,8 @@ module Lucid
         nests[to].prepend(model)
       end
       
-      def remove (model, from:)
-        nests[from].remove(model)
+      def remove (collection_key, from:)
+        nests[from].remove(collection_key)
       end
       
     end

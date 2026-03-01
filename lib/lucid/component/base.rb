@@ -105,6 +105,10 @@ module Lucid
       end
 
       def element_id
+        self.class.element_id(path)
+      end
+      
+      def self.element_id (path)
         if path.root?
           "root"
         else
