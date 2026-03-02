@@ -13,7 +13,8 @@ module Lucid
             end
             nest(:a) { Class.new(Component::Base) { element { h1 "Component A" } } }
             nest(:b) { Class.new(Component::Base) { element { h1 "Component B" } } }
-            nest(:item_views, over: []) { |i| item_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { item_class[].enum(:items, as: :foo) }
           end
         end
         let(:view) { base_class.new({}) }
@@ -127,7 +128,7 @@ module Lucid
           view         = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
             let(:list) { [] }
-            nest(:subviews, over: :list) { nested_class }
+            nest(:subviews) { nested_class[].enum(:list, as: :foo) }
             on(msg_class) do
               append({}, to: :subviews)
               replace
@@ -167,10 +168,11 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) { append 0, to: :item_views }
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Append)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -186,13 +188,14 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) do
               append 0, to: :item_views
               append 1, to: :item_views
             end
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(2)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -209,13 +212,14 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) do
               replace
               append 0, to: :item_views
             end
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -236,10 +240,11 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) { prepend 0, to: :item_views }
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Prepend)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
@@ -255,13 +260,14 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) do
               prepend 0, to: :item_views
               prepend 1, to: :item_views
             end
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(2)
           expect(view.changes.to_s).to match(/id="item_views-0"/)
           expect(view.changes.to_s).to match(/<p>Item 0<\/p>/)
@@ -278,13 +284,14 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: []) { |i| subview_class[foo: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :foo) }
             on(msg_class) do
               replace
               prepend 0, to: :item_views
             end
           end.new({}, msg_class.new)
-          
+
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Replace)
           expect(view.changes.to_s).to eq("<h1>Hello, World</h1>")
@@ -305,7 +312,8 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            let(:items) { [1, 2, 3] }
+            nest(:item_views) { subview_class[].enum(:items, as: :index) }
             on(msg_class) { remove(1, from: :item_views) }
           end.new({}, msg_class.new)
 
@@ -324,7 +332,8 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            let(:items) { [] }
+            nest(:item_views) { subview_class[].enum(:items, as: :index) }
             on(msg_class) do
               remove(1, from: :item_views)
               remove(3, from: :item_views)
@@ -346,7 +355,8 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            let(:items) { [1, 2, 3] }
+            nest(:item_views) { subview_class[].enum(:items, as: :index) }
             on(msg_class) do
               replace
               append 0, to: :item_views
@@ -367,17 +377,17 @@ module Lucid
           end
           view          = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
-            nest(:item_views, over: [1, 2, 3]) { |i| subview_class[index: i] }
+            nest(:item_views) { subview_class[].enum([1, 2, 3], as: :index) }
             on(msg_class) { remove 1, from: :item_views }
           end.new({}, msg_class.new)
-
+          
           expect(view.changes.count).to eq(1)
           expect(view.changes.first).to be_a(ChangeSet::Remove)
           expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)
         end
       end
-      
+
       describe "#delete" do
         it "override subsequent replace action" do
           msg_class = Class.new(Lucid::Event)

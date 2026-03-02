@@ -99,7 +99,7 @@ module Lucid
           component.subcomponents.each do |(name, sub)|
             case sub
             when Component::Base then append_component(sub)
-            when Nesting::Collection then append_collection(sub)
+            when Array then append_collection(sub)
             else raise ArgumentError, "Unsupported subcomponent type: #{sub}: #{sub.class}"
             end
           end
@@ -222,7 +222,7 @@ module Lucid
           def template
             nil
           end
-          
+
           def root?
             false
           end

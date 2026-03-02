@@ -121,7 +121,7 @@ module Lucid
               end
             end
             parent_component_class = Class.new(Component::Base) do
-              nest(:bars, over: [1, 2, "foo", 4]) { |c| child_component_class[count: c] }
+              nest(:bars) { child_component_class[].enum([1, 2, "foo", 4], as: :count) }
               element { subviews(:bars) }
             end
             parent_component       = parent_component_class.new({})

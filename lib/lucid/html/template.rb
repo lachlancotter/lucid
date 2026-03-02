@@ -115,7 +115,7 @@ module Lucid
         #
         # Render a component in the template.
         # 
-        def subview (name, index = nil)
+        def subview (name, index = 0)
           with_valid_nest(name) do
             # If the subcomponent raises an error during rendering, then the
             # nest will replace it with an error page. We retry the render after
@@ -134,7 +134,7 @@ module Lucid
           div(class: @renderable.collection_classname(enum_name)) do
             enum = @renderable.send(enum_name)
             case enum
-            when Lucid::Component::Nesting::Collection
+            when Enumerable
               enum.each_with_index { |sub, index| subview(enum_name, index) }
             when Lucid::Component::Base
               subview(enum_name)

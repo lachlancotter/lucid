@@ -104,7 +104,7 @@ module Lucid
             element { text "Index: #{index}" }
           end
           base_component_class   = Class.new(Component::Base) do
-            nest(:child, over: [0]) { |i| nested_component_class[index: i] }
+            nest(:child) { nested_component_class[].enum([0], as: :index) }
             to(msg_class) { append(1, to: :child) }
           end
 
@@ -139,7 +139,7 @@ module Lucid
           view      = Class.new(Component::Base) do
             param :val
             let(:items) { %w[english spanish] }
-            nest(:foo, over: :items) { foo_class[lang: [:items]] }
+            nest(:foo) { foo_class[].enum(:items, as: :lang) }
           end.new({ val: "a" })
 
           expect(view.foo[0]).to be_a(foo_class)
@@ -165,7 +165,7 @@ module Lucid
         it "nests a child component over an array" do
           view = Class.new(Component::Base) do
             let(:bar) { %w[english spanish] }
-            nest(:foo, over: :bar) { NamedNestedComponent[var: [:bar]] }
+            nest(:foo) { NamedNestedComponent[].enum(:bar, as: :var) }
           end.new({}, app_root: "/app/root")
 
           expect(view.foo[0]).to be_a(Component::Base)

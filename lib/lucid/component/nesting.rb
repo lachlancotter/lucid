@@ -17,7 +17,7 @@ module Lucid
         nests.map { |(name, nest)| [name, nest.content] }.to_h
       end
 
-      def subcomponent (name, index = nil)
+      def subcomponent (name, index = 0)
         nest = nests.fetch(name) { raise "No subcomponent named #{name}" }
         nest.component(index)
       end
@@ -104,14 +104,15 @@ module Lucid
         # over - Name of an enumerable field to map over. Optional.
         # block - Function returning a Factory instance for building the component.
         # 
-        def nest (name, over: nil, &block)
+        def nest (name, &block)
           after_initialize do
-            nests[name] = case over
-            when Symbol then CollectionNest.new(name, nests.count, self, over, &block)
-            when Enumerable then CollectionNest.new(name, nests.count, self, over, &block)
-            when NilClass then ComponentNest.new(name, nests.count, self, &block)
-            else raise ArgumentError, "Invalid enumerable"
-            end
+            nests[name] = Nest.new(name, nests.count, self, &block)
+            # nests[name] = case over
+            # when Symbol then CollectionNest.new(name, nests.count, self, over, &block)
+            # when Enumerable then CollectionNest.new(name, nests.count, self, over, &block)
+            # when NilClass then ComponentNest.new(name, nests.count, self, &block)
+            # else raise ArgumentError, "Invalid enumerable"
+            # end
           end
           after_application do
             # Refactor so that @message is yielded to the callback block.
@@ -158,9 +159,9 @@ module Lucid
           @message_scopes  = []
         end
 
-        def enum (collection_name, as:)
+        def enum (collection, as:)
           tap do
-            @enumerator = Enumerator.new(collection_name, as: as)
+            @enumerator = Enumerator.new(collection, as: as)
           end
         end
 
@@ -170,18 +171,33 @@ module Lucid
           end
         end
 
-        def call (state, message, parent, name, ordinal, collection_index: nil)
-          Types.instance(Message).optional[message]
-          @component_class.new(state, message, **build_props(parent, name, ordinal, collection_index))
+        def call (state, message, parent, name, ordinal, collection_index: nil, element: nil)
+          @component_class.new(state, message,
+             **build_props(parent, name, ordinal, collection_index, element: element)
+          )
+        end
+
+        def enumerate (state, message, parent, name, ordinal, &block)
+          @enumerator.each(parent) do |element, collection_index|
+            # Don't automatically pass messages to the whole collection.
+            yield call(state, nil, parent, name, ordinal,
+               collection_index: collection_index, element: element)
+          end
+        end
+
+        def enum?
+          @enumerator.is_a?(Enumerator)
         end
 
         private
 
-        def build_props (parent, name, ordinal, collection_index)
+        def build_props (parent, name, ordinal, collection_index, element: nil)
           config(parent, name, ordinal, collection_index).merge(
-             @signal_map.apply(parent).merge(
-                @enumerator.to_props(parent, collection_index)
-             )
+             @signal_map.apply(parent),
+             case element
+             when NilClass then @enumerator.from_index(parent, collection_index)
+             else @enumerator.from_element(parent, element)
+             end
           )
         end
 
@@ -226,26 +242,59 @@ module Lucid
         end
 
         class Enumerator
-          def initialize (collection_name, as:)
-            @collection_name = collection_name
-            @as              = as
+          def initialize (collection, as:)
+            @collection = (Types.symbol | Types.enumerable)[collection]
+            @as         = as
           end
-          
-          def to_props (component, index)
+
+          def each (component, &block)
+            collection(component).each_with_index(&block)
+          end
+
+          def collection (component)
+            case @collection
+            when Symbol then component.field(@collection).value
+            when Enumerable then @collection
+            else raise StandardError
+            end
+          end
+
+          def from_index (component, index)
             {
-               @as => element(component, @collection_name, index),
+               @as => lookup(component, index)
             }
           end
-          
-          def element (component, source, index)
+
+          def from_element (component, element)
+            {
+               @as => Field.new(component) { element }
+            }
+          end
+
+          private
+
+          def lookup (component, index)
+            Types.integer[index]
+            collection = @collection
             Field.new(component) do
-              component.field(source).value[index]
+              case collection
+              when Symbol
+                component.field(collection).value[index]
+              when Enumerable
+                collection[index]
+              else
+                raise StandardError
+              end
             end
           end
         end
-        
+
         class NilEnumerator
-          def to_props (component, index)
+          def from_index (component, index)
+            {}
+          end
+
+          def from_element (component, index)
             {}
           end
         end
@@ -263,15 +312,125 @@ module Lucid
       # ===================================================== #
 
       #
-      # Abstract base class for nesting subcomponents.
+      # Manages a subcomponent (or collection of subcomponents)
+      # within a parent component.
       # 
       class Nest
         attr_reader :parent, :name, :ordinal
 
-        def initialize (name, ordinal, parent)
-          @parent  = parent
-          @name    = Types.symbol[name]
-          @ordinal = Types.integer[ordinal]
+        def initialize (name, ordinal, parent, &block)
+          @parent     = parent
+          @name       = Types.symbol[name]
+          @ordinal    = Types.integer[ordinal]
+          @field      = Field.new(@parent, &block)
+          @components = []
+        end
+
+        def install (state, message)
+          if collection?
+            install_collection(state, message)
+          else
+            install_singleton(state, message)
+          end
+        end
+
+        def install_singleton (state, message)
+          @components = [factory.call(state, message, @parent, @name, @ordinal)]
+        rescue StandardError => error
+          App::Logger.exception(error)
+          @components = [ErrorPage.new({}, error: error)]
+        end
+
+        def install_collection (state, message)
+          @components = [].tap do |result|
+            factory.enumerate(state, message, @parent, @name, @ordinal) do |component|
+              result << component
+            end
+          end
+        rescue StandardError => error
+          App::Logger.exception(error)
+          @components = [ErrorPage.new({}, error: error)]
+        end
+
+        def deep_state
+          if collection?
+            {}.tap do |result|
+              each_component do |component|
+                result[component.collection_key] = component.deep_state
+              end
+            end
+          else
+            component.deep_state
+          end
+        end
+
+        def collection?
+          factory.enum?
+        end
+
+        def content
+          if collection?
+            @components
+          else
+            @components.first
+          end
+        end
+
+        def component (index = 0)
+          @components[index]
+        end
+
+        def each_component (&block)
+          @components.each_with_index do |component, index|
+            with_component(index, &block)
+          end
+        end
+
+        def with_component (index, retry_on_error: false, &block)
+          yield @components[index]
+        rescue StandardError => error
+          App::Logger.exception(error)
+          @components[index] = ErrorPage.new({}, error: error, collection_index: index)
+          yield @components[index] if retry_on_error
+        end
+
+        def append (model)
+          build(model, @components.length).tap do |subcomponent|
+            parent.delta.append(subcomponent, to: collection_selector)
+          end
+        end
+
+        def prepend (model)
+          build(model, 0).tap do |subcomponent|
+            parent.delta.prepend(subcomponent, to: collection_selector)
+          end
+        end
+
+        def remove (collection_key)
+          parent.delta.remove(
+             Component::Base.element_id(
+                parent.path.concat("#{name}-#{collection_key}")
+             )
+          )
+        end
+
+        def collection_selector
+          "." + parent.collection_classname(@name)
+        end
+
+        def on_route?
+          @parent.routes_to?(self)
+        end
+
+        private
+
+        def factory
+          normalize_binding(@field.value)
+        end
+
+        def build (element, index)
+          factory.call({}, nil, @parent, @name, @ordinal,
+             element: element, collection_index: index)
         end
 
         #
@@ -284,30 +443,6 @@ module Lucid
           when -> (k) { k <= Component::Base } then Factory.new(binding)
           else raise ArgumentError, "Invalid Factory: #{binding.class}"
           end
-        end
-
-        def on_route?
-          @parent.routes_to?(self)
-        end
-      end
-
-      #
-      # Instantiates and configures a nested component.
-      # 
-      class Builder
-        def initialize (klass, signal_map)
-          @component_class = Types.subclass(Component::Base)[klass]
-          @signal_map      = signal_map
-        end
-
-        attr_reader :component_class
-
-        def call (state, parent, name, ordinal)
-          factory(parent).call(state, parent, name, ordinal)
-        end
-
-        def factory (parent)
-          Factory.new(@component_class, **@signal_map.apply(parent))
         end
       end
 
@@ -556,50 +691,6 @@ module Lucid
           normalize_binding(@parent.instance_exec(element, index, **kwargs, &@map_f))
         end
       end
-
-      # ===================================================== #
-      #    Collection
-      # ===================================================== #
-
-      #
-      # Wrapper around the elements in a CollectionNest. Originally
-      # intended as an API for manipulating the collection, but that 
-      # functionality has been refactored into CollectionNest itself.
-      # This is probably not needed anymore and should be removed.
-      #
-      class Collection
-        include Enumerable
-
-        def initialize (nest, elements)
-          @nest     = Types.instance(Nest)[nest]
-          @elements = Types.enumerable[elements]
-        end
-
-        def each (&block)
-          @elements.each(&block)
-        end
-
-        def map! (&block)
-          @elements.map!(&block)
-        end
-
-        def [] (key)
-          @elements[key]
-        end
-
-        def []= (key, value)
-          @elements[key] = value
-        end
-
-        def first
-          @elements.first
-        end
-
-        def last
-          @elements.last
-        end
-      end
-
     end
   end
 end
