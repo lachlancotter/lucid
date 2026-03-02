@@ -97,7 +97,7 @@ module Lucid
       # given configuration.
       #
       def self.[] (*list, **map)
-        PropsBinding.new(self, *list, **map)
+        Factory.new(self, *list, **map)
       end
 
       def inspect

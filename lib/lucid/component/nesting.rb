@@ -102,7 +102,7 @@ module Lucid
         # Defines a nested component.
         # name - The name of the nested component in the parent.
         # over - Name of an enumerable field to map over. Optional.
-        # block - Function returning a PropsBinding instance for building the component.
+        # block - Function returning a Factory instance for building the component.
         # 
         def nest (name, over: nil, &block)
           after_initialize do
@@ -137,26 +137,37 @@ module Lucid
         def key (&block)
           define_method(:collection_key) { instance_eval(&block) }
         end
-        
-        
+
       end
 
       # ===================================================== #
-      #    PropsBinding
+      #    Factory
       # ===================================================== #
 
       #
-      # A partial configuration for a component that can be used to build
-      # the component instance when the state is available. Instances of 
-      # this class are returned by the `[]` class method on Component as
-      # a kind of factory for nested components.
+      # A configuration of property maps and message scopes that
+      # can be used to instantiate components for the nest.
       # 
-      class PropsBinding
+      class Factory
         attr_reader :component_class
 
         def initialize (component_class, *list, **map)
           @component_class = Types.subclass(Component::Base)[component_class]
           @signal_map      = SignalMap.new(*list, **map)
+          @enumerator      = NilEnumerator.new # empty by default
+          @message_scopes  = []
+        end
+
+        def enum (collection_name, as:)
+          tap do
+            @enumerator = Enumerator.new(collection_name, as: as)
+          end
+        end
+
+        def scope (event_type, &block)
+          tap do
+            @message_scopes << MessageScope.new(event_type, &block)
+          end
         end
 
         def call (state, message, parent, name, ordinal, collection_index: nil)
@@ -164,17 +175,13 @@ module Lucid
           @component_class.new(state, message, **build_props(parent, name, ordinal, collection_index))
         end
 
-        # def update (component)
-        #   if component.is_a?(@component_class)
-        #     component.update_props(@props)
-        #   end
-        # end
-
         private
 
         def build_props (parent, name, ordinal, collection_index)
           config(parent, name, ordinal, collection_index).merge(
-             @signal_map.apply(parent, index: collection_index)
+             @signal_map.apply(parent).merge(
+                @enumerator.to_props(parent, collection_index)
+             )
           )
         end
 
@@ -188,6 +195,66 @@ module Lucid
              http_session:     parent.props.http_session,
              container:        parent.props.container,
           }
+        end
+
+        #
+        # Map a list of component fields to the fields in a parent component, 
+        # so they can be passed by reference to a nested component.
+        # 
+        class SignalMap
+          def initialize (*list, **map)
+            @list = Types.array(Types.symbol)[list]
+            @map  = map
+          end
+
+          def apply (component)
+            Hash[
+               @list.map do |name|
+                 [name, component.field(name)]
+               end + @map.map do |dest, source|
+                 [dest, signal(component, source)]
+               end
+            ]
+          end
+
+          def signal (component, source)
+            case source
+            when Symbol then component.field(source)
+            else Field.new(component) { source }
+            end
+          end
+        end
+
+        class Enumerator
+          def initialize (collection_name, as:)
+            @collection_name = collection_name
+            @as              = as
+          end
+          
+          def to_props (component, index)
+            {
+               @as => element(component, @collection_name, index),
+            }
+          end
+          
+          def element (component, source, index)
+            Field.new(component) do
+              component.field(source).value[index]
+            end
+          end
+        end
+        
+        class NilEnumerator
+          def to_props (component, index)
+            {}
+          end
+        end
+
+        class MessageScope
+          def initialize (message_type, &constructor)
+            @message_type = message_type
+            @constructor  = constructor
+          end
         end
       end
 
@@ -208,56 +275,19 @@ module Lucid
         end
 
         #
-        # If a nest block returned a component class instead of a PropsBinding,
-        # then wrap that class in a PropsBinding.
+        # If a nest block returned a component class instead of a Factory,
+        # then wrap that class in a Factory.
         # 
         def normalize_binding (binding)
           case binding
-          when PropsBinding then binding
-          when -> (k) { k <= Component::Base } then PropsBinding.new(binding)
-          else raise ArgumentError, "Invalid PropsBinding: #{binding.class}"
+          when Factory then binding
+          when -> (k) { k <= Component::Base } then Factory.new(binding)
+          else raise ArgumentError, "Invalid Factory: #{binding.class}"
           end
         end
 
         def on_route?
           @parent.routes_to?(self)
-        end
-      end
-
-      #
-      # Map a list of component fields to the fields in a parent component, 
-      # so they can be passed by reference to a nested component.
-      # 
-      class SignalMap
-        def initialize (*list, **map)
-          @list = Types.array(Types.symbol)[list]
-          @map  = Types.hash[map]
-        end
-
-        def apply (component, index: nil)
-          Hash[
-             @list.map do |name|
-               [name, component.field(name)]
-             end + @map.map do |dest, source|
-               [dest, signal(component, source, index)]
-             end
-          ]
-        end
-
-        def signal (component, source, index)
-          case source
-          when Symbol then component.field(source)
-          when Array then element(component, source.first, index)
-          else literal(component, source)
-          end
-        end
-
-        def literal (component, value)
-          Field.new(component) { value }
-        end
-
-        def element (component, source, index)
-          Field.new(component) { component.field(source).value[index] }
         end
       end
 
@@ -273,11 +303,11 @@ module Lucid
         attr_reader :component_class
 
         def call (state, parent, name, ordinal)
-          props_binding(parent).call(state, parent, name, ordinal)
+          factory(parent).call(state, parent, name, ordinal)
         end
 
-        def props_binding (parent)
-          PropsBinding.new(@component_class, **@signal_map.apply(parent))
+        def factory (parent)
+          Factory.new(@component_class, **@signal_map.apply(parent))
         end
       end
 
@@ -390,13 +420,13 @@ module Lucid
         end
 
         def install (state, message)
-          @component = props_binding.call(state, message, @parent, @name, @ordinal)
+          @component = factory.call(state, message, @parent, @name, @ordinal)
         rescue StandardError => error
           App::Logger.exception(error)
           @component = ErrorPage.new({}, error: error)
         end
 
-        def props_binding
+        def factory
           normalize_binding(@field.value)
         end
       end
@@ -496,9 +526,10 @@ module Lucid
           proc do |**kwargs|
             enumerable.each_with_index.map do |element, index|
               begin
-                props_binding = nest.props_binding(element, index, **kwargs)
+                factory = nest.factory(element, index, **kwargs)
                 # nested_state() isn't implemented for collections.
-                props_binding.call({}, nil, parent, name, ordinal, collection_index: index)
+                # the message also isn't being passed here.
+                factory.call({}, nil, parent, name, ordinal, collection_index: index)
               rescue StandardError => error
                 App::Logger.exception(error)
                 ErrorPage.new({}, error: error, collection_key: index)
@@ -518,10 +549,10 @@ module Lucid
           # Look up any other expected keyword params in the parent component.
           params = Field::Execution.new(@map_f).keywords
           kwargs = params.map { |k| [k, @parent.field(k).value] }.to_h
-          props_binding(element, index, **kwargs).call({}, nil, @parent, @name, @ordinal, collection_index: index)
+          factory(element, index, **kwargs).call({}, nil, @parent, @name, @ordinal, collection_index: index)
         end
 
-        def props_binding (element, index, **kwargs)
+        def factory (element, index, **kwargs)
           normalize_binding(@parent.instance_exec(element, index, **kwargs, &@map_f))
         end
       end
