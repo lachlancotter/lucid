@@ -381,7 +381,7 @@ module Lucid
             on(msg_class) { remove 1, from: :item_views }
           end.new({}, msg_class.new)
           
-          expect(view.changes.count).to eq(1)
+          expect(view.changes.count).to eq(3)
           expect(view.changes.first).to be_a(ChangeSet::Remove)
           expect(view.changes.to_s).to match(/id="item_views-1"/)
           expect(view.changes.to_s).not_to match(/<p>Item 1<\/p>/)

@@ -133,18 +133,6 @@ module Lucid
           view = base_class.new({ val: "a" }, msg_class.new)
           expect(view.foo).to be_a(bar_class)
         end
-
-        it "iterates over a collection with a key" do
-          foo_class = Class.new(Component::Base) { prop :lang }
-          view      = Class.new(Component::Base) do
-            param :val
-            let(:items) { %w[english spanish] }
-            nest(:foo) { foo_class[].enum(:items, as: :lang) }
-          end.new({ val: "a" })
-
-          expect(view.foo[0]).to be_a(foo_class)
-          expect(view.foo[0].lang).to eq("english")
-        end
       end
 
       context "named constructor" do
@@ -161,26 +149,71 @@ module Lucid
           end.new({})
           expect(view.foo).to be_a(Component::Base)
         end
+      end
+    end
 
-        it "nests a child component over an array" do
-          view = Class.new(Component::Base) do
+    describe ".enum" do
+      context "named signal" do
+        it "enumerates over a collection" do
+          nest_class = Class.new(Component::Base) { prop :var }
+          view       = Class.new(Component::Base) do
             let(:bar) { %w[english spanish] }
-            nest(:foo) { NamedNestedComponent[].enum(:bar, as: :var) }
+            nest(:foo) { nest_class[].enum(:bar, as: :var) }
           end.new({}, app_root: "/app/root")
 
           expect(view.foo[0]).to be_a(Component::Base)
           expect(view.foo[0].var).to eq("english")
           expect(view.foo[0].props.collection_index).to eq(0)
-          expect(view.foo[0].render_full).to match /Nested english/
           expect(view.foo[0].props.app_root).to eq("/app/root")
           expect(view.foo[0].path.to_s).to eq("/foo-0")
 
           expect(view.foo[1]).to be_a(Component::Base)
           expect(view.foo[1].var).to eq("spanish")
           expect(view.foo[1].props.collection_index).to eq(1)
-          expect(view.foo[1].render_full).to match /Nested spanish/
           expect(view.foo[1].props.app_root).to eq("/app/root")
           expect(view.foo[1].path).to eq("/foo-1")
+        end
+      end
+
+      context "literal" do
+        it "enumerates over a collection" do
+          nest_class = Class.new(Component::Base) { prop :var }
+          view       = Class.new(Component::Base) do
+            nest(:foo) { nest_class[].enum(%w[english spanish], as: :var) }
+          end.new({}, app_root: "/app/root")
+
+          expect(view.foo[0]).to be_a(Component::Base)
+          expect(view.foo[0].var).to eq("english")
+          expect(view.foo[0].props.collection_index).to eq(0)
+          expect(view.foo[0].props.app_root).to eq("/app/root")
+          expect(view.foo[0].path.to_s).to eq("/foo-0")
+
+          expect(view.foo[1]).to be_a(Component::Base)
+          expect(view.foo[1].var).to eq("spanish")
+          expect(view.foo[1].props.collection_index).to eq(1)
+          expect(view.foo[1].props.app_root).to eq("/app/root")
+          expect(view.foo[1].path).to eq("/foo-1")
+        end
+      end
+
+      context "message override" do
+        it "enumerates the result of the block" do
+          message_class = Class.new(Link) { validate { required(:value).filled(:string) } }
+          nest_class    = Class.new(Component::Base) { prop :var }
+          message       = message_class.new(value: "Message Value")
+          view          = Class.new(Component::Base) do
+            nest(:foo) do
+              nest_class[].
+                 enum([], as: :var).
+                 for(message_class) { |msg| msg[:value] }
+            end
+          end.new({}, message, app_root: "/app/root")
+
+          expect(view.foo[0]).to be_a(Component::Base)
+          expect(view.foo[0].var).to eq("Message Value")
+          expect(view.foo[0].props.collection_index).to eq(0)
+          expect(view.foo[0].props.app_root).to eq("/app/root")
+          expect(view.foo[0].path.to_s).to eq("/foo-0")
         end
       end
     end

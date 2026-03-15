@@ -106,7 +106,16 @@ module Lucid
         end
 
         def append_collection (collection)
-          collection.each { |subcomponent| append_component(subcomponent) }
+          collection.each do |subcomponent|
+            append_component(subcomponent) unless removed?(subcomponent.element_id)
+          end
+        end
+
+        def removed? (subcomponent_id)
+          @changes.any? do |change|
+            change.is_a?(Remove) &&
+               change.component.element_id == subcomponent_id
+          end
         end
       end
 

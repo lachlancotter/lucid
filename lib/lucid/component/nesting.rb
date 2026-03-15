@@ -156,18 +156,19 @@ module Lucid
           @component_class = Types.subclass(Component::Base)[component_class]
           @signal_map      = SignalMap.new(*list, **map)
           @enumerator      = NilEnumerator.new # empty by default
-          @message_scopes  = []
+          @cases           = {}
         end
 
         def enum (collection, as:)
           tap do
+            @as         = as
             @enumerator = Enumerator.new(collection, as: as)
           end
         end
 
-        def scope (event_type, &block)
+        def for (event_type, &block)
           tap do
-            @message_scopes << MessageScope.new(event_type, &block)
+            @cases[event_type] = Enumerator.new(block, as: @as)
           end
         end
 
@@ -178,11 +179,14 @@ module Lucid
         end
 
         def enumerate (state, message, parent, name, ordinal, &block)
-          @enumerator.each(parent) do |element, collection_index|
-            # Don't automatically pass messages to the whole collection.
-            yield call(state, nil, parent, name, ordinal,
+          enumerator_for(message).each(parent, message) do |element, collection_index|
+            yield call(state, message, parent, name, ordinal,
                collection_index: collection_index, element: element)
           end
+        end
+
+        def enumerator_for (message)
+          @cases.fetch(message.class) { @enumerator }
         end
 
         def enum?
@@ -243,17 +247,23 @@ module Lucid
 
         class Enumerator
           def initialize (collection, as:)
-            @collection = (Types.symbol | Types.enumerable)[collection]
+            @collection = (Types.symbol | Types.enumerable | Types.callable)[collection]
             @as         = as
           end
 
-          def each (component, &block)
-            collection(component).each_with_index(&block)
+          def each (component, message, &block)
+            collection(component, message).each_with_index(&block)
           end
 
-          def collection (component)
+          def collection (component, message)
             case @collection
             when Symbol then component.field(@collection).value
+            when Proc then
+              block_result = @collection.call(message)
+              case block_result
+              when Enumerable then block_result
+              else [block_result]
+              end
             when Enumerable then @collection
             else raise StandardError
             end
@@ -296,13 +306,6 @@ module Lucid
 
           def from_element (component, index)
             {}
-          end
-        end
-
-        class MessageScope
-          def initialize (message_type, &constructor)
-            @message_type = message_type
-            @constructor  = constructor
           end
         end
       end
