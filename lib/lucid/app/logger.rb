@@ -13,75 +13,93 @@ module Lucid
         #
         def cycle (cycle, &block)
           block_result = nil
-          Console.logger.info(cycle.request) do |buffer|
-            @buffer = buffer
-            begin
-              request(cycle.request)
-              # session(session_data)
-              block_result = block.call
-              response(cycle.response)
-            end
-          end
+          request(cycle.request)
+          # session(session_data)
+          block_result = block.call
+          response(cycle.response)
+          # Console.info(cycle.request) do |buffer|
+          #   @buffer = buffer
+          #   begin
+          #     request(cycle.request)
+          #     # session(session_data)
+          #     block_result = block.call
+          #     response(cycle.response)
+          #   end
+          # end
           block_result
         end
 
         def session (hash)
-          puts("  📦 Session:")
-          log_data(hash)
+          Console.info("📦 Session:", **filter_hash(hash))
+          # log_data(hash)
         end
 
         def request (request)
-          puts("#{request.request_method}: #{request.fullpath}")
-          request.env.each do |key, value|
-            if key.start_with?("HTTP_HX") #|| key.start_with?("HTTP_COOKIE")
-              puts("        #{key}: #{value.inspect}")
-            end
-          end
+          Console.info("#{request.request_method}: #{request.fullpath}",
+             **(request.env.select do |key, value|
+               key.match(/HTTP_HX/)
+             end)
+          )
+          # puts("#{request.request_method}: #{request.fullpath}")
+          # request.env.each do |key, value|
+          #   if key.start_with?("HTTP_HX") #|| key.start_with?("HTTP_COOKIE")
+          #     puts("        #{key}: #{value.inspect}")
+          #   end
+          # end
         end
 
         def response (response)
-          puts("  📤 Response:")
-          puts("        Status: #{response.status}")
-          response.headers.each do |key, value|
-            puts("        #{key}: #{value.inspect}")
-          end
+          Console.info("📤 Response: #{response.status}",
+             **filter_hash(response.headers)
+          )
+          # puts("  📤 Response:")
+          # puts("        Status: #{response.status}")
+          # response.headers.each do |key, value|
+          #   puts("        #{key}: #{value.inspect}")
+          # end
         end
 
         def link (link)
-          puts("  🔗 #{link.class.name}")
-          log_data(link.to_h)
+          Console.info("🔗 #{link.class.name}", **filter_hash(link.to_h))
+          # puts("  🔗 #{link.class.name}")
+          # log_data(link.to_h)
         end
 
         def command (command)
-          puts("  🛠️ #{command.class.name}")
-          log_data(command.to_h)
+          Console.info("🛠️ #{command.class.name}", **filter_hash(command.to_h))
+          # puts("  🛠️ #{command.class.name}")
+          # log_data(command.to_h)
         end
 
         def event (event)
-          puts("  🔈 #{event.class.name}")
-          log_data(event.to_h)
+          Console.info("🔈 #{event.class.name}", **filter_hash(event.to_h))
+          # puts("  🔈 #{event.class.name}")
+          # log_data(event.to_h)
         end
 
         def debug (message, data = {})
-          puts("  🐞 #{message}")
-          log_data(data)
+          Console.debug("🐞#{message}", **filter_hash(data))
+          # puts("  🐞 #{message}")
+          # log_data(data)
+        end
+        
+        def info (message, data = {})
+          Console.info("ℹ #{message}", **filter_hash(data))
         end
 
         def warning (message, data = {})
-          puts("  ⚠️ #{message}")
-          log_data(data)
+          Console.warn("⚠️ #{message}", **filter_hash(data))
         end
 
         def error (message, data = {})
-          puts("  ❌ #{message}")
-          log_data(data)
+          Console.error("❌ #{message}", **filter_hash(data))
         end
 
-        def exception (exception)
-          puts("  ❌ #{exception.class.name}: #{exception.message}")
-          exception.backtrace.
-             reject { |line| line.include?("gems/") }.
-             each { |line| puts("    #{line}") }
+        def exception (context, exception)
+          Console.fatal(context, exception)
+          # exception.backtrace.
+          #    reject { |line| line.include?("gems/") }.
+          #    each { |line| puts("    #{line}") }
         end
 
         private
@@ -122,20 +140,20 @@ module Lucid
           end
         end
 
-        def log_data (data)
-          data.each do |key, value|
-            filtered_value = filter_value(key, value)
-            puts("        #{key}: #{filtered_value.inspect}")
-          end
-        end
+        # def log_data (data)
+        #   data.each do |key, value|
+        #     filtered_value = filter_value(key, value)
+        #     puts("        #{key}: #{filtered_value.inspect}")
+        #   end
+        # end
 
-        def puts(*args)
-          if @buffer
-            @buffer.puts(*args)
-          else
-            super
-          end
-        end
+        # def puts(*args)
+        #   if @buffer
+        #     @buffer.puts(*args)
+        #   else
+        #     super
+        #   end
+        # end
 
       end
     end

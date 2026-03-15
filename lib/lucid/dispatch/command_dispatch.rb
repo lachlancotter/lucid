@@ -7,8 +7,8 @@ module Lucid
     # Raised when no handler is found for the given command.
     #
     class NoHandler < StandardError
-      def initialize (command)
-        super("No handler for command #{command.class}")
+      def initialize (command_class)
+        super("No handler for command #{command_class}")
       end
     end
 

@@ -340,7 +340,7 @@ module Lucid
         def install_singleton (state, message)
           @components = [factory.call(state, message, @parent, @name, @ordinal)]
         rescue StandardError => error
-          App::Logger.exception(error)
+          App::Logger.exception(@parent, error)
           @components = [ErrorPage.new({}, error: error)]
         end
 
@@ -351,7 +351,7 @@ module Lucid
             end
           end
         rescue StandardError => error
-          App::Logger.exception(error)
+          App::Logger.exception(@parent, error)
           @components = [ErrorPage.new({}, error: error)]
         end
 
@@ -392,7 +392,7 @@ module Lucid
         def with_component (index, retry_on_error: false, &block)
           yield @components[index]
         rescue StandardError => error
-          App::Logger.exception(error)
+          App::Logger.exception(@parent, error)
           @components[index] = ErrorPage.new({}, error: error, collection_index: index)
           yield @components[index] if retry_on_error
         end
@@ -505,7 +505,7 @@ module Lucid
         def with_component (index = :ignored, retry_on_error: false, &block)
           block.call(@component)
         rescue StandardError => error
-          App::Logger.exception(error)
+          App::Logger.exception(@parent, error)
           @component = ErrorPage.new({}, error: error)
           block.call(@component) if retry_on_error
         end

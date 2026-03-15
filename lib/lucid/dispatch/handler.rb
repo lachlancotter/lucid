@@ -47,7 +47,7 @@ module Lucid
         publish(PermissionDenied.new(message: @message))
       end
     rescue StandardError => e
-      App::Logger.exception(e)
+      App::Logger.exception(self, e)
       publish(HandlerRaised.new(error: e))
     end
 

@@ -13,40 +13,46 @@ module Lucid
       end
 
       def state
-        view = component(nil)
-        run_with_context(view) do
-          @response.send_state(view)
+        with_request_logging do
+          view = component(nil)
+          run_with_context(view) do
+            @response.send_state(view)
+          end
         end
       end
 
       def link
-        @request.yield_link do |link|
-          view = component(link)
-          run_with_context(view) do
-            Logger.link(link)
-            @response.send_delta(view, htmx: @request.htmx?)
+        with_request_logging do
+          @request.yield_link do |link|
+            view = component(link)
+            run_with_context(view) do
+              Logger.link(link)
+              @response.send_delta(view, htmx: @request.htmx?)
+            end
           end
         end
       end
 
       def command
-        @request.yield_command do |command|
-          Logger.command(command)
-          message_bus.dispatch(command)
-        end
-        @request.yield_invalid do |params, errors|
-          Logger.error("Invalid command", params)
-          message_bus.publish(
-             MessageInvalidated.new(
-                params: params,
-                errors: errors
-             )
-          )
-        end
-        message = message_bus.published.first
-        view    = component(message)
-        run_with_context(view) do
-          @response.send_delta(view, htmx: @request.htmx?)
+        with_request_logging do
+          @request.yield_command do |command|
+            Logger.command(command)
+            message_bus.dispatch(command)
+          end
+          @request.yield_invalid do |params, errors|
+            Logger.error("Invalid command", params)
+            message_bus.publish(
+               MessageInvalidated.new(
+                  params: params,
+                  errors: errors
+               )
+            )
+          end
+          message = message_bus.published.first
+          view    = component(message)
+          run_with_context(view) do
+            @response.send_delta(view, htmx: @request.htmx?)
+          end
         end
       end
 
@@ -69,15 +75,17 @@ module Lucid
       def message_bus
         @container[:message_bus]
       end
+      
+      def with_request_logging (&block)
+        Logger.cycle(self, &block)
+      end
 
       def run_with_context (component, &block)
-        Logger.cycle(self) do
-          HTTP::Message.with_url_base(@container[:app_root]) do
-            HTTP::Message.with_state(state_for_messages(component), &block)
-          end
+        HTTP::Message.with_url_base(@container[:app_root]) do
+          HTTP::Message.with_state(state_for_messages(component), &block)
         end
       rescue Dry::Types::CoercionError => e
-        Logger.exception(e)
+        Logger.exception(self, e)
         @response.send_error(e)
       end
 
