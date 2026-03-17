@@ -8,7 +8,7 @@ module Lucid
     #
     # Raised on an attempt to publish a message that is not an event.
     # 
-    class InvalidEvent < StandardError
+    class InvalidEvent < ApplicationError
       def initialize (event)
         super("Message is not a valid event: #{event.class}")
       end
@@ -19,9 +19,26 @@ module Lucid
     end
 
     #
+    # Raised on an attempt to subscribe to a message that is not an event.
+    # 
+    class InvalidSubscription < ApplicationError
+      def initialize (message_type)
+        super(
+           "#{message_type.name} is not a valid event type. " +
+           "Use `perform` to respond to command messages."
+        )
+      end
+
+      def self.check (message_type)
+        raise new(message_type) unless message_type < Event
+      end
+    end
+
+    #
     # Register a subscriber for the given message class.
     #
     def subscribe (event_class, &handler_block)
+      InvalidSubscription.check(event_class)
       subscribers[event_class] ||= []
       subscribers[event_class] << handler_block
     end

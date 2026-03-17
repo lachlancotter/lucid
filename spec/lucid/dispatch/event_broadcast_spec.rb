@@ -43,6 +43,17 @@ module Lucid
           expect(handler_class.subscribers_for(event_class).size).to eq(1)
         end
       end
+
+      context "wrong message type" do
+        it "raises an exception" do
+          command_class = Class.new(Command)
+          expect {
+            Class.new(Handler) do
+              subscribe(command_class) {  }
+            end
+          }.to raise_error(ApplicationError)
+        end
+      end
     end
 
     describe "publish" do

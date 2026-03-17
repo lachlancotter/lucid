@@ -6,7 +6,7 @@ module Lucid
     #
     # Raised when no handler is found for the given command.
     #
-    class NoHandler < StandardError
+    class NoHandler < ApplicationError
       def initialize (command_class)
         super("No handler for command #{command_class}")
       end
@@ -16,9 +16,22 @@ module Lucid
     # Raised when attempting to register multiple handlers for the same
     # command class either directly or via nested handler recruitment.
     #
-    class AmbiguousDispatch < StandardError
+    class AmbiguousDispatch < ApplicationError
       def initialize (command_class)
         super("Ambiguous dispatch for #{command_class}")
+      end
+    end
+
+    class InvalidHandler < ApplicationError
+      def initialize (message_class)
+        super(
+           "#{message_class} is not a valid command type. " +
+           "Use `subscribe` to subscribe to events."
+        )
+      end
+
+      def self.check (message_type)
+        raise new(message_type) unless message_type < Command
       end
     end
 
@@ -26,6 +39,7 @@ module Lucid
     # Register a handler for the given command class.
     #
     def perform (command_class, &block)
+      InvalidHandler.check(command_class)
       if performs?(command_class)
         raise AmbiguousDispatch.new(command_class)
       end

@@ -64,6 +64,17 @@ module Lucid
         }.to raise_error(CommandDispatch::AmbiguousDispatch)
       end
     end
+
+    context "wrong message type" do
+      it "raises an exception" do
+        event_class = Class.new(Event)
+        expect {
+          Class.new(Handler) do
+            perform(event_class) {  }
+          end
+        }.to raise_error(ApplicationError)
+      end
+    end
   end
 
   context "handler lookup" do
