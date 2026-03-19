@@ -76,6 +76,7 @@ module Lucid
         def param (name, type = Types.string.default("".freeze))
           state_class.attribute(name, type)
           after_initialize { fields[name] = Field.new(self) { state[name] } }
+          define_method(name) { fields[name].value }
           state_map.param(name, type) unless state_map.path?(name)
         end
 

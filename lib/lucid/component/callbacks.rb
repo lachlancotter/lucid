@@ -11,9 +11,9 @@ module Lucid
 
       private
 
-      def run_callbacks (name)
+      def run_callbacks (name, *args)
         self.class.callbacks(name).tap do |blocks|
-          blocks.each { |block| instance_exec(&block) }
+          blocks.each { |block| instance_exec(*args, &block) }
         end
       end
 

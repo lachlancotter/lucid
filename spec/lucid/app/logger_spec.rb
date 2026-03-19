@@ -3,7 +3,22 @@ require "console/capture"
 module Lucid
   class App
     describe Logger do
-      let(:output) { Console::Capture.new }
+      #
+      # Fake output channel that allows us to asset about messages on
+      # their metadata, not just subject and message.
+      # 
+      class CaptureWithData < Console::Capture
+        def include?(pattern)
+          @records.any? do |record|
+            record[:subject].to_s&.match?(pattern) ||
+               record[:message].to_s&.match?(pattern) ||
+               record.keys.any? { |k| k.to_s.match?(pattern) } ||
+               record.values.any? { |v| v.to_s.match?(pattern) }
+          end
+        end
+      end
+
+      let(:output) { CaptureWithData.new }
 
       before do
         Console.logger = Console::Logger.new(output, level: :debug)
@@ -213,7 +228,7 @@ module Lucid
             it "filters #{pattern}" do
               data = { pattern => "token_value" }
               Logger.info("Message", data)
-              expect(output).not_to include("token_value")  
+              expect(output).not_to include("token_value")
             end
           end
         end

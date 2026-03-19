@@ -48,7 +48,7 @@ module Lucid
       # The name of this component in the parent.
       #
       static :name, Types.symbol.default("root".freeze)
-      
+
       #
       # The definition order of this component in the parent. Nil for root.
       # 
@@ -59,25 +59,26 @@ module Lucid
       #
       static :collection_index, Types.integer.optional.default(nil)
 
-      def initialize (state, message = nil, **props)
+      def initialize (state, *messages, **props)
         initialize_state(state)
         initialize_props(props)
         run_callbacks(:after_initialize) # Setup fields/props
         # If any changed fields were inherited from parent, trigger dependencies.
         fields.values.each { |f| f.notify if f.changed? }
-        apply_message(message)
-        run_callbacks(:after_application) # includes building children
+        apply_messages(messages)
+        run_callbacks(:after_application, *messages) # includes building children
         # maybe build children should be explicit here
         run_callbacks(:after_build)
       end
 
-      def apply_message (message)
-        @message = message
-        case message
-        when Event then apply(message)
-        when Link then visit(message)
-        when NilClass then nil
-        else raise ArgumentError, "Unsupported message type: #{message.class}"
+      def apply_messages (messages)
+        messages.each do |message|
+          case message
+          when Event then apply(message)
+          when Link then visit(message)
+          when NilClass then nil
+          else raise ArgumentError, "Unsupported message type: #{message.class}"
+          end
         end
       end
 
@@ -107,7 +108,7 @@ module Lucid
       def element_id
         self.class.element_id(path)
       end
-      
+
       def self.element_id (path)
         if path.root?
           "root"

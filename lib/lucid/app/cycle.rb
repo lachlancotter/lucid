@@ -48,8 +48,7 @@ module Lucid
                )
             )
           end
-          message = message_bus.published.first
-          view    = component(message)
+          view = component(message_bus.published)
           run_with_context(view) do
             @response.send_delta(view, htmx: @request.htmx?)
           end
@@ -62,10 +61,10 @@ module Lucid
         @request.htmx?
       end
 
-      def component (message)
+      def component (messages)
         @container.component_class.new(
            @request.state_reader,
-           message,
+           *messages,
            app_root:     @container[:app_root],
            container:    @container,
            http_session: @container[:session]
@@ -75,7 +74,7 @@ module Lucid
       def message_bus
         @container[:message_bus]
       end
-      
+
       def with_request_logging (&block)
         Logger.cycle(self, &block)
       end

@@ -1,9 +1,9 @@
 Gem::Specification.new do |spec|
   spec.name          = "lucid"
-  spec.version       = "0.1.8"
+  spec.version       = "0.1.9"
   spec.authors       = ["Lachlan Cotter"]
   spec.email         = ["lach@satoriapp.com"]
-  spec.summary       = "Reactive, hypermedia components for Ruby"
+  spec.summary       = "Build reactive, hypermedia applications in Ruby"
   spec.description   = "Lucid is a component-based framework for building reactive, hypermedia applications in Ruby. " +
                        "It provides a set of tools and abstractions to create modular, reusable components that can be " +
                        "easily composed to build complex user interfaces."

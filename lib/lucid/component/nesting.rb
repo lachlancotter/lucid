@@ -107,21 +107,13 @@ module Lucid
         def nest (name, &block)
           after_initialize do
             nests[name] = Nest.new(name, nests.count, self, &block)
-            # nests[name] = case over
-            # when Symbol then CollectionNest.new(name, nests.count, self, over, &block)
-            # when Enumerable then CollectionNest.new(name, nests.count, self, over, &block)
-            # when NilClass then ComponentNest.new(name, nests.count, self, &block)
-            # else raise ArgumentError, "Invalid enumerable"
-            # end
           end
-          after_application do
-            # Refactor so that @message is yielded to the callback block.
-            # nests[name].install(nested_state(name), @message)
+          after_application do |*messages|
             nested_reader = @state_reader.descend(
                self.class.state_map.path_count,
                nests[name].ordinal
             )
-            nests[name].install(nested_reader, @message)
+            nests[name].install(nested_reader, messages)
           end
           define_method(name) { nests[name].content }
         end
@@ -172,21 +164,21 @@ module Lucid
           end
         end
 
-        def call (state, message, parent, name, ordinal, collection_index: nil, element: nil)
-          @component_class.new(state, message,
+        def enumerator_for (message)
+          @cases.fetch(message.class) { @enumerator }
+        end
+
+        def call (state, messages, parent, name, ordinal, collection_index: nil, element: nil)
+          @component_class.new(state, *messages,
              **build_props(parent, name, ordinal, collection_index, element: element)
           )
         end
 
-        def enumerate (state, message, parent, name, ordinal, &block)
-          enumerator_for(message).each(parent, message) do |element, collection_index|
-            yield call(state, message, parent, name, ordinal,
+        def enumerate (state, messages, parent, name, ordinal, &block)
+          enumerator_for(messages.first).each(parent, messages) do |element, collection_index|
+            yield call(state, messages, parent, name, ordinal,
                collection_index: collection_index, element: element)
           end
-        end
-
-        def enumerator_for (message)
-          @cases.fetch(message.class) { @enumerator }
         end
 
         def enum?
@@ -251,15 +243,15 @@ module Lucid
             @as         = as
           end
 
-          def each (component, message, &block)
-            collection(component, message).each_with_index(&block)
+          def each (component, messages, &block)
+            collection(component, messages).each_with_index(&block)
           end
 
-          def collection (component, message)
+          def collection (component, messages)
             case @collection
             when Symbol then component.field(@collection).value
             when Proc then
-              block_result = @collection.call(message)
+              block_result = @collection.call(messages.first)
               case block_result
               when Enumerable then block_result
               else [block_result]
@@ -329,24 +321,24 @@ module Lucid
           @components = []
         end
 
-        def install (state, message)
+        def install (state, messages)
           if collection?
-            install_collection(state, message)
+            install_collection(state, messages)
           else
-            install_singleton(state, message)
+            install_singleton(state, messages)
           end
         end
 
-        def install_singleton (state, message)
-          @components = [factory.call(state, message, @parent, @name, @ordinal)]
+        def install_singleton (state, messages)
+          @components = [factory.call(state, messages, @parent, @name, @ordinal)]
         rescue StandardError => error
           App::Logger.exception(@parent, error)
           @components = [ErrorPage.new({}, error: error)]
         end
 
-        def install_collection (state, message)
+        def install_collection (state, messages)
           @components = [].tap do |result|
-            factory.enumerate(state, message, @parent, @name, @ordinal) do |component|
+            factory.enumerate(state, messages, @parent, @name, @ordinal) do |component|
               result << component
             end
           end
