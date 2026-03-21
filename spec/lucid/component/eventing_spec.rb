@@ -30,6 +30,77 @@ module Lucid
         end
       end
 
+      context "nested component handler" do
+        it "runs handlers in nested components" do
+          result                 = nil
+          event_class            = Class.new(Event)
+          component_class        = Class.new(Component::Base) do
+            on(event_class) do |event|
+              result = self
+            end
+          end
+          parent_component_class = Class.new(Component::Base) do
+            nest(:nested) { component_class }
+          end
+          component              = parent_component_class.new({}, event_class.new)
+          expect(result).to be(component.nested)
+        end
+      end
+
+      context "nested collection element handler" do
+        it "runs handlers in matching elements" do
+          result                 = nil
+          event_class            = Class.new(Event)
+          component_class        = Class.new(Component::Base) do
+            prop :index, Types.integer
+            on(event_class) { |event| result = self }
+          end
+          parent_component_class = Class.new(Component::Base) do
+            let(:collection) { [1, 2, 3] }
+            nest(:nested) do
+              component_class[]
+                 .enum(:collection, as: :index)
+                 .for(event_class) { 1 }
+            end
+          end
+          component              = parent_component_class.new({}, event_class.new)
+          expect(result).to be(component.nested[0])
+        end
+      end
+
+      context "multiple events" do
+        context "root component" do
+          it "runs all matching handlers" do
+            event1_class    = Class.new(Event)
+            event2_class    = Class.new(Event)
+            component_class = Class.new(Component::Base) do
+              param :count, Types.integer.default(0)
+              on(event1_class) { update count: count + 1 }
+              on(event2_class) { update count: count + 2 }
+            end
+            component       = component_class.new({}, event1_class.new, event2_class.new)
+            expect(component.count).to eq(3)
+          end
+        end
+
+        context "child component" do
+          it "runs all matching handlers" do
+            event1_class          = Class.new(Event)
+            event2_class          = Class.new(Event)
+            child_component_class = Class.new(Component::Base) do
+              param :count, Types.integer.default(0)
+              on(event1_class) { update count: count + 1 }
+              on(event2_class) { update count: count + 2 }
+            end
+            component_class       = Class.new(Component::Base) do
+              nest(:child) { child_component_class }
+            end
+            component             = component_class.new({}, event1_class.new, event2_class.new)
+            expect(component.child.count).to eq(3)
+          end
+        end
+      end
+
       context "event filter" do
         context "key match" do
           it "calls the block when the values match" do
