@@ -105,7 +105,7 @@ module Lucid
         context "key match" do
           it "calls the block when the values match" do
             result          = nil
-            event_class     = Class.new(Event)
+            event_class     = Class.new(Event) { validate { required(:foo).filled(:string) } }
             component_class = Class.new(Component::Base) do
               let(:foo) { "bar" }
               on(event_class[:foo]) do |event|
@@ -119,7 +119,7 @@ module Lucid
 
           it "doesn't call the block when the values don't match" do
             result          = nil
-            event_class     = Class.new(Event)
+            event_class     = Class.new(Event) { validate { required(:foo).filled(:string) } }
             component_class = Class.new(Component::Base) do
               let(:foo) { "bar" }
               on(event_class[:foo]) do |event|
@@ -135,7 +135,7 @@ module Lucid
         context "literal match" do
           it "calls the block when the constraints are met" do
             result          = nil
-            event_class     = Class.new(Event)
+            event_class     = Class.new(Event) { validate { required(:foo).filled(:string) } }
             component_class = Class.new(Component::Base) do
               on(event_class[foo: "bar"]) do |event|
                 result = event
@@ -148,7 +148,7 @@ module Lucid
 
           it "doesn't call the block when the constraint is not met" do
             result          = nil
-            event_class     = Class.new(Event)
+            event_class     = Class.new(Event) { validate { required(:foo).filled(:string) } }
             component_class = Class.new(Component::Base) do
               on(event_class[foo: "bar"]) do |event|
                 result = event

@@ -1,34 +1,72 @@
 module Lucid
   describe Message do
-    context "valid data" do
-      it "provides the data" do
-        message_class = Class.new(Message) do
-          validate do
-            required(:foo).filled(:string)
+
+    # ===================================================== #
+    #    .new
+    # ===================================================== #
+
+    describe ".new" do
+      context "valid data" do
+        it "provides the data" do
+          message_class = Class.new(Message) do
+            validate do
+              required(:foo).filled(:string)
+            end
           end
+          message       = message_class.new(foo: "bar")
+          expect(message.to_h).to eq({ foo: "bar" })
+          expect(message.foo).to eq("bar")
         end
-        message = message_class.new(foo: "bar")
-        expect(message.to_h).to eq({ foo: "bar" })
-        expect(message.foo).to eq("bar")
+      end
+
+      context "invalid data" do
+        it "raises an exception" do
+          message_class = Class.new(Message) do
+            validate do
+              required(:foo).filled(:string)
+            end
+          end
+          expect { message_class.new(foo: nil) }.to raise_error(Message::Invalid)
+        end
+      end
+
+      context "no schema" do
+        it "does not raise an error" do
+          message_class = Class.new(Message)
+          expect { message_class.new(foo: "bar") }.not_to raise_error
+        end
       end
     end
 
-    context "invalid data" do
-      it "raises an exception" do
-        message_class = Class.new(Message) do
-          validate do
-            required(:foo).filled(:string)
+    # ===================================================== #
+    #    []
+    # ===================================================== #
+
+    describe "#[]" do
+      context "defined key" do
+        it "returns the value" do
+          message_class = Class.new(Message) do
+            validate do
+              required(:foo).filled(:string)
+            end
           end
+          message       = message_class.new(foo: "bar")
+          expect(message[:foo]).to eq("bar")
         end
-        expect { message_class.new(foo: nil) }.to raise_error(Message::Invalid)
+      end
+
+      context "undefined key" do
+        it "raises an exception" do
+          message_class = Class.new(Message) do
+            validate do
+              required(:foo).filled(:string)
+            end
+          end
+          message       = message_class.new(foo: "bar")
+          expect { message[:bar] }.to raise_error(Message::UndefinedKey)
+        end
       end
     end
 
-    context "no schema" do
-      it "does not raise an error" do
-        message_class = Class.new(Message)
-        expect { message_class.new(foo: "bar") }.not_to raise_error
-      end
-    end
   end
 end

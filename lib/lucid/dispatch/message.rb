@@ -16,6 +16,7 @@ module Lucid
     end
 
     def [] (key)
+      UndefinedKey.check(self.class, key)
       @params[key]
     end
 
@@ -55,6 +56,19 @@ module Lucid
 
       def self.check (message_class, result)
         raise new(message_class, result.errors) unless result.success?
+      end
+    end
+    
+    class UndefinedKey < ArgumentError
+      def initialize (message_class, key)
+        super("No key :#{key} for message type #{message_class}.")
+      end
+      
+      def self.check (message_class, key)
+        key_string = key.to_s
+        unless message_class.schema.key_map.any? { |k, v| k.name == key_string }
+          raise new(message_class, key)
+        end
       end
     end
 

@@ -30,7 +30,7 @@ module Lucid
 
         context "static key-value constraint" do
           it "matches when the message conforms to the constraint" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) { validate { required(:foo).filled(:string) } }
             constraint    = Constraint.new(message_class, foo: "bar")
             message       = message_class.new(foo: "bar")
             match         = constraint.match?(message)
@@ -38,7 +38,7 @@ module Lucid
           end
 
           it "does not match when the message violates the constraints" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) { validate { required(:foo).filled(:string) } }
             constraint    = Constraint.new(message_class, foo: "bar")
             message       = message_class.new(foo: "baz")
             match         = constraint.match?(message)
@@ -48,7 +48,12 @@ module Lucid
 
         context "dynamic key match constraint" do
           it "matches when the message value matches in the context" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) do
+              validate do
+                required(:foo).filled(:string)
+                required(:bar).filled(:string)
+              end
+            end
             constraint    = Constraint.new(message_class, :foo, :bar)
             message       = message_class.new(foo: "foo", bar: "bar")
             context       = { foo: "foo", bar: "bar" }
@@ -57,7 +62,12 @@ module Lucid
           end
 
           it "does not match when a value is different in the context" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) do
+              validate do
+                required(:foo).filled(:string)
+                required(:bar).filled(:string)
+              end
+            end
             constraint    = Constraint.new(message_class, :foo, :bar)
             message       = message_class.new(foo: "foo", bar: "bar")
             context       = { foo: "foo", bar: "qux" }
@@ -68,7 +78,7 @@ module Lucid
 
         context "dynamic key-value lookup constraint" do
           it "matches when the message value matches the context" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) { validate { required(:foo).filled(:string) } }
             constraint    = Constraint.new(message_class, foo: :bar)
             message       = message_class.new(foo: "baz")
             context       = { bar: "baz" }
@@ -77,7 +87,7 @@ module Lucid
           end
 
           it "does not match when the message value is different in the context" do
-            message_class = Class.new(Message)
+            message_class = Class.new(Message) { validate { required(:foo).filled(:string) } }
             constraint    = Constraint.new(message_class, foo: :bar)
             message       = message_class.new(foo: "baz")
             context       = { bar: "qux" }
