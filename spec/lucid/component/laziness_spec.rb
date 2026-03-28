@@ -20,7 +20,7 @@ module Lucid
       component_class    = Class.new(Component::Base) do
         let(:bar) { called = true; "bar" }
         nest(:sub) { subcomponent_class[foo: :bar] }
-        element { subview :sub }
+        element { subcomponent :sub }
       end
       component          = component_class.new({})
       expect(called).to be false

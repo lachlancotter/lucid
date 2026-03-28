@@ -223,7 +223,7 @@ module Lucid
         nested = Class.new(Component::Base) { element { p "Nested content" } }
         base   = Class.new(Component::Base) do
           slot :nested
-          element { div(class: "wrapper") { subview(:nested) } }
+          element { div(class: "wrapper") { subcomponent(:nested) } }
         end.new({}, nested: nested)
         expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><p>Nested content</p></div></div>')
       end
@@ -232,11 +232,11 @@ module Lucid
         variable = Class.new(Component::Base) { element { p "Nested content" } }
         slotted  = Class.new(Component::Base) do
           slot :variable
-          element { subview(:variable) }
+          element { subcomponent(:variable) }
         end
         base     = Class.new(Component::Base) do
           nest(:nested) { slotted[variable: variable] }
-          element { div(class: "wrapper") { subview(:nested) } }
+          element { div(class: "wrapper") { subcomponent(:nested) } }
         end.new({})
         expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><div id="nested-variable" class="anon"><p>Nested content</p></div></div></div>')
       end

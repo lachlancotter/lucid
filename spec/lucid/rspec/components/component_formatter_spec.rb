@@ -202,7 +202,7 @@ module Lucid
             nest(:child) { TestChild }
             element do
               h1 { text "Parent" }
-              subview :child
+              subcomponent :child
             end
           end
           component       = component_class.new({})

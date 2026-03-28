@@ -65,7 +65,7 @@ module Lucid
                     element { h1 { text "Nested" } }
                   }
                 end
-                element { subview(:foo) }
+                element { subcomponent(:foo) }
               end.new({})
               view.delta.replace
               expect(view.render_full).to match(/<div id="foo" class="anon"><h1>Nested<\/h1><\/div>/)

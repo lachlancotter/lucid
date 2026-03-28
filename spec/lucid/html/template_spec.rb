@@ -44,7 +44,7 @@ module Lucid
           end
           base_component_class   = Class.new(Component::Base) do
             nest(:nested) { nested_component_class }
-            element { subview(:nested) }
+            element { subcomponent(:nested) }
           end
 
           view = base_component_class.new({})
@@ -52,9 +52,55 @@ module Lucid
         end
       end
 
+      context "with named template" do
+        it "renders the named template with template" do
+          base_component_class = Class.new(Component::Base) do
+            template(:greeting) do |name|
+              span { text "Hello, #{name}" }
+            end
+
+            element { template(:greeting, "World") }
+          end
+
+          view = base_component_class.new({})
+          expect(view.template.render).to include("<span>Hello, World</span>")
+        end
+
+        it "warns when fragment is used" do
+          base_component_class = Class.new(Component::Base) do
+            template(:greeting) do |name|
+              span { text "Hello, #{name}" }
+            end
+
+            element { fragment(:greeting, "World") }
+          end
+
+          view = base_component_class.new({})
+          expect { view.template.render }.
+             to output(/`fragment` is deprecated; use `template` instead\./).to_stderr
+        end
+      end
+
+      context "with nested component collection" do
+        it "renders the collection with subcomponents" do
+          nested_component_class = Class.new(Component::Base) do
+            prop :name
+            element { |name| span { text name } }
+          end
+          base_component_class   = Class.new(Component::Base) do
+            nest(:nested) { nested_component_class[].enum(%w[One Two], as: :name) }
+            element { subcomponents(:nested) }
+          end
+
+          view = base_component_class.new({})
+          expect(view.template.render).to include("One")
+          expect(view.template.render).to include("Two")
+        end
+      end
+
       context "invalid nested component name" do
         it "raises an exception" do
-          base_component_class = Class.new(Component::Base) { element { subview(:invalid_name) } }
+          base_component_class = Class.new(Component::Base) { element { subcomponent(:invalid_name) } }
           view                 = base_component_class.new({})
           expect { view.template.render }.to raise_error(ApplicationError)
         end

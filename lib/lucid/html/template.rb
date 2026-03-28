@@ -108,14 +108,19 @@ module Lucid
           emit Form.new(form_model, **opts, &block).template
         end
 
-        def fragment (name, *a, **b, &block)
+        def template (name, *a, **b, &block)
           emit @renderable.template(name).render(*a, **b, &block)
+        end
+
+        def fragment (name, *a, **b, &block)
+          deprecate(:fragment, :template)
+          template(name, *a, **b, &block)
         end
 
         #
         # Render a component in the template.
         # 
-        def subview (name, index = 0)
+        def subcomponent (name, index = 0)
           with_valid_nest(name) do
             # If the subcomponent raises an error during rendering, then the
             # nest will replace it with an error page. We retry the render after
@@ -126,25 +131,39 @@ module Lucid
           end
         end
 
+        def subview (name, index = 0)
+          deprecate(:subview, :subcomponent)
+          subcomponent(name, index)
+        end
+
         #
         # Render a collection of subcomponents in the template.
         # 
-        def subviews (enum_name)
+        def subcomponents (enum_name)
           # Wrap the collection in a div we can target for insertions.
           div(class: @renderable.collection_classname(enum_name)) do
             enum = @renderable.send(enum_name)
             case enum
             when Enumerable
-              enum.each_with_index { |sub, index| subview(enum_name, index) }
+              enum.each_with_index { |sub, index| subcomponent(enum_name, index) }
             when Lucid::Component::Base
-              subview(enum_name)
+              subcomponent(enum_name)
             else
-              raise "Invalid subview: #{enum.class}"
+              raise "Invalid subcomponent: #{enum.class}"
             end
           end
         end
 
+        def subviews (enum_name)
+          deprecate(:subviews, :subcomponents)
+          subcomponents(enum_name)
+        end
+
         private
+
+        def deprecate (old_name, new_name)
+          self.class.warn_deprecated(old_name, new_name)
+        end
 
         def extend_helpers
           return unless @renderable
@@ -160,11 +179,11 @@ module Lucid
           end
         end
 
-        def normalize_subview (name_or_component)
+        def normalize_subcomponent (name_or_component)
           case name_or_component
           when Symbol then @renderable.send(name_or_component)
           when Component::Base then name_or_component
-          else raise ArgumentError, "Invalid subview type: #{name_or_component.class}"
+          else raise ArgumentError, "Invalid subcomponent type: #{name_or_component.class}"
           end
         end
 
@@ -189,6 +208,15 @@ module Lucid
           # when Types.subclass(HTTP::Message) then message.new
           else raise ArgumentError, "Message, String or Symbol expected: #{message.inspect}"
           end
+        end
+
+        def self.warn_deprecated (old_name, new_name)
+          @warned_deprecations ||= {}
+          key = [old_name, new_name]
+          return if @warned_deprecations[key]
+
+          warn "[DEPRECATION] `#{old_name}` is deprecated; use `#{new_name}` instead."
+          @warned_deprecations[key] = true
         end
       end
 

@@ -19,7 +19,7 @@ module Lucid
             child_component_class  = Class.new(Component::Base) { param :foo, Types.string }
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
             expect(parent_component.render_full).to match /Invalid Request/
@@ -48,7 +48,7 @@ module Lucid
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
             expect(parent_component.render_full).to match /Permission Denied/
@@ -79,7 +79,7 @@ module Lucid
                 else denied_component_class
                 end
               end
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             expect(parent_component_class.new({}).render_full).to match /Granted/
             expect(parent_component_class.new({}, msg_class.new).render_full).to match /Permission Denied/
@@ -104,7 +104,7 @@ module Lucid
             child_component_class  = Class.new(Component::Base) { prop :foo, Types.string }
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
             expect(parent_component.render_full).to match /Invalid Config/
@@ -122,7 +122,7 @@ module Lucid
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:bars) { child_component_class[].enum([1, 2, "foo", 4], as: :count) }
-              element { subviews(:bars) }
+              element { subcomponents(:bars) }
             end
             parent_component       = parent_component_class.new({})
             rendered               = parent_component.render_full
@@ -158,7 +158,7 @@ module Lucid
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             component              = parent_component_class.new({}, message_class.new)
             # component.visit(message_class.new)
@@ -190,7 +190,7 @@ module Lucid
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             component              = parent_component_class.new({}, message_class.new)
             expect(component.render_full).to match /Invalid State/
@@ -217,7 +217,7 @@ module Lucid
             end
             parent_component_class = Class.new(Component::Base) do
               nest(:child) { child_component_class }
-              element { subview(:child) }
+              element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
             expect(parent_component.render_full).to match /Resource Not Found/

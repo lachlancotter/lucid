@@ -530,8 +530,8 @@ module Lucid
 
               element do
                 h1 { text "Parent" }
-                subview :a
-                subview :b
+                subcomponent :a
+                subcomponent :b
               end
             end.new({}, msg_type.new)
             expect(view.changes.map(&:component)).not_to include(view)
