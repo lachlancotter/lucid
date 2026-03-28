@@ -22,7 +22,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Invalid Request/
+            expect(parent_component.render).to match /Invalid Request/
           end
         end
       end
@@ -51,7 +51,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Permission Denied/
+            expect(parent_component.render).to match /Permission Denied/
           end
         end
 
@@ -81,8 +81,8 @@ module Lucid
               end
               element { subcomponent(:child) }
             end
-            expect(parent_component_class.new({}).render_full).to match /Granted/
-            expect(parent_component_class.new({}, msg_class.new).render_full).to match /Permission Denied/
+            expect(parent_component_class.new({}).render).to match /Granted/
+            expect(parent_component_class.new({}, msg_class.new).render).to match /Permission Denied/
           end
         end
       end
@@ -107,7 +107,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Invalid Config/
+            expect(parent_component.render).to match /Invalid Config/
           end
         end
 
@@ -125,7 +125,7 @@ module Lucid
               element { subcomponents(:bars) }
             end
             parent_component       = parent_component_class.new({})
-            rendered               = parent_component.render_full
+            rendered               = parent_component.render
             expect(rendered).to match /Count 1/
             expect(rendered).to match /Count 2/
             expect(rendered).not_to match /Count 3/
@@ -162,7 +162,7 @@ module Lucid
             end
             component              = parent_component_class.new({}, message_class.new)
             # component.visit(message_class.new)
-            expect(component.render_full).to match /Invalid State/
+            expect(component.render).to match /Invalid State/
           end
         end
       end
@@ -193,7 +193,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             component              = parent_component_class.new({}, message_class.new)
-            expect(component.render_full).to match /Invalid State/
+            expect(component.render).to match /Invalid State/
           end
         end
       end
@@ -206,7 +206,7 @@ module Lucid
               element { |foo| h1 { text "No Error" } }
             end
             component       = component_class.new({})
-            expect { component.render_full }.to raise_error(ResourceError)
+            expect { component.render }.to raise_error(ResourceError)
           end
         end
 
@@ -220,7 +220,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             parent_component       = parent_component_class.new({})
-            expect(parent_component.render_full).to match /Resource Not Found/
+            expect(parent_component.render).to match /Resource Not Found/
           end
         end
       end

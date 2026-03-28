@@ -4,7 +4,7 @@ module Lucid
       describe "#send_state" do
         it "sends state" do
           adaptor   = ResponseAdaptor.new(Rack::Response.new, url_base: "/base/url")
-          component = double(url: "/foo", render_full: "<html><body>foo</body></html>")
+          component = double(url: "/foo", render: "<html><body>foo</body></html>")
           adaptor.send_state(component)
           expect(adaptor.status).to eq(200)
           expect(adaptor.location).to eq("/base/url/foo")

@@ -12,7 +12,7 @@ module Lucid
         end
 
         def to_s
-          doc = Nokogiri::HTML.fragment(@component.render_full)
+          doc = Nokogiri::HTML.fragment(@component.render)
           format_node(doc).gsub(/\n{3,}/, "\n\n").strip
         end
 

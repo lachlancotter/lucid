@@ -11,8 +11,13 @@ module Lucid
 
       attr_reader :delta
 
-      def render_full
+      def render
         ChangeSet::Replace.new(self).call
+      end
+
+      def render_full
+        warn "[DEPRECATION] `render_full` is deprecated; use `render` instead."
+        render
       end
 
       def render_changes

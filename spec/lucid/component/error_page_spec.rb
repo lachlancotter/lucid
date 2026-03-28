@@ -11,7 +11,7 @@ module Lucid
             element { |foo| text "Default" }
           end
           component       = component_class.new({}, error: error_class.new)
-          expect(component.render_full).to match /App Error/
+          expect(component.render).to match /App Error/
         end
       end
 
@@ -23,7 +23,7 @@ module Lucid
             element { |foo| text "Default" }
           end
           component       = component_class.new({}, error: error_class.new)
-          expect(component.render_full).to match /Unknown Error/
+          expect(component.render).to match /Unknown Error/
         end
       end
 
@@ -34,7 +34,7 @@ module Lucid
             element { |foo| text "Default" }
           end
           component       = component_class.new({}, error: StandardError.new)
-          expect(component.render_full).to match /Unknown Error/
+          expect(component.render).to match /Unknown Error/
         end
       end
 

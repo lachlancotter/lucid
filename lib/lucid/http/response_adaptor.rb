@@ -31,7 +31,7 @@ module Lucid
       def send_state (component)
         tap do
           self.location = url(component)
-          self.body     = HtmlBeautifier.beautify(component.render_full)
+          self.body     = HtmlBeautifier.beautify(component.render)
         end
       end
 

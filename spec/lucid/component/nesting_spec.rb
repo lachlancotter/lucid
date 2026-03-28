@@ -225,7 +225,7 @@ module Lucid
           slot :nested
           element { div(class: "wrapper") { subcomponent(:nested) } }
         end.new({}, nested: nested)
-        expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><p>Nested content</p></div></div>')
+        expect(base.render).to eq('<div class="wrapper"><div id="nested" class="anon"><p>Nested content</p></div></div>')
       end
 
       it "passes through a nest" do
@@ -238,7 +238,7 @@ module Lucid
           nest(:nested) { slotted[variable: variable] }
           element { div(class: "wrapper") { subcomponent(:nested) } }
         end.new({})
-        expect(base.render_full).to eq('<div class="wrapper"><div id="nested" class="anon"><div id="nested-variable" class="anon"><p>Nested content</p></div></div></div>')
+        expect(base.render).to eq('<div class="wrapper"><div id="nested" class="anon"><div id="nested-variable" class="anon"><p>Nested content</p></div></div></div>')
       end
     end
 

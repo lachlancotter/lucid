@@ -6,7 +6,7 @@ module Lucid
         it "can render" do
           component_class = Class.new(Component::Base) { element { text "Permitted" } }
           component       = component_class.new({})
-          expect(component.render_full).to match("Permitted")
+          expect(component.render).to match("Permitted")
         end
       end
 
@@ -23,7 +23,7 @@ module Lucid
             element { text "Permitted" }
           end
           component       = component_class.new({})
-          expect(component.render_full).to match("Permitted")
+          expect(component.render).to match("Permitted")
         end
       end
 

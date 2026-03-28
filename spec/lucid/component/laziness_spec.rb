@@ -8,7 +8,7 @@ module Lucid
       end
       component       = component_class.new({})
       expect(called).to be false
-      expect(component.render_full).to match /bar/
+      expect(component.render).to match /bar/
     end
 
     it "passes signals by reference" do
@@ -24,7 +24,7 @@ module Lucid
       end
       component          = component_class.new({})
       expect(called).to be false
-      expect(component.render_full).to match /bar/
+      expect(component.render).to match /bar/
     end
 
     it "invalidates signals via state" do
@@ -38,7 +38,7 @@ module Lucid
       end
       component       = component_class.new({ foo: "foo" }, msg_class.new)
       expect(called).to be(false)
-      expect(component.render_full).to match /BAR/
+      expect(component.render).to match /BAR/
     end
   end
 end

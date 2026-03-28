@@ -22,7 +22,7 @@ module Lucid
           end
         end.new({})
         view.delta.replace
-        expect(view.render_full).to match(
+        expect(view.render).to match(
            '<head><script src="https://example.com/script.js"></script></head>'
         )
       end

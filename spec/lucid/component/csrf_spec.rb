@@ -11,7 +11,7 @@ module Lucid
           end
           container       = App::Container.new({ csrf_token: "foo_token" }, {})
           component       = component_class.new({}, container: container)
-          expect(component.render_full).to include('<input type="hidden" name="authenticity_token" value="foo_token"')
+          expect(component.render).to include('<input type="hidden" name="authenticity_token" value="foo_token"')
         end
       end
 
@@ -24,7 +24,7 @@ module Lucid
           end
           container       = App::Container.new({ csrf_token: "foo_token" }, {})
           component       = component_class.new({}, container: container)
-          expect(component.render_full).to include('<input type="hidden" name="authenticity_token" value="foo_token"')
+          expect(component.render).to include('<input type="hidden" name="authenticity_token" value="foo_token"')
         end
       end
 

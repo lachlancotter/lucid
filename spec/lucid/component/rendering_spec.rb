@@ -35,17 +35,15 @@ module Lucid
         end
       end
 
-      describe "#render_full" do
+      describe "#render" do
         it "renders" do
           view = Class.new(Component::Base) do
             element { h1 { text "Hello, World" } }
           end.new({})
           view.delta.replace
-          expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
+          expect(view.render).to match(/<h1>Hello, World<\/h1>/)
         end
-      end
 
-      describe "render" do
         describe "element ID" do
           context "root component" do
             it "is omitted" do
@@ -53,7 +51,7 @@ module Lucid
                 element { h1 { text "Hello, World" } }
               end.new({})
               view.delta.replace
-              expect(view.render_full).to eq("<h1>Hello, World</h1>")
+              expect(view.render).to eq("<h1>Hello, World</h1>")
             end
           end
 
@@ -68,7 +66,7 @@ module Lucid
                 element { subcomponent(:foo) }
               end.new({})
               view.delta.replace
-              expect(view.render_full).to match(/<div id="foo" class="anon"><h1>Nested<\/h1><\/div>/)
+              expect(view.render).to match(/<div id="foo" class="anon"><h1>Nested<\/h1><\/div>/)
             end
           end
         end
@@ -97,7 +95,7 @@ module Lucid
                 "World"
               end
             end.new({})
-            expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
+            expect(view.render).to match(/<h1>Hello, World<\/h1>/)
           end
         end
 
@@ -112,7 +110,7 @@ module Lucid
                 "World"
               end
             end.new({})
-            expect(view.render_full).to match(/<h1>Hello, World<\/h1>/)
+            expect(view.render).to match(/<h1>Hello, World<\/h1>/)
           end
         end
 
@@ -127,7 +125,7 @@ module Lucid
                 link_to TestLink.new, "Anchor Text"
               end
             end.new({})
-            expect(view.render_full).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
+            expect(view.render).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
           end
 
           it "renders link blocks" do
@@ -136,7 +134,7 @@ module Lucid
                 link_to(TestLink.new) { text "Anchor Text" }
               end
             end.new({})
-            expect(view.render_full).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
+            expect(view.render).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
           end
         end
       end

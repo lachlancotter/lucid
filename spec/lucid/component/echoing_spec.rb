@@ -50,7 +50,7 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          render          = component.render_full
+          render          = component.render
           expect(render).to include("name=\"foo\"")
           expect(render).to include("value=\"bar\"")
         end
@@ -67,7 +67,7 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          render          = component.render_full
+          render          = component.render
           expect(render).to include("name=\"component\"")
           expect(render).to include("value=\"/\"")
           expect(render).to include("name=\"form\"")
@@ -86,7 +86,7 @@ module Lucid
           env             = mock_post_params("/", :foo_form, { foo: "bar" })
           container       = App::Container.new({}, env)
           component       = component_class.new({}, container: container)
-          render          = component.render_full
+          render          = component.render
           expect(render).to include("data-controller=\"foo\"")
         end
       end
