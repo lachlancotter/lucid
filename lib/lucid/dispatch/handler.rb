@@ -32,32 +32,32 @@ module Lucid
     #
     def initialize (message, container, &handler)
       super(container)
-      @message  = message
-      @handler  = handler
-      @memoized = {}
+      @message          = message
+      @handler          = handler
+      @memoized         = {}
+      @permission_check = PermissionCheck.new(self.class, message.class, container)
     end
 
     #
     # Entry point for handlers.
     # 
     def call
-      @permission_checked = false
-      @handler_completed  = false
-      instance_exec(@message, &@handler)
-      @handler_completed = true
+      @permission_check.track do
+        instance_exec(@message, &@handler)
+      end
+    rescue MissingPermissionCheck
+      raise
     rescue StandardError => e
       App::Logger.exception(self, e)
       publish(HandlerRaised.new(error: e))
-    ensure
-      ensure_permission_checked
     end
 
     #
     # Explicit policy check.
     # 
     def with_permission (context = {}, &block)
-      @permission_checked = true
-      policy              = self.class.policy_class.new(default_policy_context.merge(context))
+      @permission_check.checked!
+      policy = self.class.policy_class.new(default_policy_context.merge(context))
       if policy.permits_message?(@message)
         yield
       else
@@ -83,27 +83,6 @@ module Lucid
       self.class.policy_context_keys.each_with_object({}) do |key, result|
         result[key] = @container[key]
       end
-    end
-
-    def ensure_permission_checked
-      return unless @handler_completed
-      return unless self.class.policy_adopted?
-      return if @permission_checked
-      return unless permission_check_enforced?
-
-      raise MissingPermissionCheck.new(self.class, self.class.policy_class, @message.class)
-    end
-
-    def permission_check_enforced?
-      rack_env =
-        if @container.respond_to?(:env)
-          @container.env["RACK_ENV"] || @container.env[:RACK_ENV]
-        elsif @container.respond_to?(:key?) && @container.key?(:env)
-          env = @container[:env]
-          env["RACK_ENV"] || env[:RACK_ENV]
-        end
-
-      %w[test development].include?(rack_env)
     end
 
     #
@@ -162,6 +141,48 @@ module Lucid
     class MissingPermissionCheck < StandardError
       def initialize (handler_class, policy_class, message_class)
         super("#{handler_class} adopts #{policy_class} but did not call with_permission for #{message_class}")
+      end
+    end
+
+    class PermissionCheck
+      def initialize (handler_class, message_class, container)
+        @handler_class = handler_class
+        @message_class = message_class
+        @container     = container
+        @checked       = false
+      end
+
+      def track (&block)
+        return yield unless enforced?
+
+        yield
+        verify!
+      end
+
+      def checked!
+        @checked = true
+      end
+
+      def verify!
+        return unless @handler_class.policy_adopted?
+        return if @checked
+
+        raise MissingPermissionCheck.new(@handler_class, @handler_class.policy_class, @message_class)
+      end
+
+      def enforced?
+        %w[test development].include?(rack_env)
+      end
+
+      private
+
+      def rack_env
+        if @container.respond_to?(:env)
+          @container.env["RACK_ENV"] || @container.env[:RACK_ENV]
+        elsif @container.respond_to?(:key?) && @container.key?(:env)
+          env = @container[:env]
+          env["RACK_ENV"] || env[:RACK_ENV]
+        end
       end
     end
   end

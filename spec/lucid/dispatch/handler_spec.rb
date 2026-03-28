@@ -103,6 +103,38 @@ module Lucid
           }.to raise_error(Handler::MissingPermissionCheck, /did not call with_permission/)
         end
 
+        it "does not replace a handler error raised before with_permission" do
+          message_class = Class.new(Command)
+          policy_class  = Class.new(Policy) do
+            def permits_message? (message)
+              true
+            end
+          end
+          handler_class = Class.new(Handler) do
+            adopt(policy_class)
+            perform message_class do |msg|
+              raise StandardError, "boom"
+            end
+          end
+
+          message_bus = MessageBus.new(nil, nil)
+          container   = {
+            message_bus: message_bus,
+            session: nil,
+            env: { "RACK_ENV" => "test" }
+          }
+
+          expect(message_bus).to receive(:publish) do |event|
+            expect(event).to be_a(HandlerRaised)
+            expect(event.error).to be_a(StandardError)
+            expect(event.error.message).to eq("boom")
+          end
+
+          expect {
+            handler_class.dispatch(message_class.new, container)
+          }.not_to raise_error
+        end
+
         it "does not raise in production env when with_permission is not called" do
           message_class = Class.new(Command)
           policy_class  = Class.new(Policy) do
