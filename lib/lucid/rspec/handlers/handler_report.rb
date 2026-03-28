@@ -4,7 +4,7 @@ module Lucid
       #
       # Produce and approval file describing the handler effects.
       # 
-      class HandlerReport < DB::Report
+      class HandlerReport < RSpecExtensions::Approvals::DB::Report
         def initialize (message, message_bus, database_observer)
           @message     = message
           @message_bus = message_bus

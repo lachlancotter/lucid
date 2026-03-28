@@ -11,7 +11,7 @@ module Lucid
            classes: [],
            report_class: HandlerReport,
            &block)
-          db_observer = DB::Observer.new(classes)
+          db_observer = RSpecExtensions::Approvals::DB::Observer.new(classes)
           db_observer.observe do
             case message
             when Lucid::Command then handler.dispatch(message, container)

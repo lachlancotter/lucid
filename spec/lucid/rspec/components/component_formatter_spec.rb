@@ -178,7 +178,7 @@ module Lucid
           formatter       = ComponentFormatter.new(component)
           expect(formatter.to_s).to include("Hello, World")
         end
-
+        
         it "collapses multiple empty lines" do
           component_class = Class.new(Component::Base) do
             element do

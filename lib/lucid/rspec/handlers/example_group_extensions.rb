@@ -15,7 +15,7 @@ module Lucid
           base.let(:container_class) { Class.new(Lucid::App::Container) {} }
           base.let(:container) { container_class.new({}, container_env) }
           base.let(:container_env) { {} }
-          base.provide(:message_bus) { RSpecExtensions::Approvals::Handlers::FakeMessageBus.new }
+          base.provide(:message_bus) { FakeMessageBus.new }
         end
 
         #
