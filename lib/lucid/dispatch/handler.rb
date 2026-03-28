@@ -41,14 +41,28 @@ module Lucid
     # Entry point for handlers.
     # 
     def call
-      if policy.permits_message?(@message)
-        instance_exec(@message, &@handler)
-      else
-        publish(PermissionDenied.new(message: @message))
-      end
+      @permission_checked = false
+      @handler_completed  = false
+      instance_exec(@message, &@handler)
+      @handler_completed = true
     rescue StandardError => e
       App::Logger.exception(self, e)
       publish(HandlerRaised.new(error: e))
+    ensure
+      ensure_permission_checked
+    end
+
+    #
+    # Explicit policy check.
+    # 
+    def with_permission (context = {}, &block)
+      @permission_checked = true
+      policy              = self.class.policy_class.new(default_policy_context.merge(context))
+      if policy.permits_message?(@message)
+        yield
+      else
+        publish(PermissionDenied.new(message: @message))
+      end
     end
 
     #
@@ -65,12 +79,31 @@ module Lucid
       message_bus.dispatch(command)
     end
 
-    # 
-    # PublicPolicy makes all handlers available by default. Can
-    # be overridden with the adopt method to provide a custom policy.
-    # 
-    def policy
-      Policy::PublicPolicy.new(self)
+    def default_policy_context
+      self.class.policy_context_keys.each_with_object({}) do |key, result|
+        result[key] = @container[key]
+      end
+    end
+
+    def ensure_permission_checked
+      return unless @handler_completed
+      return unless self.class.policy_adopted?
+      return if @permission_checked
+      return unless permission_check_enforced?
+
+      raise MissingPermissionCheck.new(self.class, self.class.policy_class, @message.class)
+    end
+
+    def permission_check_enforced?
+      rack_env =
+        if @container.respond_to?(:env)
+          @container.env["RACK_ENV"] || @container.env[:RACK_ENV]
+        elsif @container.respond_to?(:key?) && @container.key?(:env)
+          env = @container[:env]
+          env["RACK_ENV"] || env[:RACK_ENV]
+        end
+
+      %w[test development].include?(rack_env)
     end
 
     #
@@ -90,8 +123,45 @@ module Lucid
         end
       end
 
-      def adopt (policy_class)
-        define_method(:policy) { policy_class.new(self) }
+      def adopt (policy_class, *context_keys)
+        @policy_class        = policy_class
+        @policy_context_keys = context_keys
+      end
+
+      def policy_class
+        if instance_variable_defined?(:@policy_class)
+          @policy_class
+        elsif superclass.respond_to?(:policy_class)
+          superclass.policy_class
+        else
+          Policy::PublicPolicy
+        end
+      end
+
+      def policy_context_keys
+        if instance_variable_defined?(:@policy_context_keys)
+          @policy_context_keys
+        elsif superclass.respond_to?(:policy_context_keys)
+          superclass.policy_context_keys
+        else
+          []
+        end
+      end
+
+      def policy_adopted?
+        if instance_variable_defined?(:@policy_class)
+          true
+        elsif superclass.respond_to?(:policy_adopted?)
+          superclass.policy_adopted?
+        else
+          false
+        end
+      end
+    end
+
+    class MissingPermissionCheck < StandardError
+      def initialize (handler_class, policy_class, message_class)
+        super("#{handler_class} adopts #{policy_class} but did not call with_permission for #{message_class}")
       end
     end
   end

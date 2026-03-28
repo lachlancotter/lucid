@@ -25,8 +25,8 @@ module Lucid
     # 
     class << self
       def use (accessor_name)
-        define_method(accessor_name) do |*args, &block|
-          @context.send(accessor_name, *args, &block)
+        define_method(accessor_name) do
+          @context.fetch(accessor_name)
         end
       end
     end
