@@ -45,7 +45,7 @@ module Lucid
       @permission_check.track do
         instance_exec(@message, &@handler)
       end
-    rescue MissingPermissionCheck
+    rescue PermissionCheck::Skipped
       raise
     rescue StandardError => e
       App::Logger.exception(self, e)
@@ -102,9 +102,8 @@ module Lucid
         end
       end
 
-      def adopt (policy_class, *context_keys)
-        @policy_class        = policy_class
-        @policy_context_keys = context_keys
+      def adopt (policy_class)
+        @policy_class = policy_class
       end
 
       def policy_class
@@ -118,13 +117,7 @@ module Lucid
       end
 
       def policy_context_keys
-        if instance_variable_defined?(:@policy_context_keys)
-          @policy_context_keys
-        elsif superclass.respond_to?(:policy_context_keys)
-          superclass.policy_context_keys
-        else
-          []
-        end
+        send(:deps_class).schema.keys.map(&:name)
       end
 
       def policy_adopted?
@@ -138,13 +131,13 @@ module Lucid
       end
     end
 
-    class MissingPermissionCheck < StandardError
-      def initialize (handler_class, policy_class, message_class)
-        super("#{handler_class} adopts #{policy_class} but did not call with_permission for #{message_class}")
-      end
-    end
-
     class PermissionCheck
+      class Skipped < StandardError
+        def initialize (handler_class, policy_class, message_class)
+          super("#{handler_class} adopts #{policy_class} but did not call with_permission for #{message_class}")
+        end
+      end
+
       def initialize (handler_class, message_class, container)
         @handler_class = handler_class
         @message_class = message_class
@@ -153,10 +146,9 @@ module Lucid
       end
 
       def track (&block)
-        return yield unless enforced?
-
-        yield
-        verify!
+        yield.tap do
+          verify! if enforced?
+        end
       end
 
       def checked!
@@ -165,9 +157,10 @@ module Lucid
 
       def verify!
         return unless @handler_class.policy_adopted?
+        return if @handler_class.policy_class == Policy::PublicPolicy
         return if @checked
 
-        raise MissingPermissionCheck.new(@handler_class, @handler_class.policy_class, @message_class)
+        raise Skipped.new(@handler_class, @handler_class.policy_class, @message_class)
       end
 
       def enforced?

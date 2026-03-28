@@ -9,9 +9,23 @@ module Lucid
       Handler::PermissionCheck.new(handler_class, message_class, container)
     end
 
-    let(:policy_class) { Class.new(Policy) }
-    let(:handler_class_with_policy) { Class.new(Handler) { adopt(policy_class) } }
+    let(:policy_class) do
+      Class.new(Policy) do
+        def permits_message? (message)
+          true
+        end
+
+        def permits_view? (resource)
+          true
+        end
+      end
+    end
+    let(:handler_class_with_policy) do
+      adopted_policy = policy_class
+      Class.new(Handler) { adopt(adopted_policy) }
+    end
     let(:handler_class_without_policy) { Class.new(Handler) }
+    let(:handler_class_with_public_policy) { Class.new(Handler) { adopt(Policy::PublicPolicy) } }
 
     describe "#track" do
       it "raises when a policy-governed handler completes without a permission check in test env" do
@@ -19,7 +33,7 @@ module Lucid
 
         expect {
           permission_check.track {}
-        }.to raise_error(Handler::MissingPermissionCheck, /did not call with_permission/)
+        }.to raise_error(Handler::PermissionCheck::Skipped, /did not call with_permission/)
       end
 
       it "does not raise after a permission check has been recorded" do
@@ -33,6 +47,14 @@ module Lucid
 
       it "does not raise for handlers without an adopted policy" do
         permission_check = build_permission_check(handler_class: handler_class_without_policy)
+
+        expect {
+          permission_check.track {}
+        }.not_to raise_error
+      end
+
+      it "does not raise for handlers adopting PublicPolicy" do
+        permission_check = build_permission_check(handler_class: handler_class_with_public_policy)
 
         expect {
           permission_check.track {}

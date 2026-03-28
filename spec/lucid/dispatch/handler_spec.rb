@@ -100,7 +100,28 @@ module Lucid
 
           expect {
             handler_class.dispatch(message_class.new, container)
-          }.to raise_error(Handler::MissingPermissionCheck, /did not call with_permission/)
+          }.to raise_error(Handler::PermissionCheck::Skipped, /did not call with_permission/)
+        end
+
+        it "does not raise for handlers adopting PublicPolicy" do
+          called        = false
+          message_class = Class.new(Command)
+          handler_class = Class.new(Handler) do
+            adopt(Policy::PublicPolicy)
+            perform message_class do |msg|
+              called = true
+            end
+          end
+
+          container = App::Container.new({}, {
+            "RACK_ENV" => "test",
+            "rack.session" => {}
+          })
+
+          expect {
+            handler_class.dispatch(message_class.new, container)
+          }.not_to raise_error
+          expect(called).to eq(true)
         end
 
         it "does not replace a handler error raised before with_permission" do
@@ -192,7 +213,7 @@ module Lucid
             end
           end
           handler_class = Class.new(Handler) do
-            adopt(policy_class, :current_user)
+            adopt(policy_class)
 
             def default_policy_context
               { current_user: "alice" }
@@ -223,7 +244,8 @@ module Lucid
             end
           end
           handler_class = Class.new(Handler) do
-            adopt(policy_class, :current_user)
+            adopt(policy_class)
+            use :current_user, Types::Any
 
             perform message_class do |msg|
               with_permission(resource: "post-1") do
