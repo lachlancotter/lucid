@@ -5,8 +5,14 @@ module Lucid
         base.extend ClassMethods
       end
 
+      def temps
+        @temps ||= {}
+      end
+
       def touch (hash)
         hash.each do |key, value|
+          raise ArgumentError, "No such temp: #{key}" unless temps.key?(key)
+
           instance_variable_set("@#{key}", value)
           invalidate key
         end
@@ -22,6 +28,7 @@ module Lucid
           after_initialize do
             instance_variable_set("@#{name}", type[])
             fields[name] = Field.new(self) { instance_variable_get("@#{name}") }
+            temps[name] = fields[name]
           end
           define_method(name) { fields[name].value }
         end

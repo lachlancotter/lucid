@@ -25,6 +25,16 @@ module Lucid
           view       = view_class.new({}, msg_class.new)
           expect(view.foo).to eq("bar")
         end
+
+        it "raises for unknown temp fields" do
+          msg_class  = Class.new(Lucid::Event)
+          view_class = Class.new(Component::Base) do
+            on(msg_class) { touch(foo: "bar") }
+          end
+
+          expect { view_class.new({}, msg_class.new) }.
+             to raise_error(ArgumentError, "No such temp: foo")
+        end
       end
     end
   end

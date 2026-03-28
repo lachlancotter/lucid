@@ -34,6 +34,16 @@ module Lucid
         nest.name == self.class.instance_variable_get(:@nested_route_component)
       end
 
+      #
+      # Update state-backed values and invalidate dependent fields.
+      #
+      protected def update (data)
+        @state = @state.new(data)
+        data.keys.each { |key| field(key).invalidate if field?(key) }
+      rescue Dry::Struct::Error => e
+        raise StateError.new(self, data, e.message)
+      end
+
       private
 
       def initialize_state (state)

@@ -9,6 +9,7 @@ module Lucid
       include StateMapping
       include Properties
       include Temps
+      include Mutation
       include Nesting
       include Fields
       include FieldInheritance
@@ -80,17 +81,6 @@ module Lucid
           else raise ArgumentError, "Unsupported message type: #{message.class}"
           end
         end
-      end
-
-      #
-      # Update a value in the state, and trigger invalidation of
-      # dependent fields.
-      #
-      protected def update (data)
-        @state = @state.new(data)
-        data.keys.each { |key| field(key).invalidate if field?(key) }
-      rescue Dry::Struct::Error => e
-        raise StateError.new(self, data, e.message)
       end
 
       #
