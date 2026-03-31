@@ -32,7 +32,17 @@ module Lucid
         def format_message (message)
           {
              "type"    => message.class.name,
-             "payload" => message.to_h
+             "payload" => message.to_h.tap do |attrs|
+               # Backtraces are unstable across environments
+               # so exclude from the approval file.
+               if attrs[:error].is_a?(Exception)
+                 attrs[:error] = {
+                    type:      attrs[:error].class.name,
+                    message:   attrs[:error].message,
+                    backtrace: ["<FILTERED>"]
+                 }
+               end
+             end
           }
         end
       end

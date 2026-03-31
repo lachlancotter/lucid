@@ -131,6 +131,10 @@ module Lucid
       end
     end
 
+    #
+    # Tracks whether a policy-governed handler invocation explicitly performed
+    # a permission check, and raises in development/test when that step is skipped.
+    #
     class PermissionCheck
       class Skipped < StandardError
         def initialize (handler_class, policy_class, message_class)
