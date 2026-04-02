@@ -2,7 +2,7 @@ module Lucid
   module RSpec
     module Handlers
 
-      if defined?(::RSpecExtensions)
+      if defined?(::RSpecExtensions::Approvals::DB::Report)
         #
         # Produce and approval file describing the handler effects.
         # 
