@@ -100,6 +100,48 @@ module Lucid
           @renderer.tag(:input, input_attrs)
         end
 
+        def email (key, value: nil, **attrs)
+          input_attrs = {
+             type:  :email,
+             name:  field_name(key),
+             value: value || field_value(key),
+             id:    field_id(key)
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
+        def date (key, value: nil, **attrs)
+          input_attrs = {
+             type:  :date,
+             name:  field_name(key),
+             value: value || field_value(key),
+             id:    field_id(key)
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
+        def number (key, value: nil, **attrs)
+          input_attrs = {
+             type:  :number,
+             name:  field_name(key),
+             value: value || field_value(key),
+             id:    field_id(key)
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
+        def checkbox (key, value: "1", checked: nil, **attrs)
+          field_checked = field_value(key)
+          input_attrs   = {
+             type:    :checkbox,
+             name:    field_name(key),
+             value:   value,
+             id:      field_id(key),
+             checked: checked.nil? ? (field_checked == true || field_checked == value) : checked
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
         def password (key, value: nil, **attrs)
           input_attrs = {
              type:  :password,
