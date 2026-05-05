@@ -10,11 +10,19 @@ module Lucid
           expect(effects.redirect_url).to eq("https://example.com/checkout")
         end
 
-        it "rejects relative redirect URLs" do
+        it "stores a path-only redirect URL" do
+          effects = ResponseEffects.new
+
+          effects.redirect_to("/checkout")
+
+          expect(effects.redirect_url).to eq("/checkout")
+        end
+
+        it "rejects relative redirect URLs without a leading slash" do
           effects = ResponseEffects.new
 
           expect {
-            effects.redirect_to("/checkout")
+            effects.redirect_to("checkout")
           }.to raise_error(ResponseEffects::InvalidRedirect)
         end
 

@@ -38,6 +38,8 @@ module Lucid
         case uri
         when -> (value) { value.is_a?(URI::HTTP) || value.is_a?(URI::HTTPS) }
           uri.to_s
+        when -> (value) { value.scheme.nil? && value.host.nil? && value.path.start_with?("/") }
+          uri.to_s
         else
           raise InvalidRedirect.new(url)
         end
