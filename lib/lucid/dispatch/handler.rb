@@ -26,6 +26,11 @@ module Lucid
     use :session, Types.instance(App::Session)
 
     #
+    # Request-scoped response effects recorded by handlers.
+    #
+    use :response_effects, Types.instance(App::ResponseEffects)
+
+    #
     # Instantiate a Handler with a container object and code block.
     # The block will be called with the message as an argument.
     # The container provides the dependencies required by the handler.
@@ -77,6 +82,10 @@ module Lucid
     # 
     def dispatch (command)
       message_bus.dispatch(command)
+    end
+
+    def redirect_to (url)
+      response_effects.redirect_to(url)
     end
 
     def default_policy_context

@@ -48,6 +48,11 @@ module Lucid
                )
             )
           end
+          return @response.send_external_redirect(
+             response_effects.redirect_url,
+             htmx: @request.htmx?
+          ) if response_effects.redirect?
+
           view = component(message_bus.published)
           run_with_context(view) do
             @response.send_delta(view, htmx: @request.htmx?)
@@ -73,6 +78,10 @@ module Lucid
 
       def message_bus
         @container[:message_bus]
+      end
+
+      def response_effects
+        @container[:response_effects]
       end
 
       def with_request_logging (&block)

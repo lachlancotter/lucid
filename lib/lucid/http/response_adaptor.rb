@@ -42,6 +42,17 @@ module Lucid
         end
       end
 
+      def send_external_redirect (url, htmx:)
+        tap do
+          if htmx
+            self.status = 200
+            self.headers["HX-Redirect"] = url
+          else
+            @response.redirect(url, 303)
+          end
+        end
+      end
+
       private
 
       def url (component)

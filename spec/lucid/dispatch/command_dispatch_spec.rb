@@ -3,6 +3,7 @@ module Lucid
 
     class TestContainer < Injection::Container
       provide(:message_bus) { nil }
+      provide(:response_effects) { App::ResponseEffects.new }
       provide(:session) { nil }
       provide(:foo) { "bar" }
     end

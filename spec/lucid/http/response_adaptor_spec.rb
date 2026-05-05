@@ -63,6 +63,30 @@ module Lucid
           end
         end
       end
+
+      describe "#send_external_redirect" do
+        context "without HTMX" do
+          it "sends a redirect response" do
+            adaptor = ResponseAdaptor.new(Rack::Response.new, url_base: "/base/url")
+
+            adaptor.send_external_redirect("https://example.com/checkout", htmx: false)
+
+            expect(adaptor.status).to eq(303)
+            expect(adaptor.location).to eq("https://example.com/checkout")
+          end
+        end
+
+        context "with HTMX" do
+          it "sends an HX-Redirect response header" do
+            adaptor = ResponseAdaptor.new(Rack::Response.new, url_base: "/base/url")
+
+            adaptor.send_external_redirect("https://example.com/checkout", htmx: true)
+
+            expect(adaptor.status).to eq(200)
+            expect(adaptor.headers["HX-Redirect"]).to eq("https://example.com/checkout")
+          end
+        end
+      end
     end
   end
 end

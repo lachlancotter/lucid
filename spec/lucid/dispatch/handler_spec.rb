@@ -8,13 +8,35 @@ module Lucid
         block         = handler_class.handlers[message_class]
 
         message_bus = MessageBus.new(nil, nil)
-        container   = { message_bus: message_bus, session: nil }
+        container   = {
+          message_bus: message_bus,
+          response_effects: App::ResponseEffects.new,
+          session: nil
+        }
         handler     = handler_class.new(message_class.new, container, &block)
         expect(message_bus).to receive(:publish) do |event|
           expect(event).to be_a(HandlerRaised)
           expect(event.error).to be_a(StandardError)
         end
         expect { handler.call }.not_to raise_error
+      end
+
+      it "records redirects as response effects" do
+        message_class = Class.new(Command)
+        effects       = App::ResponseEffects.new
+        handler_class = Class.new(Handler) do
+          perform(message_class) { redirect_to("https://example.com/checkout") }
+        end
+
+        container = {
+          message_bus: MessageBus.new(nil, nil),
+          response_effects: effects,
+          session: nil
+        }
+
+        handler_class.dispatch(message_class.new, container)
+
+        expect(effects.redirect_url).to eq("https://example.com/checkout")
       end
     end
 
@@ -23,7 +45,11 @@ module Lucid
         it "always calls" do
           called        = false
           message_class = Class.new(Command)
-          container     = { message_bus: nil, session: nil }
+          container     = {
+            message_bus: nil,
+            response_effects: App::ResponseEffects.new,
+            session: nil
+          }
           handler       = Handler.new(message_class.new, container) { called = true }
           handler.call
           expect(called).to eq(true)
@@ -48,7 +74,11 @@ module Lucid
             end
           end
           message_bus   = MessageBus.new(nil, nil)
-          container     = { message_bus: message_bus, session: nil }
+          container     = {
+            message_bus: message_bus,
+            response_effects: App::ResponseEffects.new,
+            session: nil
+          }
           handler_class.dispatch(message_class.new, container)
           expect(called).to eq(true)
         end
@@ -72,7 +102,11 @@ module Lucid
             end
           end
           message_bus   = MessageBus.new(nil, nil)
-          container     = { message_bus: message_bus, session: nil }
+          container     = {
+            message_bus: message_bus,
+            response_effects: App::ResponseEffects.new,
+            session: nil
+          }
           handler_class.dispatch(message_class.new, container)
           expect(called).to eq(false)
         end
@@ -141,6 +175,7 @@ module Lucid
           message_bus = MessageBus.new(nil, nil)
           container   = {
             message_bus: message_bus,
+            response_effects: App::ResponseEffects.new,
             session: nil,
             env: { "RACK_ENV" => "test" }
           }
@@ -227,7 +262,11 @@ module Lucid
           end
 
           message_bus = MessageBus.new(nil, nil)
-          container   = { message_bus: message_bus, session: nil }
+          container   = {
+            message_bus: message_bus,
+            response_effects: App::ResponseEffects.new,
+            session: nil
+          }
           handler_class.dispatch(message_class.new, container)
           expect(called).to eq(true)
         end
@@ -255,7 +294,12 @@ module Lucid
           end
 
           message_bus = MessageBus.new(nil, nil)
-          container   = { message_bus: message_bus, session: nil, current_user: "alice" }
+          container   = {
+            message_bus: message_bus,
+            response_effects: App::ResponseEffects.new,
+            session: nil,
+            current_user: "alice"
+          }
           handler_class.dispatch(message_class.new, container)
           expect(called).to eq(true)
         end
@@ -266,7 +310,11 @@ module Lucid
       it "defines values" do
         handler_class = Class.new(Handler) { let(:foo) { "bar" } }
         message_class = Class.new(Command)
-        container     = { message_bus: nil, session: nil }
+        container     = {
+          message_bus: nil,
+          response_effects: App::ResponseEffects.new,
+          session: nil
+        }
         message       = message_class.new
         handler       = handler_class.new(message, container) {}
         expect(handler.foo).to eq("bar")
@@ -275,7 +323,11 @@ module Lucid
       it "accepts a message argument" do
         handler_class = Class.new(Handler) { let(:foo) { |msg| msg[:count] } }
         message_class = Class.new(Command) { validate { optional(:count) } }
-        container     = { message_bus: nil, session: nil }
+        container     = {
+          message_bus: nil,
+          response_effects: App::ResponseEffects.new,
+          session: nil
+        }
         message       = message_class.new(count: 42)
         handler       = handler_class.new(message, container) {}
         expect(handler.foo).to eq(42)
@@ -285,7 +337,11 @@ module Lucid
         count         = 0
         handler_class = Class.new(Handler) { let(:foo) { count += 1 } }
         message_class = Class.new(Command) {}
-        container     = { message_bus: nil, session: nil }
+        container     = {
+          message_bus: nil,
+          response_effects: App::ResponseEffects.new,
+          session: nil
+        }
         message       = message_class.new
         handler       = handler_class.new(message, container) {}
         expect(handler.foo).to eq(1)

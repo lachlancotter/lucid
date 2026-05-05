@@ -170,6 +170,49 @@ module Lucid
             expect(response.body).to include("param: baz")
           end
         end
+
+        context "when the handler redirects externally" do
+          let(:handler_class) do
+            Class.new(Lucid::Handler) do
+              perform(TestCommand) { redirect_to("https://example.com/checkout") }
+            end
+          end
+
+          context "basic request" do
+            let(:env) do
+              {
+                 "REQUEST_METHOD" => "GET",
+                 "PATH_INFO"      => HTTP::URL.new(TestCommand, {}).path,
+                 "QUERY_STRING"   => HTTP::URL.new(TestCommand, {}).query_string,
+              }
+            end
+
+            it "redirects to the external URL" do
+              cycle.command
+              expect(response.status).to eq(303)
+              expect(response.location).to eq("https://example.com/checkout")
+            end
+          end
+
+          context "HTMX" do
+            let(:env) do
+              {
+                 "REQUEST_METHOD"      => "GET",
+                 "PATH_INFO"           => HTTP::URL.new(TestCommand, {}).path,
+                 "QUERY_STRING"        => HTTP::URL.new(TestCommand, {}).query_string,
+                 "HTTP_HX_REQUEST"     => "true",
+                 "HTTP_HX_CURRENT_URL" => "/"
+              }
+            end
+
+            it "uses HX-Redirect" do
+              cycle.command
+              expect(response.status).to eq(200)
+              expect(response.headers["HX-Redirect"]).to eq("https://example.com/checkout")
+              expect(response.headers["HX-Push-Url"]).to be_nil
+            end
+          end
+        end
       end
 
     end
