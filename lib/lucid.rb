@@ -13,7 +13,6 @@ module Lucid
     LOADER.inflector.inflect('http' => 'HTTP')
     LOADER.inflector.inflect('html' => 'HTML')
     LOADER.inflector.inflect('url' => 'URL')
-    LOADER.inflector.inflect('rspec' => 'RSpec')
     LOADER.enable_reloading
     LOADER.setup
   end
