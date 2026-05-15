@@ -4,3 +4,4 @@
 .aider*
 /tmp/*
 /apps/*/tmp/*
+.DS_Store

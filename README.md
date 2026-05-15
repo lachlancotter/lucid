@@ -1,5 +1,7 @@
 # Lucid
 
+[![CI](https://github.com/lachlancotter/lucid/actions/workflows/ci.yml/badge.svg)](https://github.com/lachlancotter/lucid/actions/workflows/ci.yml)
+
 Lucid is a Ruby framework for building reactive, hypermedia applications with a
 message-driven architecture.
 
@@ -13,6 +15,42 @@ interactive behavior around three primitives:
 The result is a UI layer that is easier to refactor, easier to compose, and
 more naturally aligned with server-rendered hypermedia than a route-centric
 controller stack.
+
+## At A Glance
+
+- Model user intent as `Messages`, not route helpers.
+- Keep business effects in `Handlers`, not view code.
+- Render server-side UI with stateful `Components`.
+- Update the browser with normal HTML and HTMX-friendly partial responses.
+
+```mermaid
+flowchart LR
+  U[User action] --> M[Message]
+  M --> H[Handler]
+  H --> E[Event]
+  E --> C[Component]
+  C --> R[HTML response]
+```
+
+## Quickstart
+
+Run the included example app from this repository:
+
+```bash
+bundle install
+bundle exec ruby examples/hello_world/app.rb
+```
+
+Then open `http://localhost:4567`.
+
+The example defines:
+
+- a `Link` message for navigation intent
+- a root `Component` that reacts to that message
+- a `Lucid::App` subclass that serves the component tree
+
+If you want to inspect it first, see
+[examples/hello_world/app.rb](examples/hello_world/app.rb).
 
 ## What Lucid Is
 
@@ -122,6 +160,12 @@ The important part is the shape of the system:
 - the handler owns the side effect
 
 That separation is the main payoff of Lucid.
+
+## Project Status
+
+Lucid is an actively evolving framework with a stable conceptual core and a
+small, focused documentation set. The API surface is opinionated and still
+being refined.
 
 ## Why This Approach
 
