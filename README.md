@@ -173,20 +173,16 @@ everything to funnel through controllers.
 
 ## Documentation Map
 
-The repository already contains deeper concept and reference material:
+The documentation set is intentionally small:
 
+- [Docs Index](docs/index.md)
 - [Why Lucid?](docs/why.md)
-- [Messages](docs/chapter-04-messages.md)
+- [Hello World](docs/hello.md)
+- [Architecture](docs/architecture.md)
+- [Messages](docs/messages.md)
+- [Components](docs/components.md)
 - [Handlers](docs/handlers.md)
-- [Handler Testing](docs/handler_testing.md)
-- [View Components](docs/view_components.md)
-- [Pagination](docs/pagination.md)
-- [View CSS](docs/view_css.md)
+- [Reference: State](docs/reference/state.md)
+- [Reference: Templates](docs/reference/templates.md)
 
-If you are new to the framework, start with the messages and components docs.
-
-## Status
-
-Lucid is currently best approached as an opinionated framework with an evolving
-documentation story. This README is the entry point; the `docs/` directory is
-where the deeper conceptual material lives today.
+If you are new to the framework, start with `why`, `hello`, and `architecture`.
