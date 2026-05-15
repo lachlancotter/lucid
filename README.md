@@ -1,7 +1,5 @@
 # Lucid
 
-[![CI](https://github.com/lachlancotter/lucid/actions/workflows/ci.yml/badge.svg)](https://github.com/lachlancotter/lucid/actions/workflows/ci.yml)
-
 Lucid is a Ruby framework for building reactive, hypermedia applications with a
 message-driven architecture.
 
