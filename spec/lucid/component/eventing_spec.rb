@@ -13,6 +13,27 @@ module Lucid
           component       = component_class.new({}, event_class.new)
           expect(result).to be(component)
         end
+
+        it "applies event params before validating required state" do
+          event_class     = Class.new(Event) do
+            validate { required(:foo).filled(:string) }
+          end
+          component_class = Class.new(Component::Base) do
+            param :foo, Types.string
+            on(event_class) { |event| update(foo: event.foo) }
+          end
+          component       = component_class.new({}, event_class.new(foo: "bar"))
+          expect(component.deep_state).to eq({ foo: "bar" })
+        end
+
+        it "raises when the applied event does not satisfy required state" do
+          event_class     = Class.new(Event)
+          component_class = Class.new(Component::Base) do
+            param :foo, Types.string
+            on(event_class) {}
+          end
+          expect { component_class.new({}, event_class.new) }.to raise_error(ParamError)
+        end
       end
 
       context "event subclass" do
@@ -44,6 +65,21 @@ module Lucid
           end
           component              = parent_component_class.new({}, event_class.new)
           expect(result).to be(component.nested)
+        end
+
+        it "applies event params before validating required child state" do
+          event_class            = Class.new(Event) do
+            validate { required(:foo).filled(:string) }
+          end
+          component_class        = Class.new(Component::Base) do
+            param :foo, Types.string
+            on(event_class) { |event| update(foo: event.foo) }
+          end
+          parent_component_class = Class.new(Component::Base) do
+            nest(:nested) { component_class }
+          end
+          component              = parent_component_class.new({}, event_class.new(foo: "bar"))
+          expect(component.nested.deep_state).to eq({ foo: "bar" })
         end
       end
 

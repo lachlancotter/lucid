@@ -49,8 +49,15 @@ module Lucid
       def initialize_state (state)
         validate_state_scope!(state).tap do |scope|
           @state_reader = scope
-          @state        = self.class.build_state(scope)
+          @state        = PendingState.new(
+             self.class.read_state_data(scope),
+             self.class.default_state_data
+          )
         end
+      end
+
+      def validate_deferred_state!
+        @state = self.class.build_state_from_data(@state.to_h)
       end
 
       def validate_state_scope! (scope)
@@ -98,14 +105,39 @@ module Lucid
           @state_map ||= State::Map.new
         end
 
-        #
-        # Build an instance of the state class from the reader.
-        # 
-        def build_state (cursor)
-          data = cursor.read(state_map)
+        def build_state_from_data (data)
           state_class.new(data)
         rescue Dry::Struct::Error => e
           raise ParamError.new(self, data, e.message)
+        end
+
+        def read_state_data (cursor)
+          cursor.read(state_map)
+        end
+
+        def default_state_data
+          state_class.schema.keys.each_with_object({}) do |key, defaults|
+            defaults[key.name] = key.type[] if key.type.default?
+          end
+        end
+      end
+
+      class PendingState
+        def initialize (data, defaults = {})
+          @defaults = defaults
+          @data     = @defaults.merge(data)
+        end
+
+        def [] (key)
+          @data[key]
+        end
+
+        def new (data)
+          self.class.new(@data.merge(data), @defaults)
+        end
+
+        def to_h
+          @data.to_h
         end
       end
     end

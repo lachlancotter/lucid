@@ -67,6 +67,7 @@ module Lucid
         # If any changed fields were inherited from parent, trigger dependencies.
         fields.values.each { |f| f.notify if f.changed? }
         apply_messages(messages)
+        validate_deferred_state!
         run_callbacks(:after_application, *messages) # includes building children
         # maybe build children should be explicit here
         run_callbacks(:after_build)

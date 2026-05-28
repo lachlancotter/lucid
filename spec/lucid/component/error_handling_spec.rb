@@ -144,7 +144,7 @@ module Lucid
               element { h1 { text "Success" } }
               to(message_class) { update(foo: "invalid") }
             end
-            expect { component_class.new({}, message_class.new) }.to raise_error(StateError)
+            expect { component_class.new({}, message_class.new) }.to raise_error(ParamError)
           end
         end
 
@@ -162,7 +162,7 @@ module Lucid
             end
             component              = parent_component_class.new({}, message_class.new)
             # component.visit(message_class.new)
-            expect(component.render).to match /Invalid State/
+            expect(component.render).to match /Invalid Request/
           end
         end
       end
@@ -176,7 +176,7 @@ module Lucid
               element { h1 { text "Success" } }
               on(message_class) { update(foo: "invalid") }
             end
-            expect { component_class.new({}, message_class.new) }.to raise_error(StateError)
+            expect { component_class.new({}, message_class.new) }.to raise_error(ParamError)
           end
         end
 
@@ -193,7 +193,7 @@ module Lucid
               element { subcomponent(:child) }
             end
             component              = parent_component_class.new({}, message_class.new)
-            expect(component.render).to match /Invalid State/
+            expect(component.render).to match /Invalid Request/
           end
         end
       end
