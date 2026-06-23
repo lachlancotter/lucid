@@ -319,6 +319,8 @@ module Lucid
           @ordinal    = Types.integer[ordinal]
           @field      = Field.new(@parent, &block)
           @components = []
+          @component_class = current_component_class
+          @field.invalidate
         end
 
         def install (state, messages)
@@ -330,7 +332,10 @@ module Lucid
         end
 
         def install_singleton (state, messages)
-          @components = [factory.call(state, messages, @parent, @name, @ordinal)]
+          selected_factory = factory
+          clear_state_path!(state) if replacing_routed_component?(selected_factory, messages)
+          @component_class = selected_factory.component_class
+          @components = [selected_factory.call(state, messages, @parent, @name, @ordinal)]
         rescue StandardError => error
           App::Logger.exception(@parent, error)
           @components = [ErrorPage.new({}, error: error)]
@@ -426,6 +431,23 @@ module Lucid
         def build (element, index)
           factory.call({}, nil, @parent, @name, @ordinal,
              element: element, collection_index: index)
+        end
+
+        def replacing_routed_component? (selected_factory, messages)
+          messages.any? &&
+          on_route? &&
+             @component_class &&
+             @component_class != selected_factory.component_class
+        end
+
+        def clear_state_path! (state)
+          state.clear_path!
+        end
+
+        def current_component_class
+          factory.component_class
+        rescue StandardError
+          nil
         end
 
         #

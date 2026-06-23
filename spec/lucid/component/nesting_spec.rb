@@ -133,6 +133,36 @@ module Lucid
           view = base_class.new({ val: "a" }, msg_class.new)
           expect(view.foo).to be_a(bar_class)
         end
+
+        it "clears nested path segments when the routed child class changes" do
+          msg_class  = Class.new(Lucid::Event)
+          foo_class  = Class.new(Component::Base) do
+            route ":id"
+            param :id, Types.string.default("foo-default".freeze)
+          end
+          bar_class  = Class.new(Component::Base) do
+            route ":slug"
+            param :slug, Types.string.default("bar-default".freeze)
+          end
+          base_class = Class.new(Component::Base) do
+            route ":val", nest: :foo
+            param :val, Types.string
+            on(msg_class) { update(val: "b") }
+            nest :foo do |val|
+              case val
+              when "a" then foo_class
+              when "b" then bar_class
+              else fail
+              end
+            end
+          end
+
+          view = base_class.new(State::Store.from_url("/a/123").scoped, msg_class.new)
+
+          expect(view.state.to_h).to eq(val: "b")
+          expect(view.foo).to be_a(bar_class)
+          expect(view.foo.state.to_h).to eq(slug: "bar-default")
+        end
       end
 
       context "named constructor" do

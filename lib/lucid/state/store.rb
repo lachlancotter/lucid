@@ -49,6 +49,10 @@ module Lucid
         @params[key] = value
       end
 
+      def clear_segments_from (n)
+        @path.slice!(n..-1)
+      end
+
       private
 
       def self.parse_path (path_str)

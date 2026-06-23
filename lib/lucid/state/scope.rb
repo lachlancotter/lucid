@@ -60,6 +60,10 @@ module Lucid
         set_segment(key, value)
       end
 
+      def clear_path!
+        @store.clear_segments_from(@depth)
+      end
+
       private
 
       def qualify_key (key)

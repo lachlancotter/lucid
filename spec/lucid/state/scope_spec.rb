@@ -244,6 +244,27 @@ module Lucid
         end
       end
 
+      describe "#clear_path!" do
+        it "removes path segments from the current depth onward" do
+          store = Store.new(%w[a b c d])
+          scope = Scope.new(store, 2)
+
+          scope.clear_path!
+
+          expect(store.to_url).to eq("/a/b")
+        end
+
+        it "preserves parent path segments" do
+          store = Store.new(%w[parent child grandchild])
+          scope = Scope.new(store, 1)
+
+          scope.clear_path!
+
+          expect(scope.get_segment(0)).to be_nil
+          expect(store.get_segment(0)).to eq("parent")
+        end
+      end
+
       describe "combined depth and coordinate" do
         it "applies both depth offset and coordinate" do
           store = Store.new(["a", "b", "c"], { "foo.12" => "bar" })

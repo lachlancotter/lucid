@@ -27,6 +27,9 @@ module Lucid
         @segments[n] = value
       end
 
+      def clear_segments_from (n)
+      end
+
       def key? (key)
         @hash.key?(key.to_s)
       end
