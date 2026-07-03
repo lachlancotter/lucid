@@ -61,7 +61,7 @@ module Lucid
 
     def publish (event, container = {})
       InvalidEvent.check(event)
-      App::Logger.event(event)
+      Logger.event(event)
       each_subscriber(event.class) do |klass, handler_block|
         klass.new(event, container, &handler_block).call
       end

@@ -1,8 +1,7 @@
 require "console/capture"
 
 module Lucid
-  class App
-    describe Logger do
+  describe Logger do
       #
       # Fake output channel that allows us to asset about messages on
       # their metadata, not just subject and message.
@@ -253,6 +252,5 @@ module Lucid
           end
         end
       end
-    end
   end
 end

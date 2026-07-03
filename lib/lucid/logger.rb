@@ -1,12 +1,11 @@
 require "console"
 
 module Lucid
-  class App
-    #
-    # Print pretty logs of the request cycle to the console.
-    #
-    class Logger
-      class << self
+  #
+  # Print pretty logs of framework activity to the console.
+  #
+  class Logger
+    class << self
 
         #
         # Wrap a request cycle.
@@ -155,7 +154,6 @@ module Lucid
         #   end
         # end
 
-      end
     end
   end
 end

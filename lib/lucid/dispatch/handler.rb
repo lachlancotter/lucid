@@ -53,7 +53,7 @@ module Lucid
     rescue PermissionCheck::Skipped
       raise
     rescue StandardError => e
-      App::Logger.exception(self, e)
+      Logger.exception(self, e)
       publish(HandlerRaised.new(error: e))
     end
 
