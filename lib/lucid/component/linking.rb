@@ -2,26 +2,13 @@ module Lucid
   module Component
     module Linking
       #
-      # Return a local link for the given name and params. Local
-      # links are applied only to the current Linkable instance.
-      #
-      def link_to (name = nil, params = {})
-        Link::Scoped.new(self, Types.symbol[name], params)
-      end
-
-      #
       # Apply the block for the given link type to the current
       # state, and return the transformed state. Used to resolve the
       # href for global links.
       #
-      private def visit (link)
+      private def handle_link (link)
         Types.instance(Link)[link]
-        visitors[link.key].call(self, link) if visitors.key?(link.key)
-        # each_subcomponent { |sub| sub.visit(link) }
-      end
-
-      def visitors
-        @visitors ||= {}
+        message_handlers.call(link, self)
       end
 
       def self.included (base)
@@ -37,63 +24,32 @@ module Lucid
         #
         # Returns the route to the view state that answers the query.
         #
-        # link_key may be a Symbol or a Link subclass.
+        # link_filter may be a Link subclass or constrained Link type.
         #
-        def to (link_key, *attrs, **map, &block)
-          with_invalid_link_type_checking(link_key) do
+        def to (link_filter, *attrs, **map, &block)
+          with_invalid_link_type_checking(link_filter) do
             after_initialize do
-              visitors[link_key] = Visit.new(*attrs, **map, &block)
+              message_handlers.register(link_filter, *attrs, **map, &block)
             end
           end
         end
 
-        def with_invalid_link_type_checking (message_type, &block)
-          case message_type
-          when -> (k) { k <= Link } then yield
-          when -> (k) { k <= Event }
+        def with_invalid_link_type_checking (message_filter, &block)
+          case message_filter
+          when -> (f) { f.is_a?(Constraint) && f.message_class <= Link } then yield
+          when -> (f) { f.is_a?(Constraint) && f.message_class <= Event }
             raise ApplicationError,
-               "Event messages cannot be handled with `to` handlers. Use `on` handlers instead: #{message_type.inspect}"
+               "Event messages cannot be handled with `to` handlers. Use `on` handlers instead: #{message_filter.inspect}"
+          when -> (k) { k.is_a?(Class) && k <= Link } then yield
+          when -> (k) { k.is_a?(Class) && k <= Event }
+            raise ApplicationError,
+               "Event messages cannot be handled with `to` handlers. Use `on` handlers instead: #{message_filter.inspect}"
           else
             raise ArgumentError,
-               "Invalid event filter: #{message_type.inspect}"
+               "Invalid link filter: #{message_filter.inspect}"
           end
         end
 
-      end
-
-      #
-      # Applies a link to a component using a list of attribute symbols,
-      # a Hash of symbols or a block.
-      #
-      class Visit
-        def initialize (*attrs, **map, &block)
-          @attrs = attrs
-          @map   = map
-          @block = block
-        end
-
-        def call (component, link)
-          data = delta(link)
-          # component.update(data) if data.any?
-          component.instance_exec { update(data) } if data.any?
-          component.instance_exec(link, &@block) if @block
-        end
-
-        private
-
-        #
-        # Merge attributes from the link with constants from the visit.
-        #
-        def delta (link)
-          whitelist(link).merge(@map)
-        end
-
-        #
-        # Select specified attributes from the link.
-        #
-        def whitelist (link)
-          link.to_h.select { |k, _| @attrs.include?(k) }
-        end
       end
     end
   end

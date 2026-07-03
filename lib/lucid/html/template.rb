@@ -204,9 +204,8 @@ module Lucid
           case message
           when Message then message
           when String then message
-          when Symbol then @renderable.link_to(message)
           # when Types.subclass(HTTP::Message) then message.new
-          else raise ArgumentError, "Message, String or Symbol expected: #{message.inspect}"
+          else raise ArgumentError, "Message or String expected: #{message.inspect}"
           end
         end
 
