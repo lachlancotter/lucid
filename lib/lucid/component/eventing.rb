@@ -8,34 +8,35 @@ module Lucid
         base.extend(ClassMethods)
       end
 
-      private def apply (event)
-        self.class.event_handlers.call(event, self)
-        # each_subcomponent { |sub| sub.apply(event) }
+      private def handle_event (event)
+        Types.instance(Event)[event]
+        message_handlers.call(event, self)
       end
 
       private
 
       module ClassMethods
-        def on (event_type, *keys, **maps, &block)
-          with_invalid_event_type_checking(event_type) do
-            event_handlers.register(event_type, *keys, **maps, &block)
+        def on (event_filter, *attrs, **map, &block)
+          with_invalid_event_type_checking(event_filter) do
+            after_initialize do
+              message_handlers.register(event_filter, *attrs, **map, &block)
+            end
           end
         end
 
-        def event_handlers
-          @event_handlers ||= EventHandlers.new
-        end
-
-        def with_invalid_event_type_checking (message_type, &block)
-          case message_type
-          when Constraint then yield
-          when -> (k) { k <= Event } then yield
-          when -> (k) { k <= Link }
+        def with_invalid_event_type_checking (message_filter, &block)
+          case message_filter
+          when -> (f) { f.is_a?(Constraint) && f.message_class <= Event } then yield
+          when -> (f) { f.is_a?(Constraint) && f.message_class <= Link }
             raise ApplicationError,
-               "Link messages cannot be handled with `on` handlers. Use `to` handlers instead: #{message_type.inspect}"
+               "Link messages cannot be handled with `on` handlers. Use `to` handlers instead: #{message_filter.inspect}"
+          when -> (k) { k.is_a?(Class) && k <= Event } then yield
+          when -> (k) { k.is_a?(Class) && k <= Link }
+            raise ApplicationError,
+               "Link messages cannot be handled with `on` handlers. Use `to` handlers instead: #{message_filter.inspect}"
           else
             raise ArgumentError,
-               "Invalid event filter: #{message_type.inspect}"
+               "Invalid event filter: #{message_filter.inspect}"
           end
         end
       end

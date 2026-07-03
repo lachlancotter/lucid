@@ -39,6 +39,51 @@ module Lucid
             expect(app.deep_state).to eq({ foo: "bar" })
           end
 
+          it "applies link handlers for subclasses" do
+            link_class    = Class.new(Link)
+            subclass      = Class.new(link_class)
+            app_class     = Class.new(Component::Base) do
+              param :foo, Types.string.default("bar".freeze)
+              to link_class, foo: "baz"
+            end
+            app           = app_class.new({}, subclass.new)
+            expect(app.deep_state).to eq({ foo: "baz" })
+          end
+
+          it "applies constrained link handlers when values match" do
+            link_class = Class.new(Link) do
+              validate do
+                required(:id).filled(:string)
+                required(:foo).filled(:string)
+              end
+            end
+            app_class  = Class.new(Component::Base) do
+              let(:current_id) { "123" }
+              param :foo
+              to link_class[id: :current_id], :foo
+            end
+            link       = link_class.new(id: "123", foo: "bar")
+            app        = app_class.new({}, link)
+            expect(app.deep_state).to eq({ foo: "bar" })
+          end
+
+          it "doesn't apply constrained link handlers when values don't match" do
+            link_class = Class.new(Link) do
+              validate do
+                required(:id).filled(:string)
+                required(:foo).filled(:string)
+              end
+            end
+            app_class  = Class.new(Component::Base) do
+              let(:current_id) { "123" }
+              param :foo, Types.string.default("old".freeze)
+              to link_class[id: :current_id], :foo
+            end
+            link       = link_class.new(id: "456", foo: "bar")
+            app        = app_class.new({}, link)
+            expect(app.deep_state).to eq({ foo: "old" })
+          end
+
           it "triggers watchers" do
             called     = false
             link_class = Class.new(Link) do
@@ -153,13 +198,26 @@ module Lucid
       end
     end
 
-    context "invalid message type" do
-      it "raises an exception" do
-        event_class = Class.new(Event)
-        expect {
-          Class.new(Component::Base) { to(event_class) {} }
-        }.to raise_error(ApplicationError)
+      context "invalid message type" do
+        it "raises an exception" do
+          event_class = Class.new(Event)
+          expect {
+            Class.new(Component::Base) { to(event_class) {} }
+          }.to raise_error(ApplicationError)
+        end
+
+        it "raises an exception for event constraints" do
+          event_class = Class.new(Event) { validate { required(:foo).filled(:string) } }
+          expect {
+            Class.new(Component::Base) { to(event_class[:foo]) {} }
+          }.to raise_error(ApplicationError)
+        end
+
+        it "raises an exception for local link symbols" do
+          expect {
+            Class.new(Component::Base) { to(:local) {} }
+          }.to raise_error(ArgumentError)
+        end
       end
     end
   end
-end
