@@ -121,6 +121,10 @@ module Lucid
 
         end
 
+        class TestFollowUpEvent < Lucid::Event
+
+        end
+
         let(:component_class) do
           Class.new(Lucid::Component::Base) do
             param :foo, Types.string.default("bar".freeze)
@@ -168,6 +172,42 @@ module Lucid
             expect(response.headers['hx-push-url']).to eq("/?foo=baz")
             expect(response.status).to eq(200)
             expect(response.body).to include("param: baz")
+          end
+        end
+
+        context "when a subscriber publishes another event" do
+          let(:component_class) do
+            Class.new(Lucid::Component::Base) do
+              param :foo, Types.string.default("bar".freeze)
+              on(TestFollowUpEvent) { update(foo: "qux") }
+              element do |foo|
+                h1 { text "Linking Component" }
+                p { text "param: #{foo}" }
+              end
+            end
+          end
+
+          let(:handler_class) do
+            Class.new(Lucid::Handler) do
+              perform(TestCommand) { publish TestEvent.new }
+              subscribe(TestEvent) { publish TestFollowUpEvent.new }
+            end
+          end
+
+          let(:env) do
+            {
+               "REQUEST_METHOD"      => "GET",
+               "PATH_INFO"           => HTTP::URL.new(TestCommand, {}).path,
+               "QUERY_STRING"        => HTTP::URL.new(TestCommand, {}).query_string,
+               "HTTP_HX_REQUEST"     => "true",
+               "HTTP_HX_CURRENT_URL" => "/"
+            }
+          end
+
+          it "renders after the message queue is fully drained" do
+            cycle.command
+            expect(response.status).to eq(200)
+            expect(response.body).to include("param: qux")
           end
         end
 
