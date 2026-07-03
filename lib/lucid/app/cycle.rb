@@ -26,7 +26,7 @@ module Lucid
           @request.yield_link do |link|
             view = component(link)
             run_with_context(view) do
-              Logger.link(link)
+              Lucid::Logger.link(link)
               @response.send_delta(view, htmx: @request.htmx?)
             end
           end
@@ -36,11 +36,11 @@ module Lucid
       def command
         with_request_logging do
           @request.yield_command do |command|
-            Logger.command(command)
+            Lucid::Logger.command(command)
             message_bus.dispatch(command)
           end
           @request.yield_invalid do |params, errors|
-            Logger.error("Invalid command", params)
+            Lucid::Logger.error("Invalid command", params)
             message_bus.publish(
                MessageInvalidated.new(
                   params: params,
@@ -85,7 +85,7 @@ module Lucid
       end
 
       def with_request_logging (&block)
-        Logger.cycle(self, &block)
+        Lucid::Logger.cycle(self, &block)
       end
 
       def run_with_context (component, &block)
@@ -93,7 +93,7 @@ module Lucid
           HTTP::Message.with_state(state_for_messages(component), &block)
         end
       rescue Dry::Types::CoercionError => e
-        Logger.exception(self, e)
+        Lucid::Logger.exception(self, e)
         @response.send_error(e)
       end
 
