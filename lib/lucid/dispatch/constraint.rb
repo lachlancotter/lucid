@@ -6,6 +6,8 @@ module Lucid
   # given context (typically a component).
   #
   class Constraint
+    attr_reader :message_class
+
     def initialize (message_class, *keys, **maps)
       @message_class = Types.subclass(Message)[message_class]
       @keys          = Types.array[keys]

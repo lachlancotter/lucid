@@ -136,6 +136,15 @@ module Lucid
             end.new({})
             expect(view.render).to eq('<a href="/@/lucid/component/test-link">Anchor Text</a>')
           end
+
+          it "rejects local symbol buttons" do
+            view = Class.new(Component::Base) do
+              element do
+                button_to :local, "Click"
+              end
+            end.new({})
+            expect { view.render }.to raise_error(ArgumentError, /Message or String expected/)
+          end
         end
       end
     end

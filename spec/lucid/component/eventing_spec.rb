@@ -137,6 +137,28 @@ module Lucid
         end
       end
 
+      context "state update shorthand" do
+        it "applies event params with symbol keys" do
+          event_class     = Class.new(Event) { validate { required(:foo).filled(:string) } }
+          component_class = Class.new(Component::Base) do
+            param :foo
+            on event_class, :foo
+          end
+          component       = component_class.new({}, event_class.new(foo: "bar"))
+          expect(component.deep_state).to eq({ foo: "bar" })
+        end
+
+        it "applies static state with keyword values" do
+          event_class     = Class.new(Event)
+          component_class = Class.new(Component::Base) do
+            param :foo
+            on event_class, foo: "bar"
+          end
+          component       = component_class.new({}, event_class.new)
+          expect(component.deep_state).to eq({ foo: "bar" })
+        end
+      end
+
       context "event filter" do
         context "key match" do
           it "calls the block when the values match" do
@@ -194,6 +216,22 @@ module Lucid
             component       = component_class.new({}, event)
             expect(result).to be_nil
           end
+        end
+
+        it "applies state update shorthand after a constrained type" do
+          event_class     = Class.new(Event) do
+            validate do
+              required(:foo).filled(:string)
+              required(:bar).filled(:string)
+            end
+          end
+          component_class = Class.new(Component::Base) do
+            let(:foo) { "match" }
+            param :bar
+            on event_class[:foo], :bar
+          end
+          component       = component_class.new({}, event_class.new(foo: "match", bar: "applied"))
+          expect(component.deep_state).to eq({ bar: "applied" })
         end
       end
 

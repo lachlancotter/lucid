@@ -13,6 +13,7 @@ module Lucid
       include Nesting
       include Fields
       include FieldInheritance
+      include MessageHandling
       include Linking
       include Eventing
       include Echoing
@@ -76,8 +77,8 @@ module Lucid
       def apply_messages (messages)
         messages.each do |message|
           case message
-          when Event then apply(message)
-          when Link then visit(message)
+          when Event then handle_event(message)
+          when Link then handle_link(message)
           when NilClass then nil
           else raise ArgumentError, "Unsupported message type: #{message.class}"
           end
