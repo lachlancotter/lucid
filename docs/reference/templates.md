@@ -35,3 +35,19 @@ The most important rendering helpers are:
 - `template`
 - `subcomponent`
 - `subcomponents`
+
+## File Upload Forms
+
+Use `multipart: true` when a form includes file inputs:
+
+```ruby
+form_for(upload_form, multipart: true) do |f|
+  f.file(:avatar, accept: "image/*")
+end
+```
+
+Uploaded files are supported on `POST` forms. Rack parses each uploaded file as
+a hash containing upload metadata and a `Tempfile`; handlers are responsible for
+validating the file size and type, then moving or processing the tempfile during
+the request. Browsers do not repopulate file inputs after validation errors, so
+file fields do not echo a `value` from the form model.

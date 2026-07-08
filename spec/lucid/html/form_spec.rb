@@ -1,5 +1,33 @@
+require "tempfile"
+
 module Lucid
   module HTML
+    describe Form do
+      describe "#template" do
+        it "renders multipart form encoding when requested" do
+          message_type = stub_const("UploadMessage", Class.new(HTTP::Message))
+          params       = HTTP::FormModel.new(message_type, {})
+          result       = Form.new(params, multipart: true) {}.to_s
+          expect(result).to match('enctype="multipart/form-data"')
+          expect(result).not_to match("multipart=")
+        end
+
+        it "does not render form encoding by default" do
+          message_type = stub_const("UploadMessage", Class.new(HTTP::Message))
+          params       = HTTP::FormModel.new(message_type, {})
+          result       = Form.new(params) {}.to_s
+          expect(result).not_to match("enctype=")
+        end
+
+        it "preserves other form attributes" do
+          message_type = stub_const("UploadMessage", Class.new(HTTP::Message))
+          params       = HTTP::FormModel.new(message_type, {})
+          result       = Form.new(params, class: "upload-form") {}.to_s
+          expect(result).to match('class="upload-form"')
+        end
+      end
+    end
+
     describe Form::Builder do
 
       describe "#text" do
@@ -27,6 +55,41 @@ module Lucid
             expect(result).to match('name="foo"')
             expect(result).to match('value="explicit_value"')
           end
+        end
+      end
+
+      describe "#file" do
+        it "renders a file field with the field name and id" do
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, {})
+          renderer     = Template::RenderContext.new(nil) {}
+          builder      = Form::Builder.new(renderer, params)
+          result       = builder.file(:avatar)
+          expect(result).to match('type="file"')
+          expect(result).to match('name="avatar"')
+          expect(result).to match('id="avatar"')
+        end
+
+        it "does not render a value from the model" do
+          upload       = { filename: "avatar.png", type: "image/png", tempfile: ::Tempfile.new("avatar") }
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, { avatar: upload })
+          renderer     = Template::RenderContext.new(nil) {}
+          builder      = Form::Builder.new(renderer, params)
+          result       = builder.file(:avatar)
+          expect(result).not_to match("value=")
+        ensure
+          upload[:tempfile].close!
+        end
+
+        it "renders additional attributes" do
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, {})
+          renderer     = Template::RenderContext.new(nil) {}
+          builder      = Form::Builder.new(renderer, params)
+          result       = builder.file(:avatar, accept: "image/*", required: true)
+          expect(result).to include('accept="image/*"')
+          expect(result).to match("required")
         end
       end
 

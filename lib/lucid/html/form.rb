@@ -1,3 +1,5 @@
+require "papercraft"
+
 module Lucid
   module HTML
     #
@@ -6,7 +8,7 @@ module Lucid
     class Form
       def initialize (form_model, **opts, &block)
         @form_model = Types.instance(HTTP::FormModel)[form_model]
-        @options    = Types.hash[opts]
+        @options    = normalize_options(Types.hash[opts])
         @block      = block
       end
 
@@ -25,6 +27,13 @@ module Lucid
             end
           end
         end.apply(@form_model, @options, &@block)
+      end
+
+      def normalize_options (options)
+        options = options.dup
+        multipart = options.delete(:multipart)
+        options[:enctype] = "multipart/form-data" if multipart
+        options
       end
 
       class Builder
@@ -126,6 +135,15 @@ module Lucid
              name:  field_name(key),
              value: value || field_value(key),
              id:    field_id(key)
+          }.merge(attrs)
+          @renderer.tag(:input, input_attrs)
+        end
+
+        def file (key, **attrs)
+          input_attrs = {
+             type: :file,
+             name: field_name(key),
+             id:   field_id(key)
           }.merge(attrs)
           @renderer.tag(:input, input_attrs)
         end
