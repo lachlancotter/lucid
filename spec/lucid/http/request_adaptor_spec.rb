@@ -104,6 +104,62 @@ module Lucid
           params      = RequestAdaptor.new(request).raw_params
           expect(params).to eq({ "id" => "1", "state" => { "baz" => "qux" } })
         end
+
+        it "decodes multipart params with an uploaded file" do
+          boundary = "AaB03x"
+          body     = [
+             "--#{boundary}",
+             'Content-Disposition: form-data; name="title"',
+             "",
+             "Profile",
+             "--#{boundary}",
+             'Content-Disposition: form-data; name="avatar"; filename="avatar.txt"',
+             "Content-Type: text/plain",
+             "",
+             "file body",
+             "--#{boundary}--",
+             ""
+          ].join("\r\n")
+          request  = Rack::Request.new(
+             "REQUEST_METHOD" => "POST",
+             "CONTENT_TYPE"   => "multipart/form-data; boundary=#{boundary}",
+             "CONTENT_LENGTH" => body.bytesize.to_s,
+             "rack.input"     => StringIO.new(body)
+          )
+          params   = RequestAdaptor.new(request).raw_params
+
+          expect(params["title"]).to eq("Profile")
+          expect(params["avatar"][:filename]).to eq("avatar.txt")
+          expect(params["avatar"][:type]).to eq("text/plain")
+          expect(params["avatar"][:tempfile].read).to eq("file body")
+        end
+      end
+
+      describe "#message_params" do
+        it "preserves uploaded file data in message params" do
+          boundary = "AaB03x"
+          body     = [
+             "--#{boundary}",
+             'Content-Disposition: form-data; name="avatar"; filename="avatar.txt"',
+             "Content-Type: text/plain",
+             "",
+             "file body",
+             "--#{boundary}--",
+             ""
+          ].join("\r\n")
+          request  = Rack::Request.new(
+             "REQUEST_METHOD" => "POST",
+             "CONTENT_TYPE"   => "multipart/form-data; boundary=#{boundary}",
+             "CONTENT_LENGTH" => body.bytesize.to_s,
+             "rack.input"     => StringIO.new(body)
+          )
+          params   = RequestAdaptor.new(request).message_params.to_h
+
+          expect(params[:avatar][:filename]).to eq("avatar.txt")
+          expect(params[:avatar][:type]).to eq("text/plain")
+          expect(params[:avatar][:tempfile]).to be_a(Tempfile)
+          expect(params[:avatar][:tempfile].read).to eq("file body")
+        end
       end
 
     end
