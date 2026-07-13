@@ -100,7 +100,7 @@ module Lucid
         end
 
         def button_to (message, text = nil, **opts)
-          button_opts = { csrf_token: @renderable.container[:csrf_token] }.merge(opts)
+          button_opts = { csrf_token: @renderable.csrf_token }.merge(opts)
           emit Button.new(normalize_command(message), text, **button_opts).template
         end
 

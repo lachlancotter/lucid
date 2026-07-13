@@ -90,11 +90,11 @@ module Lucid
         end
 
         def message_params
-          @component.container[:request].message_params(filter: @param_filter)
+          @component.request.message_params(filter: @param_filter)
         end
 
         def csrf_token
-          @component.container[:csrf_token]
+          @component.csrf_token
         end
       end
 

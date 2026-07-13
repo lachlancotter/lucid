@@ -438,14 +438,14 @@ module Lucid
           expect(view.changes.any?).to be(true)
         end
 
-        it "is true when template use dependencies change" do
+        it "is true when template inherit dependencies change" do
           msg_type = Class.new(Lucid::Event)
           view     = Class.new(Component::Base) do
             param :foo
             on(msg_type) { update(foo: "bar") }
             nest :bar do
               Class.new(Component::Base) {
-                use :foo
+                inherit :foo
                 element { |foo| h1 { text foo } }
               }
             end

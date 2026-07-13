@@ -32,9 +32,30 @@ Lucid distinguishes between internal component state and external inputs.
 - `prop` defines incoming data needed for rendering
 - `temp` can hold transient rendering concerns that should not be encoded into
   the URL
+- `use` declares request-container dependencies, matching handler dependency
+  injection
+- `inherit` references reactive fields from an ancestor component or the HTTP
+  session
 
 Typed declarations matter because Lucid rebuilds components from request state
 on every cycle.
+
+Container dependencies are plain collaborators:
+
+```ruby
+class AccountMenu < Lucid::Component::Base
+  use :current_user, Types::Any
+end
+```
+
+Inherited fields remain reactive UI data:
+
+```ruby
+class ChildPanel < Lucid::Component::Base
+  inherit :selected_tab
+  inherit :flash, from: :http_session
+end
+```
 
 ## Composition
 

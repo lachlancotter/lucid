@@ -1,7 +1,7 @@
 module Lucid
   module Component
     #
-    # Allow components to access fields declared in parent components and in the session.
+    # Allow components to inherit fields declared in parent components and in the HTTP session.
     #
     module FieldInheritance
       def self.included(base)
@@ -19,13 +19,13 @@ module Lucid
 
       module ClassMethods
         #
-        # Declare a dependency on a field defined in a parent component.
+        # Declare a dependency on a field defined in a parent component or the HTTP session.
         #
-        def use (name, from: nil)
+        def inherit (name, from: nil)
           after_initialize do
             fields[name] = case from
             when NilClass then field_in_ancestor(name)
-            when :http_session then props.http_session.field(name)
+            when :http_session then http_session.field(name)
             else raise ArgumentError, "Invalid field source: #{from}"
             end
           end
