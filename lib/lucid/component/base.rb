@@ -12,6 +12,7 @@ module Lucid
       include Mutation
       include Nesting
       include Fields
+      include Dependencies
       include FieldInheritance
       include MessageHandling
       include Linking
@@ -37,11 +38,6 @@ module Lucid
       static :container, Types.container.optional.default { App::Container.new({}, {}) }
 
       #
-      # Access to the Session for the current request.
-      #
-      static :http_session, Types.instance(App::Session).optional.default(nil)
-
-      #
       # This component's parent in the component tree.
       #
       static :parent, Types.component.optional.default(nil)
@@ -61,9 +57,14 @@ module Lucid
       #
       static :collection_index, Types.integer.optional.default(nil)
 
+      use :request, Types.instance(HTTP::RequestAdaptor)
+      use :http_session, Types.instance(App::Session)
+      use :csrf_token, Types::Any.optional
+
       def initialize (state, *messages, **props)
         initialize_state(state)
         initialize_props(props)
+        validate_dependencies
         run_callbacks(:after_initialize) # Setup fields/props
         # If any changed fields were inherited from parent, trigger dependencies.
         fields.values.each { |f| f.notify if f.changed? }

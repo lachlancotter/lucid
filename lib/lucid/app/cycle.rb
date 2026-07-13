@@ -71,8 +71,7 @@ module Lucid
            @request.state_reader,
            *messages,
            app_root:     @container[:app_root],
-           container:    @container,
-           http_session: @container[:session]
+           container:    @container
         )
       end
 

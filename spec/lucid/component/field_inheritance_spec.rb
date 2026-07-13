@@ -1,12 +1,12 @@
 module Lucid
   describe Component::FieldInheritance do
-    describe ".use" do
+    describe ".inherit" do
       it "inherits let value from parent" do
         view = Class.new(Component::Base) do
           let(:foo) { "bar" }
           nest :child do
             Class.new(Component::Base) {
-              use :foo
+              inherit :foo
             }
           end
         end.new({})
@@ -20,7 +20,7 @@ module Lucid
             Class.new(Component::Base) {
               nest :grandchild do
                 Class.new(Component::Base) {
-                  use :foo
+                  inherit :foo
                 }
               end
             }
@@ -29,11 +29,11 @@ module Lucid
         expect(view.child.grandchild.foo).to eq("bar")
       end
 
-      it "inherits values from the session" do
+      it "inherits values from the HTTP session" do
         session_class = Class.new(App::Session) { key :foo }
-        session       = session_class.new("foo" => "bar")
-        view_class    = Class.new(Component::Base) { use :foo, from: :http_session }
-        view          = view_class.new({}, http_session: session)
+        container     = App::Container.new({ session_class: session_class }, { "rack.session" => { "foo" => "bar" } })
+        view_class    = Class.new(Component::Base) { inherit :foo, from: :http_session }
+        view          = view_class.new({}, container: container)
         expect(view.foo).to eq("bar")
       end
 
@@ -42,7 +42,7 @@ module Lucid
           param :foo
           nest :child do
             Class.new(Component::Base) {
-              use :foo
+              inherit :foo
             }
           end
         end.new({ foo: "bar" })
@@ -53,7 +53,7 @@ module Lucid
         view = Class.new(Component::Base) do
           prop :foo
           nest :child do
-            Class.new(Component::Base) { use :foo }
+            Class.new(Component::Base) { inherit :foo }
           end
         end.new({}, foo: "bar")
         expect(view.child.foo).to eq("bar")
@@ -67,7 +67,7 @@ module Lucid
               let(:foo) { "baz" }
               nest :grandchild do
                 Class.new(Component::Base) {
-                  use :foo
+                  inherit :foo
                 }
               end
             }
@@ -78,7 +78,7 @@ module Lucid
 
       it "raises when undefined" do
         view = Class.new(Component::Base) do
-          use :foo
+          inherit :foo
         end
         expect { view.new({}) }.to raise_error(Fields::NoSuchField)
       end

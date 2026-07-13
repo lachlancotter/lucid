@@ -39,6 +39,7 @@ module Lucid
       provide(:response) { HTTP::ResponseAdaptor.new(base_response, url_base: app_root) }
       provide(:response_effects) { ResponseEffects.new }
       provide(:session) { session_class.new(@env['rack.session']) }
+      provide(:http_session) { session }
       provide(:message_bus) { MessageBus.new(handler_class, self) }
     end
   end
