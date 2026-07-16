@@ -28,6 +28,21 @@ module Lucid
 
       module ClassMethods
         #
+        # Create a FormModel for rendering a message form without echoing
+        # submitted parameters back into the component.
+        #
+        def form (name, message_class, &block)
+          after_initialize do
+            fields[name] = Field.new(self) do
+              model_options = { component_id: path.to_s, form_name: name, csrf_token: csrf_token }
+              model         = HTTP::FormModel.new(message_class, {}, **model_options)
+              block ? instance_exec(model, &block) : model
+            end
+          end
+          define_method(name) { fields[name] }
+        end
+
+        #
         # Create a FormModel that echos back the parameters from the request.
         # The block can be used to modify the FormModel before it is used to
         # generate the HTML.
