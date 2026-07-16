@@ -25,6 +25,76 @@ module Lucid
         }
       end
 
+      context ".form" do
+        it "provides a form model" do
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Component::Base) { form :foo_form, message_class }
+          component       = component_class.new({})
+          expect(component.fields[:foo_form].value).to be_a(HTTP::FormModel)
+          expect(component.fields[:foo_form].value.message_type).to eq(message_class)
+          expect(component.fields[:foo_form].value.to_h).to eq({})
+        end
+
+        it "renders the component path, form name, and CSRF token" do
+          component_class = Class.new(Component::Base) do
+            form :foo_form, TestCommand
+            element do |foo_form|
+              form_for(foo_form) {}
+            end
+          end
+          container       = App::Container.new({ csrf_token: "foo_token" }, {})
+          component       = component_class.new({}, container: container)
+          render          = component.render
+          expect(render).to include("name=\"component\"")
+          expect(render).to include("value=\"/\"")
+          expect(render).to include("name=\"form\"")
+          expect(render).to include("value=\"foo_form\"")
+          expect(render).to include("name=\"authenticity_token\"")
+          expect(render).to include("value=\"foo_token\"")
+        end
+
+        it "uses configured default params" do
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Component::Base) do
+            form(:foo_form, message_class) do |form|
+              form.or_default({ foo: "default" })
+            end
+          end
+          component       = component_class.new({})
+          expect(component.fields[:foo_form].value.to_h).to eq({ foo: "default" })
+        end
+
+        it "renders configured default params to the template" do
+          component_class = Class.new(Component::Base) do
+            form(:foo_form, TestCommand) do |form|
+              form.or_default({ foo: "default" })
+            end
+            element do |foo_form|
+              form_for foo_form do |f|
+                f.text(:foo)
+              end
+            end
+          end
+          component       = component_class.new({})
+          render          = component.render
+          expect(render).to include("name=\"foo\"")
+          expect(render).to include("value=\"default\"")
+        end
+
+        it "does not trigger form dependencies when the form is submitted" do
+          called          = false
+          message_class   = Class.new(Lucid::Command)
+          component_class = Class.new(Component::Base) do
+            form :foo_form, message_class
+            watch(:foo_form) { called = true }
+          end
+          env             = mock_post_params("/", :foo_form, { foo: "bar" })
+          container       = App::Container.new({}, env)
+          component_class.new({}, container: container)
+          expect(called).to be_falsey
+        end
+      end
+
       context "always" do
         it "provides a form model" do
           message_class   = Class.new(Lucid::Command)
