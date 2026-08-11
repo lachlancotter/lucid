@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Handlers | Lucid Documentation</title>
+    <meta name="description" content="Use handlers for effectful command behavior, policies, redirects, and event publication.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a class="active" aria-current="page" href="handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+<a href="reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Handlers</h1>
+            <p class="lede">Use handlers for effectful command behavior, policies, redirects, and event publication.</p>
+          </header>
+
+          <p>Handlers own effectful application behavior.</p>
+<p>In Lucid, a handler is the place to:</p>
+<ul>
+<li>process commands</li>
+<li>load domain records</li>
+<li>check permissions</li>
+<li>write data</li>
+<li>publish events</li>
+<li>request redirects or other response effects</li>
+</ul>
+<h2 id="lifecycle">Lifecycle</h2>
+<p>Handlers are instantiated with:</p>
+<ul>
+<li>the incoming message</li>
+<li>the request container</li>
+<li>the block registered for that message</li>
+</ul>
+<p>When <code>call</code> runs, Lucid executes the handler block inside a permission-checking and error-reporting wrapper.</p>
+<p>If a handler raises unexpectedly, Lucid logs the exception and publishes a <code>HandlerRaised</code> event.</p>
+<h2 id="messaging-responsibilities">Messaging Responsibilities</h2>
+<p>Handlers can:</p>
+<ul>
+<li><code>publish(event)</code> to broadcast new events</li>
+<li><code>dispatch(command)</code> to trigger other command flows</li>
+<li><code>redirect_to(url)</code> to register a response redirect</li>
+</ul>
+<h2 id="dependency-injection">Dependency Injection</h2>
+<p>Handlers support dependency injection through <code>use</code>. The default base handler already exposes:</p>
+<ul>
+<li><code>message_bus</code></li>
+<li><code>session</code></li>
+<li><code>response_effects</code></li>
+</ul>
+<p>Applications can add more dependencies through the request container.</p>
+<h2 id="policies">Policies</h2>
+<p>Handlers can adopt policy classes and are expected to call <code>with_permission</code> when policy-gated behavior is executed.</p>
+<p>In test and development environments, Lucid will raise if a policy-adopting handler skips that permission check.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="components.html">
+  <span>Previous</span>
+  <strong>Components</strong>
+</a>
+<a href="reference/state.html">
+  <span>Next</span>
+  <strong>State</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

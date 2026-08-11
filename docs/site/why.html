@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Why Lucid? | Lucid Documentation</title>
+    <meta name="description" content="The design pressure that led Lucid toward messages, handlers, and components.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a class="active" aria-current="page" href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+<a href="reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Why Lucid?</h1>
+            <p class="lede">The design pressure that led Lucid toward messages, handlers, and components.</p>
+          </header>
+
+          <p>Lucid exists to make interactive server-rendered applications easier to design, change, and reason about.</p>
+<p>Traditional Ruby web applications usually spread one user interaction across several tightly coupled layers:</p>
+<ul>
+<li>routes define URL structure</li>
+<li>controllers interpret requests</li>
+<li>views generate links and forms against route helpers</li>
+<li>client code fills the gaps when the UI becomes more dynamic</li>
+</ul>
+<p>That model works, but it creates friction as the interface grows more stateful. Navigation state leaks into routes, rendering decisions creep into controllers, and refactors often require coordinated changes across URLs, controllers, templates, and JavaScript.</p>
+<p>Lucid takes a different approach.</p>
+<h2 id="the-problem-lucid-solves">The Problem Lucid Solves</h2>
+<p>Lucid is designed for applications where HTML is still the right output format, but the UI behaves more like a living interface than a stack of static pages.</p>
+<p>In those applications, the hard problems are usually:</p>
+<ul>
+<li>expressing user intent cleanly</li>
+<li>keeping business logic out of rendering code</li>
+<li>representing UI state in a way the browser can navigate</li>
+<li>updating only the parts of the page that changed</li>
+<li>avoiding route and controller coupling as features evolve</li>
+</ul>
+<p>Lucid addresses those problems by centering the UI around messages and components instead of controller actions.</p>
+<h2 id="the-core-shift">The Core Shift</h2>
+<p>Lucid organizes the application around three concepts:</p>
+<ul>
+<li><code>Messages</code> describe intent</li>
+<li><code>Handlers</code> apply effects</li>
+<li><code>Components</code> render state to HTML</li>
+</ul>
+<p>This changes the main question from:</p>
+<blockquote><p>Which controller action should handle this URL?</p></blockquote>
+<p>to:</p>
+<blockquote><p>What is the user trying to do, and which parts of the system care?</p></blockquote>
+<p>That shift matters because intent is usually more stable than route structure. When your code speaks in terms of <code>ShowEditForm</code>, <code>DeletePost</code>, or <code>PostDeleted</code>, the system becomes easier to extend and refactor.</p>
+<h2 id="why-messages-matter">Why Messages Matter</h2>
+<p>Messages decouple interactions from URLs.</p>
+<p>Instead of binding a link directly to a route helper or controller action, you create a value object that expresses the interaction. Lucid then encodes that message into HTTP and decodes it back on the server.</p>
+<p>This buys you several things:</p>
+<ul>
+<li>views do not need hard-coded knowledge of route structure</li>
+<li>multiple handlers can react to the same command or event</li>
+<li>links and commands become reusable application vocabulary</li>
+<li>tests can focus on intent and effects instead of route plumbing</li>
+</ul>
+<h2 id="why-components-matter">Why Components Matter</h2>
+<p>Lucid components are the rendering layer. They hold typed state, compose into trees, and render HTML using Ruby templates.</p>
+<p>Because components rebuild from request state on each cycle, the URL can become a truthful representation of the current UI. That makes browser navigation work more naturally and reduces the need for hidden session-driven UI state.</p>
+<p>Components also react directly to link messages and published events, which gives the system a reactive feel without forcing you into a client-side SPA architecture.</p>
+<h2 id="why-handlers-matter">Why Handlers Matter</h2>
+<p>Handlers own command-side behavior:</p>
+<ul>
+<li>loading resources</li>
+<li>enforcing permissions</li>
+<li>writing to the database</li>
+<li>publishing events</li>
+<li>issuing redirects or other response effects</li>
+</ul>
+<p>This keeps business logic out of templates and component rendering paths, while still allowing the UI to update automatically in response to domain events.</p>
+<h2 id="where-lucid-fits">Where Lucid Fits</h2>
+<p>Lucid is not trying to replace every part of your stack.</p>
+<p>It fits best when you want:</p>
+<ul>
+<li>Ruby-driven HTML rendering</li>
+<li>richer interactions than classic full-page request cycles</li>
+<li>a hypermedia approach instead of a full client-side SPA</li>
+<li>explicit separation between intent, effects, and rendering</li>
+</ul>
+<p>It is less compelling if your application is primarily:</p>
+<ul>
+<li>a JSON API</li>
+<li>a static content site</li>
+<li>a fully client-owned SPA where the server only exposes data endpoints</li>
+</ul>
+<h2 id="the-payoff">The Payoff</h2>
+<p>Lucid trades familiar MVC conventions for a model that is better aligned with interactive hypermedia applications.</p>
+<p>The main benefits are:</p>
+<ul>
+<li>less coupling between views, routes, and business logic</li>
+<li>URLs derived from state instead of handwritten navigation plumbing</li>
+<li>cleaner composition of UI behavior</li>
+<li>easier refactoring as features grow</li>
+<li>server-rendered interactivity without abandoning HTML as the primary medium</li>
+</ul>
+<p>If those problems are the ones making your application difficult to evolve, Lucid is the right abstraction to explore next.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="index.html">
+  <span>Previous</span>
+  <strong>Overview</strong>
+</a>
+<a href="hello.html">
+  <span>Next</span>
+  <strong>Hello World</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

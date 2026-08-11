@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Components | Lucid Documentation</title>
+    <meta name="description" content="Learn how components hold typed state, compose views, and render HTML.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="messages.html">Messages</a>
+<a class="active" aria-current="page" href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+<a href="reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Components</h1>
+            <p class="lede">Learn how components hold typed state, compose views, and render HTML.</p>
+          </header>
+
+          <p>Components are Lucid&#39;s rendering unit.</p>
+<p>A component is a Ruby object that:</p>
+<ul>
+<li>holds typed state with <code>param</code></li>
+<li>accepts typed external inputs with <code>prop</code></li>
+<li>composes subcomponents with <code>nest</code></li>
+<li>renders HTML using templates and Papercraft helpers</li>
+<li>reacts to messages and events</li>
+</ul>
+<h2 id="what-components-are-for">What Components Are For</h2>
+<p>Components should own presentation logic and UI state transitions.</p>
+<p>They are a good place for:</p>
+<ul>
+<li>mapping message intent into view state</li>
+<li>composing the page from smaller UI parts</li>
+<li>exposing helper methods used by templates</li>
+<li>responding to published domain events with re-renders</li>
+</ul>
+<p>They are not the right place for database writes or transaction-heavy business logic. That belongs in handlers.</p>
+<h2 id="state-and-props">State and Props</h2>
+<p>Lucid distinguishes between internal component state and external inputs.</p>
+<ul>
+<li><code>param</code> defines URL-backed state</li>
+<li><code>prop</code> defines incoming data needed for rendering</li>
+<li><code>temp</code> can hold transient rendering concerns that should not be encoded into the URL</li>
+<li><code>use</code> declares request-container dependencies, matching handler dependency injection</li>
+<li><code>inherit</code> references reactive fields from an ancestor component or the HTTP session</li>
+</ul>
+<p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
+<p>Container dependencies are plain collaborators:</p>
+<pre><code>class AccountMenu &lt; Lucid::Component::Base
+  use :current_user, Types::Any
+end</code></pre>
+<p>Inherited fields remain reactive UI data:</p>
+<pre><code>class ChildPanel &lt; Lucid::Component::Base
+  inherit :selected_tab
+  inherit :flash, from: :http_session
+end</code></pre>
+<h2 id="composition">Composition</h2>
+<p>Components compose by nesting other components. This gives you:</p>
+<ul>
+<li>isolated, focused view objects</li>
+<li>explicit parent-child relationships</li>
+<li>predictable data flow</li>
+<li>reusable rendering boundaries for partial updates</li>
+</ul>
+<h2 id="responding-to-messages">Responding to Messages</h2>
+<p>Components primarily respond to <code>Link</code> messages with <code>to</code> blocks. These blocks typically call <code>update</code> to change component state.</p>
+<p>Components can also respond to <code>Event</code> messages with <code>on</code> blocks so the UI tracks domain changes without manual refresh code.</p>
+<h2 id="rendering">Rendering</h2>
+<p>Lucid components render HTML through <code>Lucid::HTML::Template</code>, which provides helpers such as:</p>
+<ul>
+<li><code>link_to</code></li>
+<li><code>button_to</code></li>
+<li><code>form_for</code></li>
+<li><code>subcomponent</code></li>
+<li><code>subcomponents</code></li>
+<li><code>template</code></li>
+</ul>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="messages.html">
+  <span>Previous</span>
+  <strong>Messages</strong>
+</a>
+<a href="handlers.html">
+  <span>Next</span>
+  <strong>Handlers</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Configuration | Lucid Documentation</title>
+    <meta name="description" content="Reference for application settings, request containers, and extension points.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../hello.html">Hello World</a>
+<a href="../architecture.html">Architecture</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a href="../reference/templates.html">Templates</a>
+<a class="active" aria-current="page" href="../reference/configuration.html">Configuration</a>
+<a href="../reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Reference</p>
+            <h1>Configuration</h1>
+            <p class="lede">Reference for application settings, request containers, and extension points.</p>
+          </header>
+
+          <p>Lucid keeps application-level configuration intentionally small.</p>
+<p><code>Lucid::App</code> exposes a handful of settings that define the root objects and runtime environment for request handling.</p>
+<h2 id="app-settings">App Settings</h2>
+<p>The main settings are:</p>
+<ul>
+<li><code>component_class</code>: the root component class</li>
+<li><code>handler_class</code>: the root handler class</li>
+<li><code>container_class</code>: the dependency container class</li>
+<li><code>session_class</code>: the wrapper class for the Rack session</li>
+<li><code>app_root</code>: the URL base path for the application</li>
+</ul>
+<h2 id="container">Container</h2>
+<p>The container is created per request and provides request-scoped collaborators such as:</p>
+<ul>
+<li>the request adaptor</li>
+<li>the response adaptor</li>
+<li>the message bus</li>
+<li>response effects</li>
+<li>the session wrapper</li>
+</ul>
+<p>For most applications, the container is where Lucid is extended with domain-specific dependencies.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../reference/templates.html">
+  <span>Previous</span>
+  <strong>Templates</strong>
+</a>
+<a href="../reference/project_structure.html">
+  <span>Next</span>
+  <strong>Project Structure</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
