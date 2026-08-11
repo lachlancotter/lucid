@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lucid Documentation</title>
+    <meta
+      name="description"
+      content="Documentation for Lucid, a Ruby framework for reactive hypermedia applications."
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+          <p class="rail-title">Start Here</p>
+          <a class="active" href="index.html">Overview</a>
+          <a href="../why.md">Why Lucid?</a>
+          <a href="../hello.md">Hello World</a>
+          <a href="../architecture.md">Architecture</a>
+          <a href="../messages.md">Messages</a>
+          <a href="../components.md">Components</a>
+          <a href="../handlers.md">Handlers</a>
+        </div>
+
+        <div class="rail-group">
+          <p class="rail-title">Reference</p>
+          <a href="../reference/state.md">State</a>
+          <a href="../reference/templates.md">Templates</a>
+          <a href="../reference/configuration.md">Configuration</a>
+          <a href="../reference/project_structure.md">Project Structure</a>
+        </div>
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Overview</p>
+            <h1>Lucid Documentation</h1>
+            <p class="lede">
+              Lucid is a Ruby framework for building reactive, hypermedia
+              applications with a message-driven architecture.
+            </p>
+          </header>
+
+          <section aria-labelledby="what-is-lucid">
+            <h2 id="what-is-lucid">What Lucid is</h2>
+            <p>
+              Lucid organizes interactive server-rendered applications around
+              three primitives: messages, handlers, and components. Instead of
+              centering UI behavior on routes and controllers, Lucid models what
+              the user is trying to do and lets the relevant parts of the system
+              respond.
+            </p>
+            <p>
+              It fits best when you want rich HTML interactions, server-side
+              rendering, typed UI state, and HTMX-friendly partial responses
+              without moving application state management into the browser.
+            </p>
+          </section>
+
+          <section aria-labelledby="quickstart">
+            <h2 id="quickstart">Quickstart</h2>
+            <p>Run the included example app from this repository:</p>
+            <pre><code>bundle install
+bundle exec ruby examples/hello_world/app.rb</code></pre>
+            <p>Then open <code>http://localhost:4567</code>.</p>
+            <p>
+              For the full walkthrough, continue to
+              <a href="../hello.md">Hello World</a>.
+            </p>
+          </section>
+
+          <section aria-labelledby="core-model">
+            <h2 id="core-model">Core model</h2>
+            <dl class="concept-list">
+              <div>
+                <dt>Messages</dt>
+                <dd>
+                  Value objects that describe intent. Links represent navigation,
+                  commands represent mutations, and events represent things that
+                  happened in the system.
+                </dd>
+              </div>
+              <div>
+                <dt>Handlers</dt>
+                <dd>
+                  Objects that apply business effects for commands: loading data,
+                  enforcing policies, writing records, publishing events, and
+                  registering redirects.
+                </dd>
+              </div>
+              <div>
+                <dt>Components</dt>
+                <dd>
+                  Ruby objects that hold typed state, compose subcomponents, react
+                  to messages or events, and render HTML.
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section aria-labelledby="request-flow">
+            <h2 id="request-flow">Request flow</h2>
+            <ol>
+              <li>A user action submits a link or command message.</li>
+              <li>Lucid decodes the HTTP request into a typed message object.</li>
+              <li>
+                Components handle link messages; handlers process command
+                messages and publish events.
+              </li>
+              <li>The component tree renders a full page or targeted HTML update.</li>
+            </ol>
+          </section>
+
+          <section aria-labelledby="why-use-lucid">
+            <h2 id="why-use-lucid">Why use Lucid</h2>
+            <ul>
+              <li>Views do not need hard-coded route structure.</li>
+              <li>Business logic stays out of rendering code.</li>
+              <li>Navigation state can be represented in URLs.</li>
+              <li>Server-rendered UI can still support targeted partial updates.</li>
+            </ul>
+          </section>
+
+          <section aria-labelledby="next">
+            <h2 id="next">Next steps</h2>
+            <div class="link-list">
+              <a href="../why.md">
+                <strong>Why Lucid?</strong>
+                <span>Understand the problems Lucid is designed to solve.</span>
+              </a>
+              <a href="../hello.md">
+                <strong>Hello World</strong>
+                <span>Build the smallest useful Lucid application.</span>
+              </a>
+              <a href="../architecture.md">
+                <strong>Architecture</strong>
+                <span>Trace the command, navigation, and rendering loops.</span>
+              </a>
+              <a href="../messages.md">
+                <strong>Messages</strong>
+                <span>Learn how links, commands, and events encode intent.</span>
+              </a>
+            </div>
+          </section>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
