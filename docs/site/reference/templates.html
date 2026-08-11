@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Templates | Lucid Documentation</title>
+    <meta name="description" content="Reference for Lucid templates, rendering context, helpers, and multipart forms.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../hello.html">Hello World</a>
+<a href="../architecture.html">Architecture</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a class="active" aria-current="page" href="../reference/templates.html">Templates</a>
+<a href="../reference/configuration.html">Configuration</a>
+<a href="../reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Reference</p>
+            <h1>Templates</h1>
+            <p class="lede">Reference for Lucid templates, rendering context, helpers, and multipart forms.</p>
+          </header>
+
+          <p>Lucid templates are built on top of Papercraft.</p>
+<p><code>Lucid::HTML::Template</code> adds framework-specific behavior so templates can work directly with messages, forms, and nested components.</p>
+<h2 id="template-model">Template Model</h2>
+<p>A Lucid template is a Ruby block that renders HTML in a Papercraft context.</p>
+<p>Templates can be:</p>
+<ul>
+<li>the main component template</li>
+<li>named templates rendered via <code>template :name</code></li>
+<li>wrappers used during component replacement and HTMX updates</li>
+</ul>
+<h2 id="binding-and-context">Binding and Context</h2>
+<p>Templates are bound to a renderable object, usually a component instance. That binding gives the template access to:</p>
+<ul>
+<li>the component&#39;s helpers</li>
+<li>nested component rendering</li>
+<li>Lucid message helpers</li>
+<li>explicit <code>context</code> access when needed</li>
+</ul>
+<h2 id="core-helpers">Core Helpers</h2>
+<p>The most important rendering helpers are:</p>
+<ul>
+<li><code>link_to</code></li>
+<li><code>button_to</code></li>
+<li><code>form_for</code></li>
+<li><code>template</code></li>
+<li><code>subcomponent</code></li>
+<li><code>subcomponents</code></li>
+</ul>
+<h2 id="file-upload-forms">File Upload Forms</h2>
+<p>Use <code>multipart: true</code> when a form includes file inputs:</p>
+<pre><code>form_for(upload_form, multipart: true) do |f|
+  f.file(:avatar, accept: &quot;image/*&quot;)
+end</code></pre>
+<p>Uploaded files are supported on <code>POST</code> forms. Rack parses each uploaded file as a hash containing upload metadata and a <code>Tempfile</code>; handlers are responsible for validating the file size and type, then moving or processing the tempfile during the request. Browsers do not repopulate file inputs after validation errors, so file fields do not echo a <code>value</code> from the form model.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../reference/state.html">
+  <span>Previous</span>
+  <strong>State</strong>
+</a>
+<a href="../reference/configuration.html">
+  <span>Next</span>
+  <strong>Configuration</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

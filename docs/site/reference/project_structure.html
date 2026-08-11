@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Structure | Lucid Documentation</title>
+    <meta name="description" content="Reference for Lucid&#39;s feature-oriented project layout.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../hello.html">Hello World</a>
+<a href="../architecture.html">Architecture</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a href="../reference/templates.html">Templates</a>
+<a href="../reference/configuration.html">Configuration</a>
+<a class="active" aria-current="page" href="../reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Reference</p>
+            <h1>Project Structure</h1>
+            <p class="lede">Reference for Lucid&#39;s feature-oriented project layout.</p>
+          </header>
+
+          <p>Lucid encourages a feature-oriented project layout.</p>
+<p>The internal loader is designed around two broad areas:</p>
+<ul>
+<li><code>core/</code> for shared application code</li>
+<li><code>features/</code> for feature-specific code and feature entrypoints</li>
+</ul>
+<h2 id="core">Core</h2>
+<p><code>core/</code> is where shared application code lives, such as:</p>
+<ul>
+<li>base policies</li>
+<li>shared components</li>
+<li>cross-cutting services</li>
+<li>application-wide helpers</li>
+</ul>
+<h2 id="features">Features</h2>
+<p>Each feature lives under <code>features/&lt;feature_name&gt;/</code>.</p>
+<p>Feature entrypoint files can also live directly under <code>features/</code> so the module or message classes are defined before the feature directories are autoloaded.</p>
+<h2 id="why-this-layout-exists">Why This Layout Exists</h2>
+<p>The structure reinforces Lucid&#39;s design:</p>
+<ul>
+<li>messages and handlers live near the behavior they support</li>
+<li>components stay close to their feature context</li>
+<li>code organization follows product capabilities instead of controller classes</li>
+</ul>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../reference/configuration.html">
+  <span>Previous</span>
+  <strong>Configuration</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

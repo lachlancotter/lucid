@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Architecture | Lucid Documentation</title>
+    <meta name="description" content="Trace the request, message dispatch, and rendering loops that make Lucid work.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a class="active" aria-current="page" href="architecture.html">Architecture</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+<a href="reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Architecture</h1>
+            <p class="lede">Trace the request, message dispatch, and rendering loops that make Lucid work.</p>
+          </header>
+
+          <p>Lucid is a request-driven framework with a message-centered architecture.</p>
+<p>Instead of centering the UI around controller actions, Lucid organizes interactive behavior around three primitives:</p>
+<ul>
+<li><code>Messages</code> describe intent</li>
+<li><code>Handlers</code> apply effects</li>
+<li><code>Components</code> render state to HTML</li>
+</ul>
+<h2 id="the-core-flow">The Core Flow</h2>
+<p>A typical mutation request looks like this:</p>
+<ol>
+<li>A user action submits a <code>Command</code>.</li>
+<li>A handler receives that command.</li>
+<li>The handler applies business logic and publishes events.</li>
+<li>Components react to those events and re-render.</li>
+<li>The response returns either a full page or a targeted HTML update.</li>
+</ol>
+<p>Navigation is simpler:</p>
+<ol>
+<li>A user follows a <code>Link</code>.</li>
+<li>A component handles that link directly.</li>
+<li>The component updates its state.</li>
+<li>Lucid renders the new UI state and URL.</li>
+</ol>
+<h2 id="the-three-interaction-loops">The Three Interaction Loops</h2>
+<p>Lucid makes three different kinds of interaction explicit:</p>
+<h3 id="command-loop">Command Loop</h3>
+<p>This is the mutation path:</p>
+<ul>
+<li>user expresses intent</li>
+<li>handler applies effects</li>
+<li>events are published</li>
+<li>UI updates in response</li>
+</ul>
+<p>This loop is appropriate when something in the system changes.</p>
+<h3 id="navigation-loop">Navigation Loop</h3>
+<p>This is the state-transition path:</p>
+<ul>
+<li>user asks to see a different state</li>
+<li>a component handles a link message</li>
+<li>component state changes</li>
+<li>the URL and rendered output change</li>
+</ul>
+<p>This loop is appropriate when the user is navigating or reconfiguring the view.</p>
+<h3 id="micro-feedback-loop">Micro-feedback Loop</h3>
+<p>This is the immediate client-side acknowledgment path:</p>
+<ul>
+<li>button press states</li>
+<li>loading indicators</li>
+<li>tiny interaction feedback</li>
+</ul>
+<p>Lucid does not try to model these as server round-trips. This is the place for small client-side behavior such as Stimulus controllers.</p>
+<h2 id="url-and-state">URL and State</h2>
+<p>Lucid treats UI state as something that can be encoded into the URL.</p>
+<p>That matters because it means:</p>
+<ul>
+<li>components can rebuild from request state on every cycle</li>
+<li>browser back/forward behavior stays meaningful</li>
+<li>links are shareable</li>
+<li>navigation state does not need to hide in controllers or sessions</li>
+</ul>
+<h2 id="request-handling">Request Handling</h2>
+<p><code>Lucid::App</code> installs a very thin routing layer:</p>
+<ul>
+<li><code>GET /?*</code> renders state</li>
+<li><code>GET /@/?*</code> applies a <code>Link</code></li>
+<li><code>POST /@/?*</code> dispatches a <code>Command</code></li>
+</ul>
+<p><code>Lucid::App::Cycle</code> coordinates request parsing, message dispatch, component construction, and response generation.</p>
+<h2 id="htmx-and-partial-updates">HTMX and Partial Updates</h2>
+<p>Lucid works well with HTMX because the server remains the source of truth for rendering while only the changed components are sent back.</p>
+<p>For HTMX requests, Lucid returns component deltas and response headers such as:</p>
+<ul>
+<li><code>HX-Push-Url</code></li>
+<li><code>HX-Retarget</code></li>
+<li><code>HX-Reswap</code></li>
+<li><code>HX-Redirect</code></li>
+</ul>
+<p>That gives you reactive server-rendered UI without moving application state management into the browser.</p>
+<h2 id="why-this-design-helps">Why This Design Helps</h2>
+<p>The architecture is opinionated, but the tradeoff is deliberate:</p>
+<ul>
+<li>views do not need to know route structure</li>
+<li>business logic stays out of rendering code</li>
+<li>UI state has a concrete representation</li>
+<li>message types become the vocabulary of the application</li>
+<li>partial updates remain server-driven</li>
+</ul>
+<p>For the next layer of detail, continue with <a href="messages.html">Messages</a>, <a href="components.html">Components</a>, and <a href="handlers.html">Handlers</a>.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="hello.html">
+  <span>Previous</span>
+  <strong>Hello World</strong>
+</a>
+<a href="messages.html">
+  <span>Next</span>
+  <strong>Messages</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

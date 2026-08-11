@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messages | Lucid Documentation</title>
+    <meta name="description" content="Understand links, commands, and events as typed descriptions of user and system intent.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a class="active" aria-current="page" href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+<a href="reference/project_structure.html">Project Structure</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Messages</h1>
+            <p class="lede">Understand links, commands, and events as typed descriptions of user and system intent.</p>
+          </header>
+
+          <p>Messages are the language of intent in Lucid.</p>
+<p>Instead of expressing interactions as route/controller pairs, Lucid represents them as typed value objects that can be encoded into HTTP and dispatched inside the application.</p>
+<h2 id="message-families">Message Families</h2>
+<h3 id="links">Links</h3>
+<p><code>Link</code> messages represent navigation and view-state changes. They use <code>GET</code> semantics and are usually handled directly by components.</p>
+<p>Examples:</p>
+<ul>
+<li>show the edit form</li>
+<li>move to page 3</li>
+<li>filter by status</li>
+<li>switch tabs</li>
+</ul>
+<h3 id="commands">Commands</h3>
+<p><code>Command</code> messages represent mutations. They use <code>POST</code> semantics and are dispatched to handlers.</p>
+<p>Examples:</p>
+<ul>
+<li>create a comment</li>
+<li>delete a post</li>
+<li>mark an item complete</li>
+<li>register a learner</li>
+</ul>
+<h3 id="events">Events</h3>
+<p><code>Event</code> messages represent things that happened in the system. Handlers publish them, and components or other handlers can react to them.</p>
+<h2 id="why-this-matters">Why This Matters</h2>
+<p>Messages decouple user intent from route structure.</p>
+<p>That gives you:</p>
+<ul>
+<li>views that do not hard-code URLs</li>
+<li>reusable interaction vocabulary</li>
+<li>easier refactoring</li>
+<li>multiple listeners for the same command or event</li>
+</ul>
+<h2 id="encoding-and-urls">Encoding and URLs</h2>
+<p>Lucid can generate a URL from a message. For <code>GET</code> messages, the URL includes:</p>
+<ul>
+<li>the message name</li>
+<li>its parameters</li>
+<li>the current application state when required</li>
+</ul>
+<p>This is how Lucid avoids hand-authored route strings in templates.</p>
+<h2 id="validation">Validation</h2>
+<p>Messages are validated before being turned into runtime objects.</p>
+<p>If a command payload is invalid, Lucid publishes a <code>MessageInvalidated</code> event instead of silently treating it as a successful request.</p>
+<h2 id="in-practice">In Practice</h2>
+<p>Links are usually handled by components. Commands are usually handled by handlers. Events connect the two by allowing the UI to react after business effects are applied.</p>
+<p>For the next layer down, see:</p>
+<ul>
+<li><a href="components.html">Components</a></li>
+<li><a href="handlers.html">Handlers</a></li>
+<li><a href="reference/state.html">State</a></li>
+</ul>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="architecture.html">
+  <span>Previous</span>
+  <strong>Architecture</strong>
+</a>
+<a href="components.html">
+  <span>Next</span>
+  <strong>Components</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
