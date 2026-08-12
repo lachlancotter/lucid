@@ -337,36 +337,81 @@ def render_index_page
                 </p>
               </header>
 
-              <section aria-labelledby="what-is-lucid">
-                <h2 id="what-is-lucid">What Lucid is</h2>
+              <section aria-labelledby="how-lucid-is-different">
+                <h2 id="how-lucid-is-different">How Lucid is different</h2>
                 <p>
-                  Lucid organizes interactive server-rendered applications around
-                  three primitives: messages, handlers, and components. Instead of
-                  centering UI behavior on routes and controllers, Lucid models what
-                  the user is trying to do and lets the relevant parts of the system
-                  respond.
+                  In a typical MVC framework like Rails, an interaction usually
+                  starts with a route, moves through a controller action, and
+                  renders a view. That is a familiar shape, but rich interfaces can
+                  make the layers feel tightly coupled: templates need route
+                  helpers, controllers collect rendering decisions, and UI state
+                  often gets split across params, sessions, and client-side code.
                 </p>
                 <p>
-                  It fits best when you want rich HTML interactions, server-side
-                  rendering, typed UI state, and HTMX-friendly partial responses
-                  without moving application state management into the browser.
+                  As the interface becomes more stateful, developers usually face
+                  an uncomfortable choice. They can keep state coordination on the
+                  server, where controllers become the central place that knows too
+                  much about view structure and user flow. Or they can move state
+                  coordination into the browser, where the application gains a
+                  thicker front end, a separate state model, and more client-side
+                  tooling.
+                </p>
+                <p>
+                  Lucid starts from intent instead of endpoints. User interactions
+                  are represented as typed messages, so views describe what should
+                  happen without knowing which route or controller shape will serve
+                  it. Components own view state transitions, handlers own business
+                  effects, and the request cycle decides what HTML needs to be
+                  replaced.
+                </p>
+                <p>
+                  That gives Lucid apps a SPA-like feel while staying loosely
+                  coupled, reactive, and server-driven. You can update precise
+                  parts of the page without introducing a front-end build pipeline,
+                  client-side application state, or the imperative state management
+                  that often appears in HTMX-heavy views.
                 </p>
               </section>
 
-              <section aria-labelledby="quickstart">
-                <h2 id="quickstart">Quickstart</h2>
-                <p>Run the included example app from this repository:</p>
-                <pre><code>bundle install
-#{'bundle exec ruby examples/hello_world/app.rb'}</code></pre>
-                <p>Then open <code>http://localhost:4567</code>.</p>
+              <section aria-labelledby="design-goals">
+                <h2 id="design-goals">Design goals</h2>
                 <p>
-                  For the full walkthrough, continue to
-                  <a href="hello.html">Hello World</a>.
+                  Lucid is designed to make rich server-rendered interfaces direct
+                  to build and easy to change.
                 </p>
+                <ul>
+                  <li>
+                    Keep view code semantic. Components describe application
+                    behavior through messages, state, props, and data flow rather
+                    than route helpers, DOM IDs, JavaScript hooks, or client-side
+                    wiring.
+                  </li>
+                  <li>
+                    Make UX refactoring local. Changing a workflow should not
+                    require coordinated edits across routes, controllers, templates,
+                    and browser-side state.
+                  </li>
+                  <li>
+                    Let the server coordinate interaction. Lucid follows component
+                    data flow and state changes to decide which parts of the page
+                    update, so rich UIs can scale without manually maintaining swap
+                    targets.
+                  </li>
+                  <li>
+                    Preserve hypermedia foundations. Lucid enhances plain links and
+                    forms into SPA-like interactions without abandoning HTTP
+                    semantics or requiring a front-end toolchain, so applications
+                    degrade gracefully without JavaScript.
+                  </li>
+                </ul>
               </section>
 
               <section aria-labelledby="core-model">
                 <h2 id="core-model">Core model</h2>
+                <p>
+                  Lucid has three core primitives. Messages name intent, handlers
+                  apply effects, and components render state back to HTML.
+                </p>
                 <dl class="concept-list">
                   <div>
                     <dt>Messages</dt>
@@ -397,28 +442,45 @@ def render_index_page
               <section aria-labelledby="request-flow">
                 <h2 id="request-flow">Request flow</h2>
                 <ol>
-                  <li>A user action submits a link or command message.</li>
+                  <li>A user action submits a link or command message over HTTP.</li>
                   <li>Lucid decodes the HTTP request into a typed message object.</li>
                   <li>
-                    Components handle link messages; handlers process command
-                    messages and publish events.
+                    <code>Link</code> messages are sent with <code>GET</code> and
+                    dispatched through the component tree.
+                  </li>
+                  <li>
+                    <code>Command</code> messages are sent with <code>POST</code> and
+                    dispatched to the message bus.
+                  </li>
+                  <li>Handlers process command messages and publish events.</li>
+                  <li>
+                    Components can react to link messages or published events and
+                    update their state.
                   </li>
                   <li>The component tree renders a full page or targeted HTML update.</li>
                 </ol>
               </section>
 
-              <section aria-labelledby="why-use-lucid">
-                <h2 id="why-use-lucid">Why use Lucid</h2>
-                <ul>
-                  <li>Views do not need hard-coded route structure.</li>
-                  <li>Business logic stays out of rendering code.</li>
-                  <li>Navigation state can be represented in URLs.</li>
-                  <li>Server-rendered UI can still support targeted partial updates.</li>
-                </ul>
+              <section aria-labelledby="quickstart">
+                <h2 id="quickstart">Quickstart</h2>
+                <p>From a checkout of this repository, run the included example app:</p>
+                <pre><code>bundle install
+#{'bundle exec ruby examples/hello_world/app.rb'}</code></pre>
+                <p>Then open <code>http://localhost:4567</code>.</p>
+                <p>
+                  This repository quickstart requires Ruby <code>3.2.8</code> and
+                  Bundler. The example app does not require a database or external
+                  services.
+                </p>
+                <p>
+                  For the full walkthrough, continue to
+                  <a href="hello.html">Hello World</a>.
+                </p>
               </section>
 
               <section aria-labelledby="next">
                 <h2 id="next">Next steps</h2>
+                <h3>Start here</h3>
                 <div class="link-list">
                   <a href="why.html">
                     <strong>Why Lucid?</strong>
@@ -435,6 +497,45 @@ def render_index_page
                   <a href="messages.html">
                     <strong>Messages</strong>
                     <span>Learn how links, commands, and events encode intent.</span>
+                  </a>
+                  <a href="components.html">
+                    <strong>Components</strong>
+                    <span>Learn how components hold state, compose views, and render HTML.</span>
+                  </a>
+                  <a href="handlers.html">
+                    <strong>Handlers</strong>
+                    <span>
+                      Put command-side behavior, policies, redirects, and event
+                      publication in handlers.
+                    </span>
+                  </a>
+                </div>
+
+                <h3>Reference</h3>
+                <div class="link-list">
+                  <a href="reference/state.html">
+                    <strong>State</strong>
+                    <span>
+                      Work with URL-backed state, state maps, and nested component
+                      state.
+                    </span>
+                  </a>
+                  <a href="reference/templates.html">
+                    <strong>Templates</strong>
+                    <span>
+                      Use the template context, helpers, and multipart form support.
+                    </span>
+                  </a>
+                  <a href="reference/configuration.html">
+                    <strong>Configuration</strong>
+                    <span>
+                      Configure application settings, request containers, and
+                      extension points.
+                    </span>
+                  </a>
+                  <a href="reference/project_structure.html">
+                    <strong>Project Structure</strong>
+                    <span>Organize Lucid code around features.</span>
                   </a>
                 </div>
               </section>
