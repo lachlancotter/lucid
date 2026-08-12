@@ -9,6 +9,25 @@ interactive behavior around three primitives:
 - `Handlers` apply effects
 - `Components` render state to HTML
 
+## Implementation Choices
+
+Lucid's architecture is shaped around a few concrete choices:
+
+- Clean, semantic HTML components. Views can stay focused on structure and
+  presentation instead of mixing markup with route helpers, JavaScript hooks,
+  DOM IDs, and client-side state management.
+- Components are uncoupled from URLs and element IDs. Navigation is expressed
+  through messages, and replacement targets are decided by the server.
+- The component graph enables surgical DOM replacement. Lucid follows component
+  data flow and state changes to calculate which components need to re-render
+  with fine-grain precision.
+- There are no top-down controllers coordinating the whole interaction.
+  Components handle view-state changes, while handlers own command-side effects.
+- Routing is managed from typed messages. Links and forms describe application
+  intent, and Lucid encodes that intent into HTTP.
+- Commands and queries stay separate. Links model navigation and view state;
+  commands model mutations and run through handlers.
+
 ## The Core Flow
 
 A typical mutation request looks like this:
@@ -87,8 +106,10 @@ construction, and response generation.
 
 ## HTMX and Partial Updates
 
-Lucid works well with HTMX because the server remains the source of truth for
-rendering while only the changed components are sent back.
+Lucid uses HTMX as the browser-side transport and swap layer, but it does not
+ask templates to coordinate application behavior through HTMX attributes. The
+server remains the source of truth for rendering, follows component data flow
+and state changes, and decides which parts of the view need to be replaced.
 
 For HTMX requests, Lucid returns component deltas and response headers such as:
 
@@ -98,7 +119,7 @@ For HTMX requests, Lucid returns component deltas and response headers such as:
 - `HX-Redirect`
 
 That gives you reactive server-rendered UI without moving application state
-management into the browser.
+management or replacement targeting into the browser.
 
 ## Why This Design Helps
 

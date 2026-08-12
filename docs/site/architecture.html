@@ -55,6 +55,16 @@
 <li><code>Handlers</code> apply effects</li>
 <li><code>Components</code> render state to HTML</li>
 </ul>
+<h2 id="implementation-choices">Implementation Choices</h2>
+<p>Lucid&#39;s architecture is shaped around a few concrete choices:</p>
+<ul>
+<li>Clean, semantic HTML components. Views can stay focused on structure and presentation instead of mixing markup with route helpers, JavaScript hooks, DOM IDs, and client-side state management.</li>
+<li>Components are uncoupled from URLs and element IDs. Navigation is expressed through messages, and replacement targets are decided by the server.</li>
+<li>The component graph enables surgical DOM replacement. Lucid follows component data flow and state changes to calculate which components need to re-render with fine-grain precision.</li>
+<li>There are no top-down controllers coordinating the whole interaction. Components handle view-state changes, while handlers own command-side effects.</li>
+<li>Routing is managed from typed messages. Links and forms describe application intent, and Lucid encodes that intent into HTTP.</li>
+<li>Commands and queries stay separate. Links model navigation and view state; commands model mutations and run through handlers.</li>
+</ul>
 <h2 id="the-core-flow">The Core Flow</h2>
 <p>A typical mutation request looks like this:</p>
 <ol>
@@ -117,7 +127,7 @@
 </ul>
 <p><code>Lucid::App::Cycle</code> coordinates request parsing, message dispatch, component construction, and response generation.</p>
 <h2 id="htmx-and-partial-updates">HTMX and Partial Updates</h2>
-<p>Lucid works well with HTMX because the server remains the source of truth for rendering while only the changed components are sent back.</p>
+<p>Lucid uses HTMX as the browser-side transport and swap layer, but it does not ask templates to coordinate application behavior through HTMX attributes. The server remains the source of truth for rendering, follows component data flow and state changes, and decides which parts of the view need to be replaced.</p>
 <p>For HTMX requests, Lucid returns component deltas and response headers such as:</p>
 <ul>
 <li><code>HX-Push-Url</code></li>
@@ -125,7 +135,7 @@
 <li><code>HX-Reswap</code></li>
 <li><code>HX-Redirect</code></li>
 </ul>
-<p>That gives you reactive server-rendered UI without moving application state management into the browser.</p>
+<p>That gives you reactive server-rendered UI without moving application state management or replacement targeting into the browser.</p>
 <h2 id="why-this-design-helps">Why This Design Helps</h2>
 <p>The architecture is opinionated, but the tradeoff is deliberate:</p>
 <ul>
