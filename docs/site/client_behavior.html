@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Client Behavior | Lucid Documentation</title>
+    <meta name="description" content="Draw the boundary between Lucid&#39;s server-driven model and local JavaScript behavior.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a class="active" aria-current="page" href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Client Behavior</h1>
+            <p class="lede">Draw the boundary between Lucid&#39;s server-driven model and local JavaScript behavior.</p>
+          </header>
+
+          <p>Lucid is server-driven, but it is not anti-JavaScript.</p>
+<p>The framework draws a boundary between durable application behavior and local browser behavior. Lucid should own messages, state transitions, server rendering, and partial updates. JavaScript should handle immediate interface behavior that does not need to become a second application model.</p>
+<h2 id="what-lucid-owns">What Lucid Owns</h2>
+<p>Lucid is the right place for behavior that changes application state or affects what the server should render.</p>
+<p>That includes:</p>
+<ul>
+<li>navigation and view-state changes represented by <code>Link</code> messages</li>
+<li>mutations represented by <code>Command</code> messages</li>
+<li>domain changes represented by <code>Event</code> messages</li>
+<li>URL-backed UI state</li>
+<li>server-rendered component updates</li>
+<li>redirects and response effects</li>
+</ul>
+<p>When behavior belongs to the application model, express it as a message and let Lucid coordinate the request cycle.</p>
+<h2 id="what-javascript-owns">What JavaScript Owns</h2>
+<p>JavaScript is useful for local interaction details that should feel immediate in the browser.</p>
+<p>Good uses include:</p>
+<ul>
+<li>focus management</li>
+<li>keyboard shortcuts</li>
+<li>button press and loading states</li>
+<li>disclosure animations</li>
+<li>drag and drop polish</li>
+<li>measuring or positioning browser-only UI</li>
+<li>small progressive enhancements around native controls</li>
+</ul>
+<p>This kind of JavaScript should stay local. It can improve the feel of an interaction without becoming the source of truth for application state.</p>
+<h2 id="htmx">HTMX</h2>
+<p>Lucid uses HTMX as the browser-side transport and swap layer.</p>
+<p>Templates should not have to coordinate application behavior through a growing set of HTMX attributes. Components describe messages and render HTML; Lucid decides which parts of the component tree need to be replaced and returns the appropriate response.</p>
+<h2 id="avoiding-a-second-app-model">Avoiding a Second App Model</h2>
+<p>The main risk with client-side behavior is accidentally creating a second state model in the browser.</p>
+<p>Avoid hiding durable UI state only in JavaScript when it should be represented by component state, URL state, or server-derived data. If browser back and forward behavior, shareable links, server rendering, validation, permissions, or domain effects matter, the behavior probably belongs in Lucid.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="handlers.html">
+  <span>Previous</span>
+  <strong>Handlers</strong>
+</a>
+<a href="reference/state.html">
+  <span>Next</span>
+  <strong>State</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

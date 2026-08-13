@@ -100,11 +100,15 @@ Start here:
 - [Hello World](hello.md): Build the smallest useful Lucid application.
 - [Architecture](architecture.md): Trace the command, navigation, and rendering
   loops.
+- [Features](features.md): Organize Lucid code around
+  product behavior.
 - [Messages](messages.md): Learn how links, commands, and events encode intent.
 - [Components](components.md): Learn how components hold state, compose views,
   and render HTML.
 - [Handlers](handlers.md): Put command-side behavior, policies, redirects, and
   event publication in handlers.
+- [Client Behavior](client_behavior.md): Use JavaScript for local behavior
+  without creating a second application model.
 
 Reference:
 
@@ -114,5 +118,3 @@ Reference:
   multipart form support.
 - [Configuration](reference/configuration.md): Configure application settings,
   request containers, and extension points.
-- [Project Structure](reference/project_structure.md): Organize Lucid code around
-  features.

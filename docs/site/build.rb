@@ -11,13 +11,14 @@ PAGES = [
   { title: "Why Lucid?", label: "Why Lucid?", source: "why.md", output: "why.html", section: "Start Here" },
   { title: "Hello World", label: "Hello World", source: "hello.md", output: "hello.html", section: "Start Here" },
   { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Start Here" },
+  { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Start Here" },
   { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Start Here" },
   { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Start Here" },
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Start Here" },
+  { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Start Here" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
-  { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" },
-  { title: "Project Structure", label: "Project Structure", source: "reference/project_structure.md", output: "reference/project_structure.html", section: "Reference" }
+  { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
 
 PAGE_BY_SOURCE = PAGES.to_h { |page| [page[:source], page] }
@@ -195,12 +196,16 @@ def page_intro(page)
     "Build the smallest useful Lucid application and see how state, links, and rendering connect."
   when "architecture.html"
     "Trace the request, message dispatch, and rendering loops that make Lucid work."
+  when "features.html"
+    "Organize Lucid applications around features, messages, and product behavior."
   when "messages.html"
     "Understand links, commands, and events as typed descriptions of user and system intent."
   when "components.html"
     "Learn how components hold typed state, compose views, and render HTML."
   when "handlers.html"
     "Use handlers for effectful command behavior, policies, redirects, and event publication."
+  when "client_behavior.html"
+    "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
   when "reference/state.html"
     "Reference for URL-backed state, state maps, and nested component state."
   when "reference/templates.html"
@@ -208,7 +213,7 @@ def page_intro(page)
   when "reference/configuration.html"
     "Reference for application settings, request containers, and extension points."
   else
-    "Reference for Lucid's feature-oriented project layout."
+    "Reference for Lucid."
   end
 end
 
@@ -310,9 +315,11 @@ def render_index_page
               <a href="why.html">Why Lucid?</a>
               <a href="hello.html">Hello World</a>
               <a href="architecture.html">Architecture</a>
+              <a href="features.html">Features</a>
               <a href="messages.html">Messages</a>
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
+              <a href="client_behavior.html">Client Behavior</a>
             </div>
 
             <div class="rail-group">
@@ -320,7 +327,6 @@ def render_index_page
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
               <a href="reference/configuration.html">Configuration</a>
-              <a href="reference/project_structure.html">Project Structure</a>
             </div>
 
             <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
@@ -494,6 +500,10 @@ def render_index_page
                     <strong>Architecture</strong>
                     <span>Trace the command, navigation, and rendering loops.</span>
                   </a>
+                  <a href="features.html">
+                    <strong>Features</strong>
+                    <span>Organize Lucid code around product behavior.</span>
+                  </a>
                   <a href="messages.html">
                     <strong>Messages</strong>
                     <span>Learn how links, commands, and events encode intent.</span>
@@ -508,6 +518,10 @@ def render_index_page
                       Put command-side behavior, policies, redirects, and event
                       publication in handlers.
                     </span>
+                  </a>
+                  <a href="client_behavior.html">
+                    <strong>Client Behavior</strong>
+                    <span>Use JavaScript for local behavior without creating a second app model.</span>
                   </a>
                 </div>
 
@@ -532,10 +546,6 @@ def render_index_page
                       Configure application settings, request containers, and
                       extension points.
                     </span>
-                  </a>
-                  <a href="reference/project_structure.html">
-                    <strong>Project Structure</strong>
-                    <span>Organize Lucid code around features.</span>
                   </a>
                 </div>
               </section>

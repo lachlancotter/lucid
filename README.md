@@ -200,7 +200,7 @@ Lucid depends on:
 - `dry-types`, `dry-struct`, and `dry-schema`
 - `papercraft`
 
-## Project Structure
+## Features
 
 Lucid includes conventions for organizing code into core code and features.
 
@@ -221,10 +221,13 @@ The documentation set is intentionally small:
 - [Why Lucid?](docs/why.md)
 - [Hello World](docs/hello.md)
 - [Architecture](docs/architecture.md)
+- [Features](docs/features.md)
 - [Messages](docs/messages.md)
 - [Components](docs/components.md)
 - [Handlers](docs/handlers.md)
+- [Client Behavior](docs/client_behavior.md)
 - [Reference: State](docs/reference/state.md)
 - [Reference: Templates](docs/reference/templates.md)
+- [Reference: Configuration](docs/reference/configuration.md)
 
 If you are new to the framework, start with `why`, `hello`, and `architecture`.
