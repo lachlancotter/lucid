@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Features | Lucid Documentation</title>
+    <meta name="description" content="Organize Lucid applications around features, messages, and product behavior.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a class="active" aria-current="page" href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Features</h1>
+            <p class="lede">Organize Lucid applications around features, messages, and product behavior.</p>
+          </header>
+
+          <p>Lucid applications are organized around product behavior rather than framework layers.</p>
+<p>That means a feature should keep its messages, handlers, components, policies, and supporting code close to the workflow they describe. The goal is for the shape of the codebase to follow the shape of the application, not the internal categories of a request cycle.</p>
+<h2 id="why-features-come-first">Why Features Come First</h2>
+<p>Messages become the vocabulary of a Lucid application. When those messages live near the handlers and components that use them, a feature can be understood as a single product capability instead of a set of coordinated edits across routes, controllers, templates, and service objects.</p>
+<p>Feature-oriented organization helps because:</p>
+<ul>
+<li>interaction vocabulary stays near the UI and behavior it supports</li>
+<li>command handlers live near the command messages they process</li>
+<li>components stay close to the view state they own</li>
+<li>policies and supporting services can be scoped to the workflow they protect</li>
+<li>refactors follow product boundaries instead of technical layers</li>
+</ul>
+<h2 id="core-and-features">Core and Features</h2>
+<p>The internal loader is designed around two broad areas:</p>
+<ul>
+<li><code>core/</code> for shared application code</li>
+<li><code>features/</code> for feature-specific code and feature entrypoints</li>
+</ul>
+<p>Use <code>core/</code> for code that is genuinely shared across the application, such as base policies, shared components, cross-cutting services, and application-wide helpers.</p>
+<p>Use <code>features/&lt;feature_name&gt;/</code> for code that belongs to a product workflow or capability.</p>
+<h2 id="feature-entrypoints">Feature Entrypoints</h2>
+<p>Feature entrypoint files can live directly under <code>features/</code> so modules and message classes are defined before the feature directories are autoloaded.</p>
+<p>Those entrypoints are an important part of the model. They give each feature a clear place to define its message vocabulary before the implementation details are loaded.</p>
+<h2 id="relationship-to-architecture">Relationship to Architecture</h2>
+<p>Feature organization supports the runtime architecture, but it is not the same topic.</p>
+<p>Architecture explains how requests, messages, handlers, components, state, and rendering fit together at runtime. Feature organization explains how those pieces should be arranged so the code remains understandable as the product grows.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="architecture.html">
+  <span>Previous</span>
+  <strong>Architecture</strong>
+</a>
+<a href="messages.html">
+  <span>Next</span>
+  <strong>Messages</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

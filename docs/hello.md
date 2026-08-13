@@ -63,6 +63,7 @@ With that in place:
 From there, the next concepts to learn are:
 
 - [Architecture](architecture.md)
+- [Features](features.md)
 - [Messages](messages.md)
 - [Components](components.md)
 - [Handlers](handlers.md)
