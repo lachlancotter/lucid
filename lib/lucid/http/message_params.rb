@@ -72,6 +72,8 @@ module Lucid
         case obj
         when Hash
           obj.each_with_object({}) do |(k, v), result|
+            next if k.nil?
+
             key         = k.is_a?(Integer) ? k : k.to_sym
             result[key] = deep_symbolize_keys(v)
           end

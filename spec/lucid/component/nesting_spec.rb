@@ -203,6 +203,62 @@ module Lucid
           expect(view.foo[1].props.app_root).to eq("/app/root")
           expect(view.foo[1].path).to eq("/foo-1")
         end
+
+        it "omits state for an error fallback component" do
+          nest_class = Class.new(Component::Base) { prop :var }
+          view       = Class.new(Component::Base) do
+            let(:items) { raise StandardError, "missing table" }
+            nest(:config_cards) { nest_class[].enum(:items, as: :var) }
+          end.new({})
+
+          expect(view.config_cards.first).to be_a(ErrorPage)
+          expect(view.config_cards.first.collection_key).to eq(0)
+          expect(view.deep_state).to eq(config_cards: {})
+        end
+
+        it "omits state for a collection component that errors while computing its key" do
+          nest_class = Class.new(Component::Base) do
+            prop :count, Types.integer
+            key { count }
+          end
+          view       = Class.new(Component::Base) do
+            nest(:bars) { nest_class[].enum([1, 2, "foo", 4], as: :count) }
+          end.new({})
+
+          expect(view.deep_state).to eq(bars: { 1 => {}, 2 => {}, 4 => {} })
+          expect(view.bars[2]).to be_a(ErrorPage)
+        end
+
+        it "omits state for a collection component with a nil key" do
+          nest_class = Class.new(Component::Base) do
+            prop :var
+            key { nil }
+          end
+          view       = Class.new(Component::Base) do
+            nest(:foo) { nest_class[].enum(["english"], as: :var) }
+          end.new({})
+
+          expect(view.deep_state).to eq(foo: {})
+          expect(view.foo.first).to be_a(ErrorPage)
+        end
+
+        it "keeps processing collection state after a component has a nil key" do
+          evaluated  = []
+          nest_class = Class.new(Component::Base) do
+            prop :var
+            key do
+              evaluated << var
+              var unless var == "first"
+            end
+          end
+          view       = Class.new(Component::Base) do
+            nest(:foo) { nest_class[].enum(%w[first second], as: :var) }
+          end.new({})
+
+          expect(view.deep_state).to eq(foo: { "second" => {} })
+          expect(evaluated).to eq(%w[first second])
+          expect(view.foo.first).to be_a(ErrorPage)
+        end
       end
 
       context "literal" do
