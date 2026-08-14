@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lucid (0.2.0)
+    lucid (0.2.1)
       binding_of_caller
       console
       docile

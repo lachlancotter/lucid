@@ -32,6 +32,12 @@ module Lucid
                 expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state%5Bbaz%5D=qux")
               end
             end
+
+            it "omits nil keys from the current state" do
+              HTTP::Message.with_state({ nil => "broken", baz: "qux" }) do
+                expect(message_class.url(foo: "bar")).to eq("/@/test/message?foo=bar&state%5Bbaz%5D=qux")
+              end
+            end
           end
           
           context "base url" do
