@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Getting Started | Lucid Documentation</title>
+    <meta name="description" content="Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a class="active" aria-current="page" href="getting_started.html">Getting Started</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Getting Started</h1>
+            <p class="lede">Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration.</p>
+          </header>
+
+          <p>Lucid is a UI framework for Ruby applications that want server-rendered, hypermedia interactions without making routes, controllers, and templates carry all of the interaction design.</p>
+<p>The easiest way to start is to run a Lucid app as a Rack application. Today, <code>Lucid::App</code> is implemented as a small <code>Sinatra::Base</code> app, so it can run directly with Sinatra or be mounted anywhere a Rack app can be mounted.</p>
+<h2 id="what-lucid-provides">What Lucid Provides</h2>
+<p>Lucid gives your application a message-driven rendering layer:</p>
+<ul>
+<li>typed messages for user and system intent</li>
+<li>handlers for command-side effects</li>
+<li>components for stateful server-rendered HTML</li>
+<li>URL-backed view state</li>
+<li>server-decided HTML updates for HTMX requests</li>
+<li>helpers for links, forms, nested components, and response effects</li>
+</ul>
+<p>The core idea is that views describe intent through messages. Lucid turns those messages into HTTP URLs and form actions, decodes requests back into typed objects, dispatches them, and renders the resulting component state.</p>
+<h2 id="what-lucid-does-not-provide">What Lucid Does Not Provide</h2>
+<p>Lucid is not a full-stack application framework.</p>
+<p>It does not provide:</p>
+<ul>
+<li>an ORM or database migrations</li>
+<li>authentication or authorization systems</li>
+<li>background jobs</li>
+<li>asset compilation</li>
+<li>mailers</li>
+<li>deployment tooling</li>
+<li>a complete Rails-style application skeleton</li>
+</ul>
+<p>Those choices stay in your application. Lucid is meant to sit beside your domain model and infrastructure, not replace them.</p>
+<h2 id="what-you-need">What You Need</h2>
+<p>A Lucid app needs:</p>
+<ul>
+<li>Ruby and Bundler</li>
+<li>the <code>lucid</code> gem</li>
+<li>a Rack-compatible HTTP runtime</li>
+<li>application code for persistence, authentication, jobs, and services</li>
+<li>HTMX in the browser when you want partial page updates</li>
+<li>optional JavaScript such as Stimulus for local-only behavior</li>
+</ul>
+<p>For a new experiment, the repository examples need no database or external services.</p>
+<h2 id="install-the-gem">Install the Gem</h2>
+<p>Add Lucid to your bundle:</p>
+<pre><code>gem &quot;lucid&quot;</code></pre>
+<p>Then install dependencies:</p>
+<pre><code>bundle install</code></pre>
+<h2 id="build-the-smallest-app">Build the Smallest App</h2>
+<p>A minimal Lucid app defines a message, a component, and an app class.</p>
+<pre><code>require &quot;lucid&quot;
+
+class GreetPerson &lt; Lucid::Link
+  validate do
+    required(:name).filled(:string)
+  end
+end
+
+class HomePage &lt; Lucid::Component::Base
+  param :name, Types.string.default(&quot;world&quot;.freeze)
+
+  to GreetPerson do |msg|
+    update(name: msg.name)
+  end
+
+  element do |name|
+    h1 { text &quot;Hello, #{name}&quot; }
+    p { link_to GreetPerson.new(name: &quot;Lucid&quot;), &quot;Say hello to Lucid&quot; }
+  end
+end
+
+class ExampleApp &lt; Lucid::App
+  set :component_class, HomePage
+end</code></pre>
+<p><code>GET /</code> renders the component from URL-backed state. A Lucid link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
+<h2 id="rack">Rack</h2>
+<p>Because <code>Lucid::App</code> is a Rack app, a plain Rack entrypoint can mount a Lucid application directly.</p>
+<pre><code>require_relative &quot;../../lib/lucid&quot;
+
+class RackBasicApp &lt; Lucid::App
+  set :component_class, HomePage
+end
+
+run RackBasicApp</code></pre>
+<p>The repository includes a runnable version at <code>examples/rack_basic/config.ru</code>. From the repository root:</p>
+<pre><code>bundle exec rackup examples/rack_basic/config.ru</code></pre>
+<p>The repository bundle includes the <code>rackup</code> executable for this example. In your own app, use <code>rackup</code>, Puma, Falcon, Passenger, or any other Rack runtime. If your Rack server supports custom ports, pass its normal port option and open the printed local URL.</p>
+<h2 id="sinatra">Sinatra</h2>
+<p>Lucid can also run directly as a Sinatra-style application because <code>Lucid::App</code> subclasses <code>Sinatra::Base</code>.</p>
+<pre><code>require_relative &quot;../../lib/lucid&quot;
+
+class SinatraBasicApp &lt; Lucid::App
+  set :component_class, HomePage
+end
+
+SinatraBasicApp.run! if $PROGRAM_NAME == __FILE__</code></pre>
+<p>The repository includes a runnable version at <code>examples/sinatra_basic/app.rb</code>. From the repository root:</p>
+<pre><code>bundle exec ruby examples/sinatra_basic/app.rb</code></pre>
+<p>Then open <code>http://localhost:4567</code>.</p>
+<h2 id="rails">Rails</h2>
+<p>Rails integration is planned around a Rails Engine and Rails Controller. That is the intended developer experience, not an implemented API in this pass.</p>
+<p>The goal is for a Rails app to keep Rails ownership of application boot, middleware, routing, assets, persistence, authentication, and deployment, while Lucid owns the interactive UI surface mounted inside that Rails application.</p>
+<p>An intended shape looks like this:</p>
+<pre><code># config/routes.rb
+Rails.application.routes.draw do
+  mount MyLucidUI::Engine =&gt; &quot;/app&quot;
+end</code></pre>
+<pre><code>module MyLucidUI
+  class ApplicationController &lt; ActionController::Base
+    include Lucid::Rails::Controller
+
+    lucid_component HomePage
+    lucid_handler ApplicationHandler
+  end
+end</code></pre>
+<p>Until that adapter exists, use the Rack/Sinatra paths for runnable Lucid apps and treat Rails as an integration target.</p>
+<h2 id="where-to-go-next">Where To Go Next</h2>
+<p>Continue to <a href="hello.html">Hello World</a> for a focused walkthrough of the component, message, and app pieces. Then read <a href="architecture.html">Architecture</a> to see how links, commands, handlers, events, and rendering fit together.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="why.html">
+  <span>Previous</span>
+  <strong>Why Lucid?</strong>
+</a>
+<a href="hello.html">
+  <span>Next</span>
+  <strong>Hello World</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

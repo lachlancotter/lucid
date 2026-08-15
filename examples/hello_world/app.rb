@@ -1,7 +1,9 @@
 require_relative "../../lib/lucid"
 
 class GreetPerson < Lucid::Link
-  param :name, String
+  validate do
+    required(:name).filled(:string)
+  end
 end
 
 class HomePage < Lucid::Component::Base

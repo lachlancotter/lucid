@@ -92,11 +92,16 @@ does not require a database or external services.
 
 For the full walkthrough, continue to [Hello World](hello.md).
 
+For setup options across Rack, Sinatra, and the planned Rails integration, see
+[Getting Started](getting_started.md).
+
 ## Next steps
 
 Start here:
 
 - [Why Lucid?](why.md): Understand the problems Lucid is designed to solve.
+- [Getting Started](getting_started.md): Install Lucid, choose a Rack or
+  Sinatra runtime, and understand the planned Rails integration.
 - [Hello World](hello.md): Build the smallest useful Lucid application.
 - [Architecture](architecture.md): Trace the command, navigation, and rendering
   loops.

@@ -8,6 +8,7 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
   gem "rack-test"
+  gem "rackup"
 end
 
 group :test, :development do
