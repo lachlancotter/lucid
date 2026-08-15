@@ -9,6 +9,7 @@ SITE_ROOT = __dir__
 PAGES = [
   { title: "Overview", label: "Overview", source: "index.md", output: "index.html", section: "Start Here" },
   { title: "Why Lucid?", label: "Why Lucid?", source: "why.md", output: "why.html", section: "Start Here" },
+  { title: "Getting Started", label: "Getting Started", source: "getting_started.md", output: "getting_started.html", section: "Start Here" },
   { title: "Hello World", label: "Hello World", source: "hello.md", output: "hello.html", section: "Start Here" },
   { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Start Here" },
   { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Start Here" },
@@ -192,6 +193,8 @@ def page_intro(page)
     "Lucid is a Ruby framework for building reactive, hypermedia applications with a message-driven architecture."
   when "why.html"
     "The design pressure that led Lucid toward messages, handlers, and components."
+  when "getting_started.html"
+    "Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration."
   when "hello.html"
     "Build the smallest useful Lucid application and see how state, links, and rendering connect."
   when "architecture.html"
@@ -313,6 +316,7 @@ def render_index_page
               <p class="rail-title">Start Here</p>
               <a class="active" href="index.html">Overview</a>
               <a href="why.html">Why Lucid?</a>
+              <a href="getting_started.html">Getting Started</a>
               <a href="hello.html">Hello World</a>
               <a href="architecture.html">Architecture</a>
               <a href="features.html">Features</a>
@@ -482,6 +486,11 @@ def render_index_page
                   For the full walkthrough, continue to
                   <a href="hello.html">Hello World</a>.
                 </p>
+                <p>
+                  For setup options across Rack, Sinatra, and the planned Rails
+                  integration, see
+                  <a href="getting_started.html">Getting Started</a>.
+                </p>
               </section>
 
               <section aria-labelledby="next">
@@ -491,6 +500,10 @@ def render_index_page
                   <a href="why.html">
                     <strong>Why Lucid?</strong>
                     <span>Understand the problems Lucid is designed to solve.</span>
+                  </a>
+                  <a href="getting_started.html">
+                    <strong>Getting Started</strong>
+                    <span>Install Lucid and choose a Rack or Sinatra runtime.</span>
                   </a>
                   <a href="hello.html">
                     <strong>Hello World</strong>

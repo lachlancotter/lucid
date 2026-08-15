@@ -125,11 +125,15 @@ Lucid code reads in terms of intent rather than route names.
 
 ```ruby
 class ShowEditForm < Lucid::Link
-  param :post_id, Integer
+  validate do
+    required(:post_id).filled(:integer)
+  end
 end
 
 class DeletePost < Lucid::Command
-  param :post_id, Integer
+  validate do
+    required(:post_id).filled(:integer)
+  end
 end
 
 class PostView < Lucid::Component::Base
