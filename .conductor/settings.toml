@@ -1,0 +1,10 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+run_mode = "concurrent"
+
+[scripts.run.docs]
+available_in = [ "local" ]
+command = "open \"$CONDUCTOR_WORKSPACE_PATH/docs/site/index.html\""
+default = true
+icon = "book-open"
