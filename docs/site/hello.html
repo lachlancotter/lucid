@@ -58,35 +58,35 @@
 <li>an app configured to render that component</li>
 </ul>
 <h2 id="a-tiny-component">A Tiny Component</h2>
-<pre><code>class HomePage &lt; Lucid::Component::Base
-  param :name, Types.string.default(&quot;world&quot;.freeze)
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
-  element do |name|
-    h1 { text &quot;Hello, #{name}&quot; }
-  end
-end</code></pre>
+  <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <p>This component declares URL-backed state with <code>param</code> and renders HTML from that state.</p>
 <h2 id="a-link-message">A Link Message</h2>
-<pre><code>class GreetPerson &lt; Lucid::Link
-  validate do
-    required(:name).filled(:string)
-  end
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <h2 id="handling-the-link">Handling the Link</h2>
-<pre><code>class HomePage &lt; Lucid::Component::Base
-  param :name, Types.string.default(&quot;world&quot;.freeze)
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
-  to GreetPerson do |msg|
-    update(name: msg.name)
-  end
-end</code></pre>
+  <span class="n">to</span> <span class="no">GreetPerson</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">update</span><span class="p">(</span><span class="ss">name: </span><span class="n">msg</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <p>Now navigation is expressed as intent instead of route manipulation.</p>
 <h2 id="wiring-the-app">Wiring the App</h2>
-<pre><code>class ExampleApp &lt; Lucid::App
-  set :component_class, HomePage
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span></code></pre>
 <p>Run the app directly with Sinatra:</p>
-<pre><code>ExampleApp.run! if $PROGRAM_NAME == __FILE__</code></pre>
+<pre><code class="language-ruby"><span class="no">ExampleApp</span><span class="p">.</span><span class="nf">run!</span> <span class="k">if</span> <span class="vg">$PROGRAM_NAME</span> <span class="o">==</span> <span class="kp">__FILE__</span></code></pre>
 <p>With that in place:</p>
 <ul>
 <li><code>GET /</code> renders the default component state</li>

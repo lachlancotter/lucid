@@ -2,6 +2,7 @@
 
 require "cgi"
 require "fileutils"
+require "rouge"
 
 ROOT = File.expand_path("..", __dir__)
 SITE_ROOT = __dir__
@@ -66,6 +67,15 @@ def slug(text)
   text.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-+\z/, "")
 end
 
+def render_code_block(code_lines, language)
+  code = code_lines.join("\n")
+  lexer = language && Rouge::Lexer.find_fancy(language, "example.#{language}")
+  language_class = lexer ? %( class="language-#{escape_html(lexer.tag)}") : ""
+  highlighted = lexer ? Rouge::Formatters::HTML.new.format(lexer.lex(code)) : escape_html(code)
+
+  "<pre><code#{language_class}>#{highlighted}</code></pre>\n"
+end
+
 def render_markdown(markdown, from_page)
   lines = markdown.lines.map(&:chomp)
   title = lines.first&.start_with?("# ") ? lines.shift.delete_prefix("# ").strip : from_page[:title]
@@ -74,6 +84,7 @@ def render_markdown(markdown, from_page)
   list_type = nil
   list_items = []
   in_code = false
+  code_language = nil
   code_lines = []
 
   flush_paragraph = lambda do
@@ -97,8 +108,9 @@ def render_markdown(markdown, from_page)
   lines.each do |line|
     if in_code
       if line.start_with?("```")
-        html << "<pre><code>#{escape_html(code_lines.join("\n"))}</code></pre>\n"
+        html << render_code_block(code_lines, code_language)
         code_lines.clear
+        code_language = nil
         in_code = false
       else
         code_lines << line
@@ -106,10 +118,11 @@ def render_markdown(markdown, from_page)
       next
     end
 
-    if line.start_with?("```")
+    if (match = line.match(/\A```\s*([A-Za-z0-9_+.-]+)?/))
       flush_paragraph.call
       flush_list.call
       in_code = true
+      code_language = match[1]
       next
     end
 
@@ -168,6 +181,7 @@ def render_markdown(markdown, from_page)
 
   flush_paragraph.call
   flush_list.call
+  html << render_code_block(code_lines, code_language) if in_code
   [title, html]
 end
 
@@ -289,7 +303,7 @@ def render_page(page)
 end
 
 def render_index_page
-  (<<~HTML).gsub(/^    /, "")
+  html = <<~HTML
     <!doctype html>
     <html lang="en">
       <head>
@@ -474,8 +488,7 @@ def render_index_page
               <section aria-labelledby="quickstart">
                 <h2 id="quickstart">Quickstart</h2>
                 <p>From a checkout of this repository, run the included example app:</p>
-                <pre><code>bundle install
-#{'bundle exec ruby examples/hello_world/app.rb'}</code></pre>
+                %%QUICKSTART_CODE%%
                 <p>Then open <code>http://localhost:4567</code>.</p>
                 <p>
                   This repository quickstart requires Ruby <code>3.2.8</code> and
@@ -568,6 +581,13 @@ def render_index_page
       </body>
     </html>
   HTML
+
+  quickstart_code = render_code_block(
+    ["bundle install", "bundle exec ruby examples/hello_world/app.rb"],
+    "sh"
+  ).rstrip
+
+  html.sub("            %%QUICKSTART_CODE%%", quickstart_code)
 end
 
 PAGES.each do |page|
