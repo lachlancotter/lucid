@@ -9,8 +9,8 @@
   --accent-soft: #e8f3f1;
   --warning: #9d6a00;
   --warning-soft: #fff7dc;
-  --code-bg: #101817;
-  --code-text: #e9f2ef;
+  --code-bg: #161b22;
+  --code-text: #c9d1d9;
   --radius: 8px;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -264,92 +264,200 @@ pre code {
   line-height: 1.68;
 }
 
-pre code .c,
-pre code .cm,
-pre code .cp,
-pre code .c1,
-pre code .cs {
-  color: #81918b;
+pre code table td {
+  padding: 5px;
+}
+
+pre code table pre {
+  margin: 0;
+}
+
+pre code,
+pre code .w {
+  color: #c9d1d9;
+  background-color: #161b22;
 }
 
 pre code .k,
-pre code .kc,
 pre code .kd,
+pre code .kn,
 pre code .kp,
 pre code .kr,
-pre code .kt {
-  color: #9fd9ff;
+pre code .kt,
+pre code .kv {
+  color: #ff7b72;
 }
 
-pre code .s,
-pre code .sa,
-pre code .sb,
-pre code .sc,
-pre code .dl,
-pre code .sd,
-pre code .s2,
-pre code .se,
-pre code .sh,
-pre code .si,
-pre code .sx,
-pre code .sr,
-pre code .s1,
-pre code .ss {
-  color: #bde68a;
+pre code .gr {
+  color: #f0f6fc;
 }
 
-pre code .n,
-pre code .na,
-pre code .nb,
-pre code .bp,
-pre code .nc,
-pre code .no,
-pre code .nd,
-pre code .ni,
-pre code .ne,
-pre code .nf,
-pre code .nl,
-pre code .nn,
-pre code .nx,
-pre code .py,
-pre code .nt,
-pre code .nv,
-pre code .vc,
-pre code .vg,
-pre code .vi,
-pre code .vm {
-  color: #e9f2ef;
+pre code .gd {
+  color: #ffdcd7;
+  background-color: #67060c;
 }
 
-pre code .nc,
-pre code .no,
+pre code .nb {
+  color: #ffa657;
+}
+
+pre code .nc {
+  color: #ffa657;
+}
+
+pre code .no {
+  color: #ffa657;
+}
+
 pre code .nn {
-  color: #ffd166;
+  color: #ffa657;
 }
 
-pre code .nf,
-pre code .fm {
-  color: #79e2c6;
+pre code .sr {
+  color: #7ee787;
 }
 
+pre code .na {
+  color: #7ee787;
+}
+
+pre code .nt {
+  color: #7ee787;
+}
+
+pre code .gi {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+
+pre code .ges {
+  font-weight: bold;
+  font-style: italic;
+}
+
+pre code .kc {
+  color: #79c0ff;
+}
+
+pre code .l,
+pre code .ld,
 pre code .m,
 pre code .mb,
 pre code .mf,
 pre code .mh,
 pre code .mi,
 pre code .il,
-pre code .mo {
-  color: #f7a8d5;
+pre code .mo,
+pre code .mx {
+  color: #79c0ff;
+}
+
+pre code .sb {
+  color: #79c0ff;
+}
+
+pre code .bp {
+  color: #79c0ff;
+}
+
+pre code .ne {
+  color: #79c0ff;
+}
+
+pre code .nl {
+  color: #79c0ff;
+}
+
+pre code .py {
+  color: #79c0ff;
+}
+
+pre code .nv,
+pre code .vc,
+pre code .vg,
+pre code .vi,
+pre code .vm {
+  color: #79c0ff;
 }
 
 pre code .o,
-pre code .ow,
-pre code .p {
-  color: #cdd8d4;
+pre code .ow {
+  color: #79c0ff;
 }
 
-pre code .gp {
-  color: #7dd3c7;
+pre code .gh {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+pre code .gu {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+pre code .s,
+pre code .sa,
+pre code .sc,
+pre code .dl,
+pre code .sd,
+pre code .s2,
+pre code .se,
+pre code .sh,
+pre code .sx,
+pre code .s1,
+pre code .ss {
+  color: #a5d6ff;
+}
+
+pre code .nd {
+  color: #d2a8ff;
+}
+
+pre code .nf,
+pre code .fm {
+  color: #d2a8ff;
+}
+
+pre code .err {
+  color: #f0f6fc;
+  background-color: #8e1519;
+}
+
+pre code .c,
+pre code .ch,
+pre code .cd,
+pre code .cm,
+pre code .cp,
+pre code .cpf,
+pre code .c1,
+pre code .cs {
+  color: #8b949e;
+}
+
+pre code .gl {
+  color: #8b949e;
+}
+
+pre code .gt {
+  color: #8b949e;
+}
+
+pre code .ni {
+  color: #c9d1d9;
+}
+
+pre code .si {
+  color: #c9d1d9;
+}
+
+pre code .ge {
+  color: #c9d1d9;
+  font-style: italic;
+}
+
+pre code .gs {
+  color: #c9d1d9;
+  font-weight: bold;
 }
 
 code {
