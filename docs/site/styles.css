@@ -258,6 +258,100 @@ pre {
   padding: 18px;
 }
 
+pre code {
+  color: inherit;
+  font-size: 0.92rem;
+  line-height: 1.68;
+}
+
+pre code .c,
+pre code .cm,
+pre code .cp,
+pre code .c1,
+pre code .cs {
+  color: #81918b;
+}
+
+pre code .k,
+pre code .kc,
+pre code .kd,
+pre code .kp,
+pre code .kr,
+pre code .kt {
+  color: #9fd9ff;
+}
+
+pre code .s,
+pre code .sa,
+pre code .sb,
+pre code .sc,
+pre code .dl,
+pre code .sd,
+pre code .s2,
+pre code .se,
+pre code .sh,
+pre code .si,
+pre code .sx,
+pre code .sr,
+pre code .s1,
+pre code .ss {
+  color: #bde68a;
+}
+
+pre code .n,
+pre code .na,
+pre code .nb,
+pre code .bp,
+pre code .nc,
+pre code .no,
+pre code .nd,
+pre code .ni,
+pre code .ne,
+pre code .nf,
+pre code .nl,
+pre code .nn,
+pre code .nx,
+pre code .py,
+pre code .nt,
+pre code .nv,
+pre code .vc,
+pre code .vg,
+pre code .vi,
+pre code .vm {
+  color: #e9f2ef;
+}
+
+pre code .nc,
+pre code .no,
+pre code .nn {
+  color: #ffd166;
+}
+
+pre code .nf,
+pre code .fm {
+  color: #79e2c6;
+}
+
+pre code .m,
+pre code .mb,
+pre code .mf,
+pre code .mh,
+pre code .mi,
+pre code .il,
+pre code .mo {
+  color: #f7a8d5;
+}
+
+pre code .o,
+pre code .ow,
+pre code .p {
+  color: #cdd8d4;
+}
+
+pre code .gp {
+  color: #7dd3c7;
+}
+
 code {
   font-family:
     "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;

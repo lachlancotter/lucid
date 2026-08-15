@@ -89,76 +89,76 @@
 <p>For a new experiment, the repository examples need no database or external services.</p>
 <h2 id="install-the-gem">Install the Gem</h2>
 <p>Add Lucid to your bundle:</p>
-<pre><code>gem &quot;lucid&quot;</code></pre>
+<pre><code class="language-ruby"><span class="n">gem</span> <span class="s2">"lucid"</span></code></pre>
 <p>Then install dependencies:</p>
-<pre><code>bundle install</code></pre>
+<pre><code class="language-shell">bundle <span class="nb">install</span></code></pre>
 <h2 id="build-the-smallest-app">Build the Smallest App</h2>
 <p>A minimal Lucid app defines a message, a component, and an app class.</p>
-<pre><code>require &quot;lucid&quot;
+<pre><code class="language-ruby"><span class="nb">require</span> <span class="s2">"lucid"</span>
 
-class GreetPerson &lt; Lucid::Link
-  validate do
-    required(:name).filled(:string)
-  end
-end
+<span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
 
-class HomePage &lt; Lucid::Component::Base
-  param :name, Types.string.default(&quot;world&quot;.freeze)
+<span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
-  to GreetPerson do |msg|
-    update(name: msg.name)
-  end
+  <span class="n">to</span> <span class="no">GreetPerson</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">update</span><span class="p">(</span><span class="ss">name: </span><span class="n">msg</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
 
-  element do |name|
-    h1 { text &quot;Hello, #{name}&quot; }
-    p { link_to GreetPerson.new(name: &quot;Lucid&quot;), &quot;Say hello to Lucid&quot; }
-  end
-end
+  <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="nb">p</span> <span class="p">{</span> <span class="n">link_to</span> <span class="no">GreetPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Lucid"</span><span class="p">),</span> <span class="s2">"Say hello to Lucid"</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
 
-class ExampleApp &lt; Lucid::App
-  set :component_class, HomePage
-end</code></pre>
+<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span></code></pre>
 <p><code>GET /</code> renders the component from URL-backed state. A Lucid link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
 <h2 id="rack">Rack</h2>
 <p>Because <code>Lucid::App</code> is a Rack app, a plain Rack entrypoint can mount a Lucid application directly.</p>
-<pre><code>require_relative &quot;../../lib/lucid&quot;
+<pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
 
-class RackBasicApp &lt; Lucid::App
-  set :component_class, HomePage
-end
+<span class="k">class</span> <span class="nc">RackBasicApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span>
 
-run RackBasicApp</code></pre>
+<span class="n">run</span> <span class="no">RackBasicApp</span></code></pre>
 <p>The repository includes a runnable version at <code>examples/rack_basic/config.ru</code>. From the repository root:</p>
-<pre><code>bundle exec rackup examples/rack_basic/config.ru</code></pre>
+<pre><code class="language-shell">bundle <span class="nb">exec </span>rackup examples/rack_basic/config.ru</code></pre>
 <p>The repository bundle includes the <code>rackup</code> executable for this example. In your own app, use <code>rackup</code>, Puma, Falcon, Passenger, or any other Rack runtime. If your Rack server supports custom ports, pass its normal port option and open the printed local URL.</p>
 <h2 id="sinatra">Sinatra</h2>
 <p>Lucid can also run directly as a Sinatra-style application because <code>Lucid::App</code> subclasses <code>Sinatra::Base</code>.</p>
-<pre><code>require_relative &quot;../../lib/lucid&quot;
+<pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
 
-class SinatraBasicApp &lt; Lucid::App
-  set :component_class, HomePage
-end
+<span class="k">class</span> <span class="nc">SinatraBasicApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span>
 
-SinatraBasicApp.run! if $PROGRAM_NAME == __FILE__</code></pre>
+<span class="no">SinatraBasicApp</span><span class="p">.</span><span class="nf">run!</span> <span class="k">if</span> <span class="vg">$PROGRAM_NAME</span> <span class="o">==</span> <span class="kp">__FILE__</span></code></pre>
 <p>The repository includes a runnable version at <code>examples/sinatra_basic/app.rb</code>. From the repository root:</p>
-<pre><code>bundle exec ruby examples/sinatra_basic/app.rb</code></pre>
+<pre><code class="language-shell">bundle <span class="nb">exec </span>ruby examples/sinatra_basic/app.rb</code></pre>
 <p>Then open <code>http://localhost:4567</code>.</p>
 <h2 id="rails">Rails</h2>
 <p>Rails integration is planned around a Rails Engine and Rails Controller. That is the intended developer experience, not an implemented API in this pass.</p>
 <p>The goal is for a Rails app to keep Rails ownership of application boot, middleware, routing, assets, persistence, authentication, and deployment, while Lucid owns the interactive UI surface mounted inside that Rails application.</p>
 <p>An intended shape looks like this:</p>
-<pre><code># config/routes.rb
-Rails.application.routes.draw do
-  mount MyLucidUI::Engine =&gt; &quot;/app&quot;
-end</code></pre>
-<pre><code>module MyLucidUI
-  class ApplicationController &lt; ActionController::Base
-    include Lucid::Rails::Controller
+<pre><code class="language-ruby"><span class="c1"># config/routes.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">mount</span> <span class="no">MyLucidUI</span><span class="o">::</span><span class="no">Engine</span> <span class="o">=&gt;</span> <span class="s2">"/app"</span>
+<span class="k">end</span></code></pre>
+<pre><code class="language-ruby"><span class="k">module</span> <span class="nn">MyLucidUI</span>
+  <span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+    <span class="kp">include</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Rails</span><span class="o">::</span><span class="no">Controller</span>
 
-    lucid_component HomePage
-    lucid_handler ApplicationHandler
-  end
-end</code></pre>
+    <span class="n">lucid_component</span> <span class="no">HomePage</span>
+    <span class="n">lucid_handler</span> <span class="no">ApplicationHandler</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <p>Until that adapter exists, use the Rack/Sinatra paths for runnable Lucid apps and treat Rails as an integration target.</p>
 <h2 id="where-to-go-next">Where To Go Next</h2>
 <p>Continue to <a href="hello.html">Hello World</a> for a focused walkthrough of the component, message, and app pieces. Then read <a href="architecture.html">Architecture</a> to see how links, commands, handlers, events, and rendering fit together.</p>

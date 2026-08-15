@@ -179,6 +179,7 @@ DEPENDENCIES
   lucid!
   rack-test
   rackup
+  rouge
   rspec
   selenium-webdriver
   webdrivers

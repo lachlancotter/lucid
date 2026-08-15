@@ -80,14 +80,14 @@
 </ul>
 <p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
 <p>Container dependencies are plain collaborators:</p>
-<pre><code>class AccountMenu &lt; Lucid::Component::Base
-  use :current_user, Types::Any
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">use</span> <span class="ss">:current_user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+<span class="k">end</span></code></pre>
 <p>Inherited fields remain reactive UI data:</p>
-<pre><code>class ChildPanel &lt; Lucid::Component::Base
-  inherit :selected_tab
-  inherit :flash, from: :http_session
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ChildPanel</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">inherit</span> <span class="ss">:selected_tab</span>
+  <span class="n">inherit</span> <span class="ss">:flash</span><span class="p">,</span> <span class="ss">from: :http_session</span>
+<span class="k">end</span></code></pre>
 <h2 id="composition">Composition</h2>
 <p>Components compose by nesting other components. This gives you:</p>
 <ul>

@@ -80,9 +80,9 @@
 </ul>
 <h2 id="file-upload-forms">File Upload Forms</h2>
 <p>Use <code>multipart: true</code> when a form includes file inputs:</p>
-<pre><code>form_for(upload_form, multipart: true) do |f|
-  f.file(:avatar, accept: &quot;image/*&quot;)
-end</code></pre>
+<pre><code class="language-ruby"><span class="n">form_for</span><span class="p">(</span><span class="n">upload_form</span><span class="p">,</span> <span class="ss">multipart: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">file</span><span class="p">(</span><span class="ss">:avatar</span><span class="p">,</span> <span class="ss">accept: </span><span class="s2">"image/*"</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
 <p>Uploaded files are supported on <code>POST</code> forms. Rack parses each uploaded file as a hash containing upload metadata and a <code>Tempfile</code>; handlers are responsible for validating the file size and type, then moving or processing the tempfile during the request. Browsers do not repopulate file inputs after validation errors, so file fields do not echo a <code>value</code> from the form model.</p>
 
 
