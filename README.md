@@ -1,9 +1,9 @@
-# Lucid
+# Caju
 
-Lucid is a Ruby framework for building reactive, hypermedia applications with a
+Caju is a Ruby framework for building reactive, hypermedia applications with a
 message-driven architecture.
 
-Instead of centering your UI around routes and controllers, Lucid organizes
+Instead of centering your UI around routes and controllers, Caju organizes
 interactive behavior around three primitives:
 
 - `Messages` describe user intent.
@@ -45,14 +45,14 @@ The example defines:
 
 - a `Link` message for navigation intent
 - a root `Component` that reacts to that message
-- a `Lucid::App` subclass that serves the component tree
+- a `Caju::App` subclass that serves the component tree
 
 If you want to inspect it first, see
 [examples/hello_world/app.rb](examples/hello_world/app.rb).
 
-## What Lucid Is
+## What Caju Is
 
-Lucid is a specialized framework for interactive HTML applications in Ruby. It
+Caju is a specialized framework for interactive HTML applications in Ruby. It
 fits best when you want:
 
 - server-rendered UI with rich interactions
@@ -60,7 +60,7 @@ fits best when you want:
 - a clean separation between UI intent, business logic, and rendering
 - URLs derived from application state rather than hand-authored route strings
 
-Lucid is not a full-stack application framework. It does not try to own your
+Caju is not a full-stack application framework. It does not try to own your
 data layer, ORM, or every integration concern in your app.
 
 ## Core Model
@@ -117,26 +117,26 @@ Navigation is simpler:
 1. A user follows a `Link`.
 2. A `Component` handles the link message directly.
 3. Component state changes.
-4. Lucid renders the new UI state and URL.
+4. Caju renders the new UI state and URL.
 
 ## A Small Example
 
-Lucid code reads in terms of intent rather than route names.
+Caju code reads in terms of intent rather than route names.
 
 ```ruby
-class ShowEditForm < Lucid::Link
+class ShowEditForm < Caju::Link
   validate do
     required(:post_id).filled(:integer)
   end
 end
 
-class DeletePost < Lucid::Command
+class DeletePost < Caju::Command
   validate do
     required(:post_id).filled(:integer)
   end
 end
 
-class PostView < Lucid::Component::Base
+class PostView < Caju::Component::Base
   param :post_id, Types.integer
   param :editing, Types.bool.default(false)
 
@@ -145,7 +145,7 @@ class PostView < Lucid::Component::Base
   end
 end
 
-class DeletePostHandler < Lucid::Handler
+class DeletePostHandler < Caju::Handler
   perform DeletePost do |cmd|
     post = Post.find(cmd.post_id)
     post.destroy!
@@ -165,13 +165,13 @@ That separation is the main payoff of Lucid.
 
 ## Project Status
 
-Lucid is an actively evolving framework with a stable conceptual core and a
+Caju is an actively evolving framework with a stable conceptual core and a
 small, focused documentation set. The API surface is opinionated and still
 being refined.
 
 ## Why This Approach
 
-Lucid is designed to avoid common coupling problems in traditional MVC-style
+Caju is designed to avoid common coupling problems in traditional MVC-style
 web applications:
 
 - views do not need to know concrete route strings
@@ -190,13 +190,17 @@ Add the gem to your application:
 gem "lucid"
 ```
 
+The gem is still named `lucid` during the transition from Lucid to Caju.
+Application code should prefer the `Caju::` namespace; the older `Lucid::`
+namespace remains supported for compatibility.
+
 Then install dependencies:
 
 ```bash
 bundle install
 ```
 
-Lucid depends on:
+Caju depends on:
 
 - `rack`
 - `sinatra`
@@ -206,7 +210,7 @@ Lucid depends on:
 
 ## Features
 
-Lucid includes conventions for organizing code into core code and features.
+Caju includes conventions for organizing code into core code and features.
 
 At a high level:
 

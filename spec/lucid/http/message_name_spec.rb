@@ -5,11 +5,19 @@ module Lucid
         it "converts class names to URLs" do
           expect(MessageName.encode("Lucid::Component::Base")).to eq("lucid/component/base")
         end
+
+        it "converts Caju class names to Caju URLs" do
+          expect(MessageName.encode("Caju::HTTP::TestMessage")).to eq("caju/h-t-t-p/test-message")
+        end
       end
 
       describe ".decode" do
         it "converts URLs class names" do
           expect(MessageName.decode("lucid/component/base")).to eq("Lucid::Component::Base")
+        end
+
+        it "converts Caju URLs to Caju class names" do
+          expect(MessageName.decode("caju/component/base")).to eq("Caju::Component::Base")
         end
       end
 
@@ -37,6 +45,12 @@ module Lucid
         context "no params" do
           it "decodes the message name" do
             url   = "/@/lucid/h-t-t-p/test-message"
+            klass = MessageName.to_class(url)
+            expect(klass).to eq(TestMessage)
+          end
+
+          it "decodes Caju message names" do
+            url   = "/@/caju/h-t-t-p/test-message"
             klass = MessageName.to_class(url)
             expect(klass).to eq(TestMessage)
           end

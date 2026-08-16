@@ -1,16 +1,16 @@
 # Getting Started
 
-Lucid is a UI framework for Ruby applications that want server-rendered,
+Caju is a UI framework for Ruby applications that want server-rendered,
 hypermedia interactions without making routes, controllers, and templates carry
 all of the interaction design.
 
-The easiest way to start is to run a Lucid app as a Rack application. Today,
-`Lucid::App` is implemented as a small `Sinatra::Base` app, so it can run
+The easiest way to start is to run a Caju app as a Rack application. Today,
+`Caju::App` is implemented as a small `Sinatra::Base` app, so it can run
 directly with Sinatra or be mounted anywhere a Rack app can be mounted.
 
-## What Lucid Provides
+## What Caju Provides
 
-Lucid gives your application a message-driven rendering layer:
+Caju gives your application a message-driven rendering layer:
 
 - typed messages for user and system intent
 - handlers for command-side effects
@@ -19,13 +19,13 @@ Lucid gives your application a message-driven rendering layer:
 - server-decided HTML updates for HTMX requests
 - helpers for links, forms, nested components, and response effects
 
-The core idea is that views describe intent through messages. Lucid turns those
+The core idea is that views describe intent through messages. Caju turns those
 messages into HTTP URLs and form actions, decodes requests back into typed
 objects, dispatches them, and renders the resulting component state.
 
-## What Lucid Does Not Provide
+## What Caju Does Not Provide
 
-Lucid is not a full-stack application framework.
+Caju is not a full-stack application framework.
 
 It does not provide:
 
@@ -37,12 +37,12 @@ It does not provide:
 - deployment tooling
 - a complete Rails-style application skeleton
 
-Those choices stay in your application. Lucid is meant to sit beside your
+Those choices stay in your application. Caju is meant to sit beside your
 domain model and infrastructure, not replace them.
 
 ## What You Need
 
-A Lucid app needs:
+A Caju app needs:
 
 - Ruby and Bundler
 - the `lucid` gem
@@ -62,6 +62,10 @@ Add Lucid to your bundle:
 gem "lucid"
 ```
 
+The gem keeps the `lucid` name during the transition from Lucid to Caju.
+New application code should use `Caju::`; existing `Lucid::` code remains
+supported.
+
 Then install dependencies:
 
 ```sh
@@ -70,18 +74,18 @@ bundle install
 
 ## Build the Smallest App
 
-A minimal Lucid app defines a message, a component, and an app class.
+A minimal Caju app defines a message, a component, and an app class.
 
 ```ruby
 require "lucid"
 
-class GreetPerson < Lucid::Link
+class GreetPerson < Caju::Link
   validate do
     required(:name).filled(:string)
   end
 end
 
-class HomePage < Lucid::Component::Base
+class HomePage < Caju::Component::Base
   param :name, Types.string.default("world".freeze)
 
   to GreetPerson do |msg|
@@ -90,28 +94,28 @@ class HomePage < Lucid::Component::Base
 
   element do |name|
     h1 { text "Hello, #{name}" }
-    p { link_to GreetPerson.new(name: "Lucid"), "Say hello to Lucid" }
+    p { link_to GreetPerson.new(name: "Caju"), "Say hello to Caju" }
   end
 end
 
-class ExampleApp < Lucid::App
+class ExampleApp < Caju::App
   set :component_class, HomePage
 end
 ```
 
-`GET /` renders the component from URL-backed state. A Lucid link renders as a
+`GET /` renders the component from URL-backed state. A Caju link renders as a
 normal URL under `/@/`, and following it sends a typed `Link` message back to
 the component tree.
 
 ## Rack
 
-Because `Lucid::App` is a Rack app, a plain Rack entrypoint can mount a Lucid
+Because `Caju::App` is a Rack app, a plain Rack entrypoint can mount a Caju
 application directly.
 
 ```ruby
 require_relative "../../lib/lucid"
 
-class RackBasicApp < Lucid::App
+class RackBasicApp < Caju::App
   set :component_class, HomePage
 end
 
@@ -132,13 +136,13 @@ the printed local URL.
 
 ## Sinatra
 
-Lucid can also run directly as a Sinatra-style application because
-`Lucid::App` subclasses `Sinatra::Base`.
+Caju can also run directly as a Sinatra-style application because
+`Caju::App` subclasses `Sinatra::Base`.
 
 ```ruby
 require_relative "../../lib/lucid"
 
-class SinatraBasicApp < Lucid::App
+class SinatraBasicApp < Caju::App
   set :component_class, HomePage
 end
 
