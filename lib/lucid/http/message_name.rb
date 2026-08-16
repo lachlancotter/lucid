@@ -4,6 +4,9 @@ module Lucid
     # Maps between Messages classes and names encoded for URLs.
     #
     module MessageName
+      PUBLIC_NAMESPACE = "Caju".freeze
+      LEGACY_NAMESPACE = "Lucid".freeze
+
       #
       # URL pattern for matching messages.
       # 
@@ -23,9 +26,7 @@ module Lucid
         PathInvalid.check(fullpath)
         path       = fullpath.match(PATTERN)[1]
         class_name = MessageName.decode(path)
-        const_get(class_name).tap do |klass|
-          ClassInvalid.check(klass)
-        end
+        resolve_class(class_name)
       end
  
       #
@@ -60,6 +61,37 @@ module Lucid
             word.capitalize
           end.join
         end.join('::')
+      end
+
+      def self.resolve_class (class_name)
+        candidate_class_names(class_name).each do |candidate|
+          if const_defined_by_name?(candidate)
+            return Object.const_get(candidate).tap do |klass|
+               ClassInvalid.check(klass)
+            end
+          end
+        end
+
+        Object.const_get(class_name)
+      end
+
+      def self.const_defined_by_name? (class_name)
+        Object.const_defined?(class_name)
+      rescue NameError
+        false
+      end
+
+      def self.candidate_class_names (class_name)
+        [class_name, compatible_class_name(class_name)].compact.uniq
+      end
+
+      def self.compatible_class_name (class_name)
+        case class_name
+        when /\A#{PUBLIC_NAMESPACE}::/
+          class_name.sub(/\A#{PUBLIC_NAMESPACE}::/, "#{LEGACY_NAMESPACE}::")
+        when /\A#{LEGACY_NAMESPACE}::/
+          class_name.sub(/\A#{LEGACY_NAMESPACE}::/, "#{PUBLIC_NAMESPACE}::")
+        end
       end
 
       #

@@ -8,6 +8,7 @@ module Lucid
   unless defined?(LOADER)
     LOADER = Zeitwerk::Loader.new
     LOADER.push_dir(__dir__)
+    LOADER.ignore("#{__dir__}/caju.rb")
     LOADER.collapse("#{__dir__}/lucid/dispatch")
     LOADER.inflector.inflect('htmx' => 'HTMX')
     LOADER.inflector.inflect('http' => 'HTTP')
@@ -102,3 +103,5 @@ module Lucid
   end
   
 end
+
+Caju = Lucid unless defined?(Caju)

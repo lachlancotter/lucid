@@ -51,10 +51,10 @@
             <p class="lede">Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration.</p>
           </header>
 
-          <p>Lucid is a UI framework for Ruby applications that want server-rendered, hypermedia interactions without making routes, controllers, and templates carry all of the interaction design.</p>
-<p>The easiest way to start is to run a Lucid app as a Rack application. Today, <code>Lucid::App</code> is implemented as a small <code>Sinatra::Base</code> app, so it can run directly with Sinatra or be mounted anywhere a Rack app can be mounted.</p>
-<h2 id="what-lucid-provides">What Lucid Provides</h2>
-<p>Lucid gives your application a message-driven rendering layer:</p>
+          <p>Caju is a UI framework for Ruby applications that want server-rendered, hypermedia interactions without making routes, controllers, and templates carry all of the interaction design.</p>
+<p>The easiest way to start is to run a Caju app as a Rack application. Today, <code>Caju::App</code> is implemented as a small <code>Sinatra::Base</code> app, so it can run directly with Sinatra or be mounted anywhere a Rack app can be mounted.</p>
+<h2 id="what-caju-provides">What Caju Provides</h2>
+<p>Caju gives your application a message-driven rendering layer:</p>
 <ul>
 <li>typed messages for user and system intent</li>
 <li>handlers for command-side effects</li>
@@ -63,9 +63,9 @@
 <li>server-decided HTML updates for HTMX requests</li>
 <li>helpers for links, forms, nested components, and response effects</li>
 </ul>
-<p>The core idea is that views describe intent through messages. Lucid turns those messages into HTTP URLs and form actions, decodes requests back into typed objects, dispatches them, and renders the resulting component state.</p>
-<h2 id="what-lucid-does-not-provide">What Lucid Does Not Provide</h2>
-<p>Lucid is not a full-stack application framework.</p>
+<p>The core idea is that views describe intent through messages. Caju turns those messages into HTTP URLs and form actions, decodes requests back into typed objects, dispatches them, and renders the resulting component state.</p>
+<h2 id="what-caju-does-not-provide">What Caju Does Not Provide</h2>
+<p>Caju is not a full-stack application framework.</p>
 <p>It does not provide:</p>
 <ul>
 <li>an ORM or database migrations</li>
@@ -76,9 +76,9 @@
 <li>deployment tooling</li>
 <li>a complete Rails-style application skeleton</li>
 </ul>
-<p>Those choices stay in your application. Lucid is meant to sit beside your domain model and infrastructure, not replace them.</p>
+<p>Those choices stay in your application. Caju is meant to sit beside your domain model and infrastructure, not replace them.</p>
 <h2 id="what-you-need">What You Need</h2>
-<p>A Lucid app needs:</p>
+<p>A Caju app needs:</p>
 <ul>
 <li>Ruby and Bundler</li>
 <li>the <code>lucid</code> gem</li>
@@ -91,19 +91,20 @@
 <h2 id="install-the-gem">Install the Gem</h2>
 <p>Add Lucid to your bundle:</p>
 <pre><code class="language-ruby"><span class="n">gem</span> <span class="s2">"lucid"</span></code></pre>
+<p>The gem keeps the <code>lucid</code> name during the transition from Lucid to Caju. New application code should use <code>Caju::</code>; existing <code>Lucid::</code> code remains supported.</p>
 <p>Then install dependencies:</p>
 <pre><code class="language-shell">bundle <span class="nb">install</span></code></pre>
 <h2 id="build-the-smallest-app">Build the Smallest App</h2>
-<p>A minimal Lucid app defines a message, a component, and an app class.</p>
+<p>A minimal Caju app defines a message, a component, and an app class.</p>
 <pre><code class="language-ruby"><span class="nb">require</span> <span class="s2">"lucid"</span>
 
-<span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
+<span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Link</span>
   <span class="n">validate</span> <span class="k">do</span>
     <span class="n">required</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+<span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
   <span class="n">to</span> <span class="no">GreetPerson</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
@@ -112,19 +113,19 @@
 
   <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
     <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
-    <span class="nb">p</span> <span class="p">{</span> <span class="n">link_to</span> <span class="no">GreetPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Lucid"</span><span class="p">),</span> <span class="s2">"Say hello to Lucid"</span> <span class="p">}</span>
+    <span class="nb">p</span> <span class="p">{</span> <span class="n">link_to</span> <span class="no">GreetPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Caju"</span><span class="p">),</span> <span class="s2">"Say hello to Caju"</span> <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
   <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
 <span class="k">end</span></code></pre>
-<p><code>GET /</code> renders the component from URL-backed state. A Lucid link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
+<p><code>GET /</code> renders the component from URL-backed state. A Caju link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
 <h2 id="rack">Rack</h2>
-<p>Because <code>Lucid::App</code> is a Rack app, a plain Rack entrypoint can mount a Lucid application directly.</p>
+<p>Because <code>Caju::App</code> is a Rack app, a plain Rack entrypoint can mount a Caju application directly.</p>
 <pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
 
-<span class="k">class</span> <span class="nc">RackBasicApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+<span class="k">class</span> <span class="nc">RackBasicApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
   <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
 <span class="k">end</span>
 
@@ -133,10 +134,10 @@
 <pre><code class="language-shell">bundle <span class="nb">exec </span>rackup examples/rack_basic/config.ru</code></pre>
 <p>The repository bundle includes the <code>rackup</code> executable for this example. In your own app, use <code>rackup</code>, Puma, Falcon, Passenger, or any other Rack runtime. If your Rack server supports custom ports, pass its normal port option and open the printed local URL.</p>
 <h2 id="sinatra">Sinatra</h2>
-<p>Lucid can also run directly as a Sinatra-style application because <code>Lucid::App</code> subclasses <code>Sinatra::Base</code>.</p>
+<p>Caju can also run directly as a Sinatra-style application because <code>Caju::App</code> subclasses <code>Sinatra::Base</code>.</p>
 <pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
 
-<span class="k">class</span> <span class="nc">SinatraBasicApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+<span class="k">class</span> <span class="nc">SinatraBasicApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
   <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
 <span class="k">end</span>
 
