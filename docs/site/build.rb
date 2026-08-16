@@ -18,15 +18,29 @@ PAGES = [
   { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Start Here" },
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Start Here" },
   { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Start Here" },
+  { title: "Create the Board Feature", label: "1. Create the Board", source: "tutorial/01-create-the-board-feature.md", output: "tutorial/01-create-the-board-feature.html", section: "Tutorial" },
+  { title: "Render Columns", label: "2. Render Columns", source: "tutorial/02-render-columns.md", output: "tutorial/02-render-columns.html", section: "Tutorial" },
+  { title: "Add Cards", label: "3. Add Cards", source: "tutorial/03-add-cards.md", output: "tutorial/03-add-cards.html", section: "Tutorial" },
+  { title: "Move Cards", label: "4. Move Cards", source: "tutorial/04-move-cards.md", output: "tutorial/04-move-cards.html", section: "Tutorial" },
+  { title: "Rename Columns", label: "5. Rename Columns", source: "tutorial/05-rename-columns.md", output: "tutorial/05-rename-columns.html", section: "Tutorial" },
+  { title: "Decompose by Feature", label: "6. Decompose by Feature", source: "tutorial/06-decompose-by-feature.md", output: "tutorial/06-decompose-by-feature.html", section: "Tutorial" },
+  { title: "Enhance with Drag and Drop", label: "7. Drag and Drop", source: "tutorial/07-enhance-with-drag-and-drop.md", output: "tutorial/07-enhance-with-drag-and-drop.html", section: "Tutorial" },
+  { title: "Test the Workflows", label: "8. Test Workflows", source: "tutorial/08-test-the-workflows.md", output: "tutorial/08-test-the-workflows.html", section: "Tutorial" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
 
 PAGE_BY_SOURCE = PAGES.to_h { |page| [page[:source], page] }
+TUTORIAL_PAGES = PAGES.select { |page| page[:source].start_with?("tutorial/") }.freeze
+TUTORIAL_ENTRY_PAGE = TUTORIAL_PAGES.first
 
 def escape_html(value)
   CGI.escapeHTML(value)
+end
+
+def tutorial_page?(page)
+  page[:source].start_with?("tutorial/")
 end
 
 def page_depth(page)
@@ -186,10 +200,16 @@ def render_markdown(markdown, from_page)
 end
 
 def nav_html(current_page)
-  PAGES.group_by { |page| page[:section] }.map do |section, pages|
+  nav_pages = PAGES.reject do |page|
+    tutorial_page?(page) && page != TUTORIAL_ENTRY_PAGE
+  end
+
+  nav_pages.group_by { |page| tutorial_page?(page) ? "Start Here" : page[:section] }.map do |section, pages|
     links = pages.map do |page|
-      active = page == current_page ? %( class="active" aria-current="page") : ""
-      %(<a#{active} href="#{relative_href(current_page, page)}">#{escape_html(page[:label])}</a>)
+      active_page = page == current_page || (tutorial_page?(page) && tutorial_page?(current_page))
+      active = active_page ? %( class="active" aria-current="page") : ""
+      label = tutorial_page?(page) ? "Tutorial" : page[:label]
+      %(<a#{active} href="#{relative_href(current_page, page)}">#{escape_html(label)}</a>)
     end.join("\n")
 
     <<~HTML
@@ -223,6 +243,22 @@ def page_intro(page)
     "Use handlers for effectful command behavior, policies, redirects, and event publication."
   when "client_behavior.html"
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
+  when "tutorial/01-create-the-board-feature.html"
+    "Start a tiny kanban app by creating the board feature."
+  when "tutorial/02-render-columns.html"
+    "Render the default kanban columns inside the board."
+  when "tutorial/03-add-cards.html"
+    "Create cards through a Lucid command workflow."
+  when "tutorial/04-move-cards.html"
+    "Move cards between columns with server-rendered controls."
+  when "tutorial/05-rename-columns.html"
+    "Add a column-owned editing workflow."
+  when "tutorial/06-decompose-by-feature.html"
+    "Organize the tutorial app around board, column, and card features."
+  when "tutorial/07-enhance-with-drag-and-drop.html"
+    "Layer drag-and-drop JavaScript onto the existing card movement workflow."
+  when "tutorial/08-test-the-workflows.html"
+    "Test the board, column, and card workflows."
   when "reference/state.html"
     "Reference for URL-backed state, state maps, and nested component state."
   when "reference/templates.html"
@@ -235,9 +271,10 @@ def page_intro(page)
 end
 
 def previous_next(page)
-  index = PAGES.index(page)
-  previous_page = index&.positive? ? PAGES[index - 1] : nil
-  next_page = index && index < PAGES.length - 1 ? PAGES[index + 1] : nil
+  pages = tutorial_page?(page) ? TUTORIAL_PAGES : PAGES.reject { |candidate| tutorial_page?(candidate) && candidate != TUTORIAL_ENTRY_PAGE }
+  index = pages.index(page)
+  previous_page = index&.positive? ? pages[index - 1] : nil
+  next_page = index && index < pages.length - 1 ? pages[index + 1] : nil
 
   [previous_page, next_page].compact.map do |target|
     direction = target == previous_page ? "Previous" : "Next"
@@ -338,6 +375,7 @@ def render_index_page
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
               <a href="client_behavior.html">Client Behavior</a>
+              <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
             </div>
 
             <div class="rail-group">
@@ -548,6 +586,10 @@ def render_index_page
                   <a href="client_behavior.html">
                     <strong>Client Behavior</strong>
                     <span>Use JavaScript for local behavior without creating a second app model.</span>
+                  </a>
+                  <a href="tutorial/01-create-the-board-feature.html">
+                    <strong>Tutorial</strong>
+                    <span>Build a tiny kanban board while decomposing the app by feature.</span>
                   </a>
                 </div>
 
