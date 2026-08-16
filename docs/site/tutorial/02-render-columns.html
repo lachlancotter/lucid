@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Configuration | Lucid Documentation</title>
-    <meta name="description" content="Reference for application settings, request containers, and extension points.">
+    <title>Render Columns | Lucid Documentation</title>
+    <meta name="description" content="Render the default kanban columns inside the board.">
     <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
@@ -29,14 +29,14 @@
 <a href="../components.html">Components</a>
 <a href="../handlers.html">Handlers</a>
 <a href="../client_behavior.html">Client Behavior</a>
-<a href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
+<a class="active" aria-current="page" href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="../reference/state.html">State</a>
 <a href="../reference/templates.html">Templates</a>
-<a class="active" aria-current="page" href="../reference/configuration.html">Configuration</a>
+<a href="../reference/configuration.html">Configuration</a>
 </div>
 
 
@@ -46,38 +46,31 @@
       <main id="main" class="content">
         <article class="doc-page">
           <header class="doc-header">
-            <p class="section-label">Reference</p>
-            <h1>Configuration</h1>
-            <p class="lede">Reference for application settings, request containers, and extension points.</p>
+            <p class="section-label">Tutorial</p>
+            <h1>Render Columns</h1>
+            <p class="lede">Render the default kanban columns inside the board.</p>
           </header>
 
-          <p>Lucid keeps application-level configuration intentionally small.</p>
-<p><code>Lucid::App</code> exposes a handful of settings that define the root objects and runtime environment for request handling.</p>
-<h2 id="app-settings">App Settings</h2>
-<p>The main settings are:</p>
+          <p>Add columns to the board so the kanban structure is visible before any cards or mutating workflows are introduced.</p>
+<h2 id="goal">Goal</h2>
+<p>Render the default board columns.</p>
+<h2 id="outline">Outline</h2>
 <ul>
-<li><code>component_class</code>: the root component class</li>
-<li><code>handler_class</code>: the root handler class</li>
-<li><code>container_class</code>: the dependency container class</li>
-<li><code>session_class</code>: the wrapper class for the Rack session</li>
-<li><code>app_root</code>: the URL base path for the application</li>
+<li>Introduce the columns feature</li>
+<li>Define the default <code>Todo</code>, <code>Doing</code>, and <code>Done</code> columns</li>
+<li>Compose column components into the board page</li>
+<li>Show the empty state for each column</li>
 </ul>
-<h2 id="container">Container</h2>
-<p>The container is created per request and provides request-scoped collaborators such as:</p>
-<ul>
-<li>the request adaptor</li>
-<li>the response adaptor</li>
-<li>the message bus</li>
-<li>response effects</li>
-<li>the session wrapper</li>
-</ul>
-<p>For most applications, the container is where Lucid is extended with domain-specific dependencies.</p>
 
 
           <nav class="page-nav" aria-label="Previous and next pages">
-            <a href="../reference/templates.html">
+            <a href="../tutorial/01-create-the-board-feature.html">
   <span>Previous</span>
-  <strong>Templates</strong>
+  <strong>1. Create the Board</strong>
+</a>
+<a href="../tutorial/03-add-cards.html">
+  <span>Next</span>
+  <strong>3. Add Cards</strong>
 </a>
 
           </nav>
