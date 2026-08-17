@@ -10,48 +10,92 @@
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <div class="site-shell">
-      <aside class="docs-rail" aria-label="Documentation navigation">
+    <div class="tutorial-shell">
+      <aside class="tutorial-rail" aria-label="Tutorial steps">
         <a class="brand" href="../index.html" aria-label="Lucid documentation home">
           <span class="brand-mark" aria-hidden="true">L</span>
           <span>Lucid</span>
         </a>
 
-        <div class="rail-group">
-  <p class="rail-title">Start Here</p>
-  <a href="../index.html">Overview</a>
-<a href="../why.html">Why Lucid?</a>
-<a href="../getting_started.html">Getting Started</a>
-<a href="../hello.html">Hello World</a>
-<a href="../architecture.html">Architecture</a>
-<a href="../features.html">Features</a>
-<a href="../messages.html">Messages</a>
-<a href="../components.html">Components</a>
-<a href="../handlers.html">Handlers</a>
-<a href="../client_behavior.html">Client Behavior</a>
-<a class="active" aria-current="page" href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
-</div>
+        <p class="rail-title">Tutorial</p>
+        <ol class="tutorial-steps">
+          <li>
+  <a href="../tutorial/01-create-the-board-feature.html">
+    <span>Step 1</span>
+    <strong>Create the Board Feature</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/02-render-columns.html">
+    <span>Step 2</span>
+    <strong>Render Columns</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/03-add-cards.html">
+    <span>Step 3</span>
+    <strong>Add Cards</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/04-move-cards.html">
+    <span>Step 4</span>
+    <strong>Move Cards</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/05-rename-columns.html">
+    <span>Step 5</span>
+    <strong>Rename Columns</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/06-decompose-by-feature.html">
+    <span>Step 6</span>
+    <strong>Decompose by Feature</strong>
+  </a>
+</li>
+<li>
+  <a class="active" aria-current="page" href="../tutorial/07-enhance-with-drag-and-drop.html">
+    <span>Step 7</span>
+    <strong>Enhance with Drag and Drop</strong>
+  </a>
+</li>
+<li>
+  <a href="../tutorial/08-test-the-workflows.html">
+    <span>Step 8</span>
+    <strong>Test the Workflows</strong>
+  </a>
+</li>
 
-<div class="rail-group">
-  <p class="rail-title">Reference</p>
-  <a href="../reference/state.html">State</a>
-<a href="../reference/templates.html">Templates</a>
-<a href="../reference/configuration.html">Configuration</a>
-</div>
-
+        </ol>
 
         <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
       </aside>
 
-      <main id="main" class="content">
-        <article class="doc-page">
-          <header class="doc-header">
-            <p class="section-label">Tutorial</p>
+      <main id="main" class="tutorial-content">
+        <header class="tutorial-header">
+          <div>
+            <p class="section-label">7. Drag and Drop</p>
             <h1>Enhance with Drag and Drop</h1>
-            <p class="lede">Layer drag-and-drop JavaScript onto the existing card movement workflow.</p>
-          </header>
+          </div>
+          <nav class="tutorial-header-nav" aria-label="Previous and next tutorial steps">
+            <a class="tutorial-header-link" href="../tutorial/06-decompose-by-feature.html">
+  <span>Previous</span>
+  <strong>6. Decompose by Feature</strong>
+</a>
+<a class="tutorial-header-link" href="../tutorial/08-test-the-workflows.html">
+  <span>Next</span>
+  <strong>8. Test Workflows</strong>
+</a>
 
-          <p>Layer JavaScript onto the existing card movement workflow as progressive enhancement.</p>
+          </nav>
+        </header>
+
+        <article class="tutorial-layout">
+          <section class="tutorial-instructions" aria-label="Tutorial instructions">
+            <p class="lede">Layer drag-and-drop JavaScript onto the existing card movement workflow.</p>
+            <p>Layer JavaScript onto the existing card movement workflow as progressive enhancement.</p>
 <h2 id="goal">Goal</h2>
 <p>Move cards by dragging them between columns while keeping the same Lucid command workflow underneath.</p>
 <h2 id="outline">Outline</h2>
@@ -62,18 +106,17 @@
 <li>Handle failed moves gracefully</li>
 </ul>
 
+          </section>
 
-          <nav class="page-nav" aria-label="Previous and next pages">
-            <a href="../tutorial/06-decompose-by-feature.html">
-  <span>Previous</span>
-  <strong>6. Decompose by Feature</strong>
-</a>
-<a href="../tutorial/08-test-the-workflows.html">
-  <span>Next</span>
-  <strong>8. Test Workflows</strong>
-</a>
+          <aside class="tutorial-example" aria-label="Example code">
+            <div class="tutorial-example-header">
+              <p class="section-label">Example Code</p>
+            </div>
+            <div class="tutorial-empty-code">
+  <p>No example code for this step yet.</p>
+</div>
 
-          </nav>
+          </aside>
         </article>
       </main>
     </div>
