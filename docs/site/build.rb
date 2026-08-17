@@ -199,6 +199,20 @@ def render_markdown(markdown, from_page)
   [title, html]
 end
 
+def tutorial_markdown_parts(markdown, from_page)
+  lines = markdown.lines.map(&:chomp)
+  title = lines.first&.start_with?("# ") ? lines.shift.delete_prefix("# ").strip : from_page[:title]
+  example_index = lines.index { |line| line.match?(/\A##\s+Example\s*\z/) }
+
+  instruction_lines = example_index ? lines.first(example_index) : lines
+  example_lines = example_index ? lines[(example_index + 1)..] : []
+  _, instructions = render_markdown(instruction_lines.join("\n"), from_page)
+  _, example = render_markdown(Array(example_lines).join("\n"), from_page)
+  has_example_code = Array(example_lines).any? { |line| line.start_with?("```") }
+
+  [title, instructions, example, has_example_code]
+end
+
 def nav_html(current_page)
   nav_pages = PAGES.reject do |page|
     tutorial_page?(page) && page != TUTORIAL_ENTRY_PAGE
@@ -270,11 +284,17 @@ def page_intro(page)
   end
 end
 
-def previous_next(page)
-  pages = tutorial_page?(page) ? TUTORIAL_PAGES : PAGES.reject { |candidate| tutorial_page?(candidate) && candidate != TUTORIAL_ENTRY_PAGE }
+def previous_next_pages(page, pages)
   index = pages.index(page)
   previous_page = index&.positive? ? pages[index - 1] : nil
   next_page = index && index < pages.length - 1 ? pages[index + 1] : nil
+
+  [previous_page, next_page]
+end
+
+def previous_next(page)
+  pages = tutorial_page?(page) ? TUTORIAL_PAGES : PAGES.reject { |candidate| tutorial_page?(candidate) && candidate != TUTORIAL_ENTRY_PAGE }
+  previous_page, next_page = previous_next_pages(page, pages)
 
   [previous_page, next_page].compact.map do |target|
     direction = target == previous_page ? "Previous" : "Next"
@@ -287,8 +307,122 @@ def previous_next(page)
   end.join
 end
 
+def tutorial_steps_html(current_page)
+  TUTORIAL_PAGES.map.with_index(1) do |page, index|
+    active = page == current_page ? %( class="active" aria-current="page") : ""
+
+    <<~HTML
+      <li>
+        <a#{active} href="#{relative_href(current_page, page)}">
+          <span>Step #{index}</span>
+          <strong>#{escape_html(page[:title])}</strong>
+        </a>
+      </li>
+    HTML
+  end.join
+end
+
+def tutorial_header_nav(page)
+  previous_page, next_page = previous_next_pages(page, TUTORIAL_PAGES)
+  links = []
+
+  if previous_page
+    links << <<~HTML
+      <a class="tutorial-header-link" href="#{relative_href(page, previous_page)}">
+        <span>Previous</span>
+        <strong>#{escape_html(previous_page[:label])}</strong>
+      </a>
+    HTML
+  end
+
+  if next_page
+    links << <<~HTML
+      <a class="tutorial-header-link" href="#{relative_href(page, next_page)}">
+        <span>Next</span>
+        <strong>#{escape_html(next_page[:label])}</strong>
+      </a>
+    HTML
+  end
+
+  links.join
+end
+
+def tutorial_example_html(example, has_example_code)
+  return example if has_example_code
+
+  <<~HTML
+    <div class="tutorial-empty-code">
+      <p>No example code for this step yet.</p>
+    </div>
+  HTML
+end
+
+def render_tutorial_page(page)
+  source = File.read(File.join(ROOT, page[:source]))
+  title, instructions, example, has_example_code = tutorial_markdown_parts(source, page)
+
+  <<~HTML
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>#{escape_html(title)} | Lucid Documentation</title>
+        <meta name="description" content="#{escape_html(page_intro(page))}">
+        <link rel="stylesheet" href="#{stylesheet_href(page)}">
+      </head>
+      <body>
+        <a class="skip-link" href="#main">Skip to content</a>
+
+        <div class="tutorial-shell">
+          <aside class="tutorial-rail" aria-label="Tutorial steps">
+            <a class="brand" href="#{relative_href(page, PAGES.first)}" aria-label="Lucid documentation home">
+              <span class="brand-mark" aria-hidden="true">L</span>
+              <span>Lucid</span>
+            </a>
+
+            <p class="rail-title">Tutorial</p>
+            <ol class="tutorial-steps">
+              #{tutorial_steps_html(page)}
+            </ol>
+
+            <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+          </aside>
+
+          <main id="main" class="tutorial-content">
+            <header class="tutorial-header">
+              <div>
+                <p class="section-label">#{escape_html(page[:label])}</p>
+                <h1>#{escape_html(title)}</h1>
+              </div>
+              <nav class="tutorial-header-nav" aria-label="Previous and next tutorial steps">
+                #{tutorial_header_nav(page)}
+              </nav>
+            </header>
+
+            <article class="tutorial-layout">
+              <section class="tutorial-instructions" aria-label="Tutorial instructions">
+                <p class="lede">#{escape_html(page_intro(page))}</p>
+                #{instructions}
+              </section>
+
+              <aside class="tutorial-example" aria-label="Example code">
+                <div class="tutorial-example-header">
+                  <p class="section-label">Example Code</p>
+                </div>
+                #{tutorial_example_html(example, has_example_code)}
+              </aside>
+            </article>
+          </main>
+        </div>
+      </body>
+    </html>
+  HTML
+end
+
 def render_page(page)
   return render_index_page if page[:output] == "index.html"
+  return render_tutorial_page(page) if tutorial_page?(page)
 
   source = File.read(File.join(ROOT, page[:source]))
   title, body = render_markdown(source, page)
