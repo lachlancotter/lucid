@@ -236,6 +236,7 @@ The documentation set is intentionally small:
 - [Client Behavior](docs/client_behavior.md)
 - [Reference: State](docs/reference/state.md)
 - [Reference: Templates](docs/reference/templates.md)
+- [Reference: Forms](docs/reference/forms.md)
 - [Reference: Configuration](docs/reference/configuration.md)
 
 If you are new to the framework, start with `why`, `hello`, and `architecture`.

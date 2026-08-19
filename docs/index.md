@@ -123,5 +123,7 @@ Reference:
   component state.
 - [Templates](reference/templates.md): Use the template context, helpers, and
   multipart form support.
+- [Forms](reference/forms.md): Build message forms with field helpers, scoped
+  names, values, IDs, and validation errors.
 - [Configuration](reference/configuration.md): Configure application settings,
   request containers, and extension points.
