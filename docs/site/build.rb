@@ -28,6 +28,7 @@ PAGES = [
   { title: "Test the Workflows", label: "8. Test Workflows", source: "tutorial/08-test-the-workflows.md", output: "tutorial/08-test-the-workflows.html", section: "Tutorial" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
+  { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
 
@@ -277,6 +278,8 @@ def page_intro(page)
     "Reference for URL-backed state, state maps, and nested component state."
   when "reference/templates.html"
     "Reference for Lucid templates, rendering context, helpers, and multipart forms."
+  when "reference/forms.html"
+    "Reference for form models, form_for, field helpers, values, IDs, and errors."
   when "reference/configuration.html"
     "Reference for application settings, request containers, and extension points."
   else
@@ -516,6 +519,7 @@ def render_index_page
               <p class="rail-title">Reference</p>
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
+              <a href="reference/forms.html">Forms</a>
               <a href="reference/configuration.html">Configuration</a>
             </div>
 
@@ -740,6 +744,13 @@ def render_index_page
                     <strong>Templates</strong>
                     <span>
                       Use the template context, helpers, and multipart form support.
+                    </span>
+                  </a>
+                  <a href="reference/forms.html">
+                    <strong>Forms</strong>
+                    <span>
+                      Build message forms with field helpers, scoped names, values,
+                      IDs, and validation errors.
                     </span>
                   </a>
                   <a href="reference/configuration.html">

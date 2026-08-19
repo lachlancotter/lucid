@@ -38,6 +38,8 @@ The most important rendering helpers are:
 
 ## File Upload Forms
 
+For the full form builder API, see [Forms](forms.md).
+
 Use `multipart: true` when a form includes file inputs:
 
 ```ruby
