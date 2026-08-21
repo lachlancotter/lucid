@@ -51,3 +51,8 @@ when policy-gated behavior is executed.
 
 In test and development environments, Lucid will raise if a policy-adopting
 handler skips that permission check.
+
+## Code Style
+
+For concrete implementation and testing conventions, see
+[Handler Patterns](reference/handler-patterns.md).
