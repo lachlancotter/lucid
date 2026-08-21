@@ -125,5 +125,7 @@ Reference:
   multipart form support.
 - [Forms](reference/forms.md): Build message forms with field helpers, scoped
   names, values, IDs, and validation errors.
+- [Handler Patterns](reference/handler-patterns.md): Structure handlers with
+  `use`, `with_*`, `when_*`, events, transactions, and handler specs.
 - [Configuration](reference/configuration.md): Configure application settings,
   request containers, and extension points.

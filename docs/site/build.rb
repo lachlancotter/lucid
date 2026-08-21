@@ -29,6 +29,7 @@ PAGES = [
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
+  { title: "Handler Patterns", label: "Handler Patterns", source: "reference/handler-patterns.md", output: "reference/handler-patterns.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
 
@@ -280,6 +281,8 @@ def page_intro(page)
     "Reference for Lucid templates, rendering context, helpers, and multipart forms."
   when "reference/forms.html"
     "Reference for form models, form_for, field helpers, values, IDs, and errors."
+  when "reference/handler-patterns.html"
+    "Reference for handler structure, dependencies, preconditions, events, transactions, and specs."
   when "reference/configuration.html"
     "Reference for application settings, request containers, and extension points."
   else
@@ -520,6 +523,7 @@ def render_index_page
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
               <a href="reference/forms.html">Forms</a>
+              <a href="reference/handler-patterns.html">Handler Patterns</a>
               <a href="reference/configuration.html">Configuration</a>
             </div>
 
@@ -751,6 +755,13 @@ def render_index_page
                     <span>
                       Build message forms with field helpers, scoped names, values,
                       IDs, and validation errors.
+                    </span>
+                  </a>
+                  <a href="reference/handler-patterns.html">
+                    <strong>Handler Patterns</strong>
+                    <span>
+                      Structure handlers with dependencies, preconditions, events,
+                      transactions, and specs.
                     </span>
                   </a>
                   <a href="reference/configuration.html">

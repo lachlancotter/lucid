@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Handler Patterns | Lucid Documentation</title>
+    <meta name="description" content="Reference for handler structure, dependencies, preconditions, events, transactions, and specs.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../getting_started.html">Getting Started</a>
+<a href="../hello.html">Hello World</a>
+<a href="../architecture.html">Architecture</a>
+<a href="../features.html">Features</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+<a href="../client_behavior.html">Client Behavior</a>
+<a href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a href="../reference/templates.html">Templates</a>
+<a href="../reference/forms.html">Forms</a>
+<a class="active" aria-current="page" href="../reference/handler-patterns.html">Handler Patterns</a>
+<a href="../reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Reference</p>
+            <h1>Handler Patterns</h1>
+            <p class="lede">Reference for handler structure, dependencies, preconditions, events, transactions, and specs.</p>
+          </header>
+
+          <p>Handlers should make command-side behavior easy to read from top to bottom: resolve dependencies, check business preconditions, apply effects, and publish events.</p>
+<p>For the conceptual overview, see <a href="../handlers.html">Handlers</a>.</p>
+<h2 id="organization">Organization</h2>
+<p>Organize a handler around a cohesive domain concept or workflow, not automatically around one message type.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">TaskHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="n">perform</span> <span class="no">CompleteTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Split a handler when the commands no longer belong to the same workflow.</p>
+<p>Most handlers should use this shape:</p>
+<ol>
+<li><code>perform</code> blocks for the commands the handler owns</li>
+<li><code>use</code> declarations for injected external collaborators</li>
+<li><code>with_*</code> methods for records or other internally resolved data</li>
+<li><code>when_*</code> methods for boolean business preconditions</li>
+<li>helper methods only when a write or lookup is genuinely non-trivial</li>
+</ol>
+<h2 id="recruiting-handlers">Recruiting Handlers</h2>
+<p>Use <code>recruit</code> when a feature or module needs one public handler while concrete handlers keep ownership of smaller workflows.</p>
+<pre><code class="language-ruby"><span class="k">module</span> <span class="nn">Tasks</span>
+  <span class="k">class</span> <span class="nc">AssignmentHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+    <span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">class</span> <span class="nc">CompletionHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+    <span class="n">perform</span> <span class="no">CompleteTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">class</span> <span class="nc">Handler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+    <span class="n">recruit</span> <span class="no">AssignmentHandler</span>
+    <span class="n">recruit</span> <span class="no">CompletionHandler</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Point application or parent-feature configuration at the module-level handler. The recruited handlers still own their <code>perform</code> blocks, dependencies, preconditions, writes, and events.</p>
+<p>Recruiting also delegates event subscriptions, so a handler that uses <code>subscribe</code> can be composed the same way.</p>
+<p>Add a wiring spec for each command that must be reachable through the recruited handler chain. Behavior specs for <code>AssignmentHandler</code> prove the workflow works; they do not prove <code>Tasks::Handler</code> can dispatch <code>AssignTask</code>.</p>
+<h2 id="dependency-injection">Dependency Injection</h2>
+<p>Use <code>use</code> for collaborators supplied by the request container, such as services, gateways, clients, adapters, or other external dependencies.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">TaskHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">use</span> <span class="ss">:task_notifier</span><span class="p">,</span> <span class="no">Types</span><span class="o">.</span><span class="no">Instance</span><span class="p">(</span><span class="no">TaskNotifier</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Do not use <code>use</code> for records loaded from application persistence. Resolve those inside the handler with <code>with_*</code> methods.</p>
+<h2 id="dependency-resolution">Dependency Resolution</h2>
+<p>Use <code>with_*</code> methods for records and other internally managed data that comes from command input.</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">with_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="o">|</span>
+    <span class="n">with_user</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">])</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+      <span class="n">task</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">assignee: </span><span class="n">user</span><span class="p">)</span>
+      <span class="n">publish</span> <span class="no">TaskAssigned</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+        <span class="ss">task_id: </span><span class="n">task</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+        <span class="ss">user_id: </span><span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+      <span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">with_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">task</span> <span class="o">=</span> <span class="no">Task</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">cmd</span><span class="p">[</span><span class="ss">:task_id</span><span class="p">]))</span>
+    <span class="k">yield</span> <span class="n">task</span>
+  <span class="k">else</span>
+    <span class="n">publish</span> <span class="no">PreconditionFailed</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">message: </span><span class="s2">"Task not found."</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Keep each resolver focused on one dependency. Yield the resolved object, not the original command or method arguments.</p>
+<p>Prefer nil checks over exception-based control flow when a missing record is an expected failure. Expected failures should publish specific error events instead of leaking raw exceptions as the handler contract.</p>
+<h2 id="preconditions">Preconditions</h2>
+<p>Use <code>when_*</code> methods for business rules that hinge on a predicate.</p>
+<pre><code class="language-ruby"><span class="k">def</span> <span class="nf">when_open</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">task</span><span class="p">.</span><span class="nf">open?</span>
+    <span class="k">yield</span>
+  <span class="k">else</span>
+    <span class="n">publish</span> <span class="no">PreconditionFailed</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">message: </span><span class="s2">"Task is not open."</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Predicate wrappers usually yield without arguments. Put them inside the dependency wrappers that provide the data they need.</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">with_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="o">|</span>
+    <span class="n">with_user</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">])</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+      <span class="n">when_open</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">task</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">assignee: </span><span class="n">user</span><span class="p">)</span>
+        <span class="n">publish</span> <span class="no">TaskAssigned</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+          <span class="ss">task_id: </span><span class="n">task</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+          <span class="ss">user_id: </span><span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+        <span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<h2 id="compound-preconditions">Compound Preconditions</h2>
+<p>When a handler has several boolean checks in a row, prefer a compound <code>when_*</code> method if the checks describe one business concept and can share one failure event.</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">with_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="o">|</span>
+    <span class="n">with_user</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">])</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+      <span class="n">when_assignable</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">task</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">assignee: </span><span class="n">user</span><span class="p">)</span>
+        <span class="n">publish</span> <span class="no">TaskAssigned</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+          <span class="ss">task_id: </span><span class="n">task</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+          <span class="ss">user_id: </span><span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+        <span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">when_assignable</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">task</span><span class="p">.</span><span class="nf">open?</span> <span class="o">&amp;&amp;</span> <span class="n">user</span><span class="p">.</span><span class="nf">active?</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">task</span><span class="p">.</span><span class="nf">assignment_locked?</span>
+    <span class="k">yield</span>
+  <span class="k">else</span>
+    <span class="n">publish</span> <span class="no">PreconditionFailed</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">message: </span><span class="s2">"Task cannot be assigned."</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Name the compound predicate around the business rule, not the individual conditions. <code>when_assignable</code> is easier to read than nesting <code>when_open</code>, <code>when_user_active</code>, and <code>when_assignment_unlocked</code> when those checks all answer the same question.</p>
+<p>You can also condense repeated dependency and precondition nesting into a compound <code>with_*</code> method. Keep the lower-level wrappers, but compose them in a business-named method so the <code>perform</code> block stays focused on the write.</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">with_assignable_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">|</span>
+    <span class="n">task</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">assignee: </span><span class="n">user</span><span class="p">)</span>
+    <span class="n">publish</span> <span class="no">TaskAssigned</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+      <span class="ss">task_id: </span><span class="n">task</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+      <span class="ss">user_id: </span><span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">with_assignable_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+  <span class="n">with_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="o">|</span>
+    <span class="n">with_user</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">])</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+      <span class="n">when_assignable</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span> <span class="k">do</span>
+        <span class="k">yield</span> <span class="n">task</span><span class="p">,</span> <span class="n">user</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Use this shape when the nested checks are reused or when the main workflow is hard to scan. The compound wrapper should still yield only resolved domain objects and should not perform the mutation itself.</p>
+<p>Do not combine predicates that need distinct failure events, different recovery paths, or separate approval coverage. In those cases, keep separate <code>when_*</code> wrappers, or make the compound method choose and publish a specific failure event for the first failed rule.</p>
+<h2 id="writes-and-events">Writes and Events</h2>
+<p>Keep the mutation and success event in the innermost block, after dependencies and preconditions have passed.</p>
+<p>Use transactions for multi-record writes:</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">CreateProject</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">with_workspace</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">workspace</span><span class="o">|</span>
+    <span class="n">with_owner</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="ss">:owner_id</span><span class="p">])</span> <span class="k">do</span> <span class="o">|</span><span class="n">owner</span><span class="o">|</span>
+      <span class="n">when_project_creation_allowed</span><span class="p">(</span><span class="n">workspace</span><span class="p">)</span> <span class="k">do</span>
+        <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
+          <span class="n">project</span> <span class="o">=</span> <span class="n">create_project</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
+          <span class="n">first_task</span> <span class="o">=</span> <span class="n">create_first_task</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+          <span class="n">publish</span> <span class="no">ProjectCreated</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+            <span class="ss">project_id: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+            <span class="ss">workspace_id: </span><span class="n">workspace</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+            <span class="ss">owner_id: </span><span class="n">owner</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+            <span class="ss">first_task_id: </span><span class="n">first_task</span><span class="p">.</span><span class="nf">id</span>
+          <span class="p">)</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Prefer bang methods such as <code>create!</code> and <code>update!</code> when persistence failure should abort the write path.</p>
+<p>Keep event construction inline unless the payload is large enough that it obscures the workflow. Extract helper methods only when they improve readability in a concrete way.</p>
+<h2 id="testing">Testing</h2>
+<p>Use handler specs to verify behavior, not implementation details.</p>
+<p>The testing helpers in this section are provided by the companion <code>lucid-rspec</code> gem, not by <code>lucid</code> itself. Add <code>lucid-rspec</code> to your test bundle and require <code>lucid/rspec</code> before using <code>verify_handler</code>, <code>provide</code>, or the <code>perform</code> matcher.</p>
+<p>Test each scenario with <code>verify_handler</code>:</p>
+<pre><code class="language-ruby"><span class="n">it</span> <span class="s2">"assigns the task and publishes an assigned event"</span> <span class="k">do</span>
+  <span class="n">message</span> <span class="o">=</span> <span class="no">AssignTask</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+    <span class="ss">task_id: </span><span class="n">task</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+    <span class="ss">user_id: </span><span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+  <span class="p">)</span>
+
+  <span class="n">verify_handler</span> <span class="no">TaskHandler</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="ss">classes: </span><span class="p">[</span><span class="no">Task</span><span class="p">]</span>
+<span class="k">end</span></code></pre>
+<p>Pass every model class the handler may create, update, or delete in <code>classes:</code> so approval output captures the full effect surface.</p>
+<p>When a handler declares an injected collaborator with <code>use</code>, provide it in the spec with <code>provide</code>:</p>
+<pre><code class="language-ruby"><span class="n">provide</span><span class="p">(</span><span class="ss">:task_notifier</span><span class="p">)</span> <span class="p">{</span> <span class="n">instance_double</span><span class="p">(</span><span class="no">TaskNotifier</span><span class="p">,</span> <span class="ss">task_assigned: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span></code></pre>
+<p>Do not define the same collaborator with both <code>provide</code> and <code>let</code>.</p>
+<p>For handlers that own multiple command types, group scenarios by message class:</p>
+<pre><code class="language-ruby"><span class="n">describe</span> <span class="no">TaskHandler</span><span class="p">,</span> <span class="ss">type: :handler</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="no">AssignTask</span> <span class="k">do</span>
+    <span class="c1"># scenarios</span>
+  <span class="k">end</span>
+
+  <span class="n">describe</span> <span class="no">CompleteTask</span> <span class="k">do</span>
+    <span class="c1"># scenarios</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>When a new command must be reachable through a module-level handler, add a wiring spec with the <code>perform</code> matcher:</p>
+<pre><code class="language-ruby"><span class="n">describe</span> <span class="no">Handler</span> <span class="k">do</span>
+  <span class="n">subject</span> <span class="p">{</span> <span class="n">described_class</span> <span class="p">}</span>
+
+  <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="p">.</span><span class="nf">to</span> <span class="n">perform</span> <span class="no">AssignTask</span> <span class="p">}</span>
+<span class="k">end</span></code></pre>
+<p>That wiring spec proves the command is recruited. Behavior specs for a concrete handler do not prove the command is reachable through the full handler chain.</p>
+<h2 id="scenario-coverage">Scenario Coverage</h2>
+<p>Cover the paths that define the handler contract:</p>
+<ul>
+<li>the happy path</li>
+<li>meaningful input or state variations</li>
+<li>idempotent or transition behavior</li>
+<li>invalid references for each <code>with_*</code> dependency</li>
+<li>business-rule failures for each meaningful <code>when_*</code> precondition</li>
+<li>collaborator-driven behavior when the handler uses <code>use</code></li>
+</ul>
+<p>Each scenario should have one example and one <code>verify_handler</code> call.</p>
+<h2 id="anti-patterns">Anti-Patterns</h2>
+<p>Avoid:</p>
+<ul>
+<li>resolving records with <code>use</code></li>
+<li>mixing dependency resolution into the mutation block</li>
+<li>using exceptions for expected missing-record paths</li>
+<li>testing private handler methods directly</li>
+<li>wrapping <code>verify_handler</code> in extra assertions for normal behavior coverage</li>
+<li>omitting module wiring coverage for newly recruited commands</li>
+</ul>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../reference/forms.html">
+  <span>Previous</span>
+  <strong>Forms</strong>
+</a>
+<a href="../reference/configuration.html">
+  <span>Next</span>
+  <strong>Configuration</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
