@@ -219,6 +219,55 @@
 <span class="k">end</span></code></pre>
 <p>Prefer bang methods such as <code>create!</code> and <code>update!</code> when persistence failure should abort the write path.</p>
 <p>Keep event construction inline unless the payload is large enough that it obscures the workflow. Extract helper methods only when they improve readability in a concrete way.</p>
+<h2 id="process-managers">Process Managers</h2>
+<p>Use process managers when one completed workflow should decide whether to start another command workflow.</p>
+<p>A command handler should own the command it performs. Its <code>perform</code> block should resolve dependencies, check preconditions, apply the write, and publish events that describe what happened. It should not directly dispatch another command.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">perform</span> <span class="no">CreateProject</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+    <span class="n">with_workspace</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">workspace</span><span class="o">|</span>
+      <span class="n">project</span> <span class="o">=</span> <span class="n">workspace</span><span class="p">.</span><span class="nf">projects</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">name: </span><span class="n">cmd</span><span class="p">[</span><span class="ss">:name</span><span class="p">])</span>
+
+      <span class="n">publish</span> <span class="no">ProjectCreated</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+        <span class="ss">project_id: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+        <span class="ss">workspace_id: </span><span class="n">workspace</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span>
+        <span class="ss">creator_id: </span><span class="n">cmd</span><span class="p">[</span><span class="ss">:creator_id</span><span class="p">]</span>
+      <span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>A process manager listens to those events with <code>subscribe</code> and decides which command messages, if any, should be dispatched next.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectSetupProcess</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">subscribe</span> <span class="no">ProjectCreated</span> <span class="k">do</span> <span class="o">|</span><span class="n">event</span><span class="o">|</span>
+    <span class="n">dispatch</span> <span class="no">CreateFirstTask</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+      <span class="ss">project_id: </span><span class="n">event</span><span class="p">[</span><span class="ss">:project_id</span><span class="p">],</span>
+      <span class="ss">creator_id: </span><span class="n">event</span><span class="p">[</span><span class="ss">:creator_id</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">dispatch</span> <span class="no">NotifyProjectCreated</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>
+      <span class="ss">project_id: </span><span class="n">event</span><span class="p">[</span><span class="ss">:project_id</span><span class="p">],</span>
+      <span class="ss">workspace_id: </span><span class="n">event</span><span class="p">[</span><span class="ss">:workspace_id</span><span class="p">]</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>This keeps command handlers focused on facts they can prove and keeps workflow coordination in one place. The event becomes the contract between the completed write and any follow-up behavior.</p>
+<p>Use a process manager when:</p>
+<ul>
+<li>follow-up work depends on an event rather than direct user input</li>
+<li>one event may fan out to multiple commands</li>
+<li>the follow-up decision has its own business rules</li>
+<li>the workflow should be easy to extend without editing the original command handler</li>
+</ul>
+<p>Keep process managers thin. They should inspect the event, apply coordination rules, and dispatch command messages. They should not duplicate the persistence write owned by the command handler, and they should not reach into another handler&#39;s private helpers.</p>
+<p>Avoid dispatching commands directly from <code>perform</code> blocks:</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">CreateProject</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">project</span> <span class="o">=</span> <span class="no">Project</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">name: </span><span class="n">cmd</span><span class="p">[</span><span class="ss">:name</span><span class="p">])</span>
+  <span class="n">dispatch</span> <span class="no">CreateFirstTask</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">project_id: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Publish an event instead, then coordinate follow-up work from a subscriber:</p>
+<pre><code class="language-ruby"><span class="n">perform</span> <span class="no">CreateProject</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>
+  <span class="n">project</span> <span class="o">=</span> <span class="no">Project</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">name: </span><span class="n">cmd</span><span class="p">[</span><span class="ss">:name</span><span class="p">])</span>
+  <span class="n">publish</span> <span class="no">ProjectCreated</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">project_id: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
 <h2 id="testing">Testing</h2>
 <p>Use handler specs to verify behavior, not implementation details.</p>
 <p>The testing helpers in this section are provided by the companion <code>lucid-rspec</code> gem, not by <code>lucid</code> itself. Add <code>lucid-rspec</code> to your test bundle and require <code>lucid/rspec</code> before using <code>verify_handler</code>, <code>provide</code>, or the <code>perform</code> matcher.</p>
@@ -270,6 +319,7 @@
 <li>mixing dependency resolution into the mutation block</li>
 <li>using exceptions for expected missing-record paths</li>
 <li>testing private handler methods directly</li>
+<li>dispatching commands directly from <code>perform</code> blocks instead of publishing events and coordinating follow-up work from <code>subscribe</code> blocks</li>
 <li>wrapping <code>verify_handler</code> in extra assertions for normal behavior coverage</li>
 <li>omitting module wiring coverage for newly recruited commands</li>
 </ul>
