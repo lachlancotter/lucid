@@ -28,7 +28,45 @@ module Lucid
       end
     end
 
+    describe Form::Context do
+      it "wraps a form model" do
+        message_type = Class.new(HTTP::Message)
+        params       = HTTP::FormModel.new(message_type, { foo: "bar" })
+        context      = Form::Context.new(params)
+        expect(context.form_model).to eq(params)
+        expect(context.path).to eq(Path.new)
+      end
+
+      describe "#scoped" do
+        it "preserves the form model and extends the field path" do
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, { profile: { name: "Jane" } })
+          context      = Form::Context.new(params).scoped(:profile)
+          expect(context.form_model).to eq(params)
+          expect(context.path).to eq(Path.new(:profile))
+        end
+
+        it "yields the scoped context" do
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, {})
+          Form::Context.new(params).scoped(:profile) do |context|
+            expect(context.path).to eq(Path.new(:profile))
+          end
+        end
+      end
+    end
+
     describe Form::Builder do
+
+      describe "#context" do
+        it "returns a portable form context" do
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, {})
+          builder      = Form::Builder.new(nil, params)
+          expect(builder.context).to be_a(Form::Context)
+          expect(builder.context.form_model).to eq(params)
+        end
+      end
 
       describe "#text" do
         context "implicit value" do

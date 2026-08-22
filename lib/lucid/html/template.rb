@@ -27,8 +27,8 @@ module Lucid
 
         def render (*args, **opts, &block)
           template = @template
-          ::Papercraft::Renderer.verify_proc_parameters(template, args, opts)
           RenderContext.new(@renderable) do
+            ::Papercraft::Renderer.verify_proc_parameters(template, args, opts)
             push_emit_yield_block(block) if block
             instance_exec(*args, **opts, &template)
           end.to_s
@@ -108,7 +108,13 @@ module Lucid
           emit Form.new(form_model, **opts, &block).template
         end
 
+        def fields_for (form_or_context)
+          context = normalize_form_context(form_or_context)
+          yield Form::Builder.new(self, context)
+        end
+
         def template (name, *a, **b, &block)
+          warn_form_builder_boundary if (a + b.values).any? { |arg| arg.is_a?(Form::Builder) }
           emit @renderable.template(name).render(*a, **b, &block)
         end
 
@@ -209,12 +215,34 @@ module Lucid
           end
         end
 
+        def normalize_form_context (form_or_context)
+          case form_or_context
+          when Form::Context then form_or_context
+          when HTTP::FormModel then Form::Context.new(form_or_context)
+          else raise ArgumentError, "FormModel or Form::Context expected: #{form_or_context.inspect}"
+          end
+        end
+
+        def warn_form_builder_boundary
+          self.class.warn_once(
+             :form_builder_template,
+             "[DEPRECATION] Passing `Lucid::HTML::Form::Builder` to `template` is deprecated; " \
+             "pass `form.context` and call `fields_for` instead."
+          )
+        end
+
         def self.warn_deprecated (old_name, new_name)
+          warn_once(
+             [old_name, new_name],
+             "[DEPRECATION] `#{old_name}` is deprecated; use `#{new_name}` instead."
+          )
+        end
+
+        def self.warn_once (key, message)
           @warned_deprecations ||= {}
-          key = [old_name, new_name]
           return if @warned_deprecations[key]
 
-          warn "[DEPRECATION] `#{old_name}` is deprecated; use `#{new_name}` instead."
+          warn message
           @warned_deprecations[key] = true
         end
       end

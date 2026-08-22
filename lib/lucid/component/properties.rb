@@ -28,12 +28,21 @@ module Lucid
 
       # If we expected a Field but got a value, then wrap it in a Field.
       def normalise_prop (key, value)
+        warn_form_builder_prop if defined?(HTML::Form::Builder) && value.is_a?(HTML::Form::Builder)
         return value if value.is_a?(Field)
         if self.class.props_class.schema.key(key).valid?(value)
           value
         else
           Field.new(self) { value }
         end
+      end
+
+      def warn_form_builder_prop
+        self.class.warn_once(
+           :form_builder_prop,
+           "[DEPRECATION] Passing `Lucid::HTML::Form::Builder` to component props is deprecated; " \
+           "pass `form.context` and call `fields_for` instead."
+        )
       end
       
       private
@@ -82,6 +91,14 @@ module Lucid
           else
             Class.new(Dry::Struct)
           end
+        end
+
+        def warn_once (key, message)
+          @warned_deprecations ||= {}
+          return if @warned_deprecations[key]
+
+          warn message
+          @warned_deprecations[key] = true
         end
       end
     end
