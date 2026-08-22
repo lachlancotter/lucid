@@ -15,7 +15,7 @@ Caju gives your application a message-driven rendering layer:
 - typed messages for user and system intent
 - handlers for command-side effects
 - components for stateful server-rendered HTML
-- URL-backed view state
+- URL-mapped view state
 - server-decided HTML updates for HTMX requests
 - helpers for links, forms, nested components, and response effects
 
@@ -103,7 +103,7 @@ class ExampleApp < Caju::App
 end
 ```
 
-`GET /` renders the component from URL-backed state. A Caju link renders as a
+`GET /` renders the component from URL-mapped state. A Caju link renders as a
 normal URL under `/@/`, and following it sends a typed `Link` message back to
 the component tree.
 

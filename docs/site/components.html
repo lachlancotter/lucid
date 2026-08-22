@@ -23,14 +23,21 @@
 <a href="why.html">Why Lucid?</a>
 <a href="getting_started.html">Getting Started</a>
 <a href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a class="active" aria-current="page" href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
 <a href="client_behavior.html">Client Behavior</a>
-<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
-<a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Tutorial</p>
+  <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
 </div>
 
 <div class="rail-group">
@@ -38,6 +45,7 @@
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
 <a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
@@ -49,7 +57,7 @@
       <main id="main" class="content">
         <article class="doc-page">
           <header class="doc-header">
-            <p class="section-label">Start Here</p>
+            <p class="section-label">Concepts</p>
             <h1>Components</h1>
             <p class="lede">Learn how components hold typed state, compose views, and render HTML.</p>
           </header>
@@ -76,13 +84,14 @@
 <h2 id="state-and-props">State and Props</h2>
 <p>Lucid distinguishes between internal component state and external inputs.</p>
 <ul>
-<li><code>param</code> defines URL-backed state</li>
+<li><code>param</code> defines URL-mapped state</li>
 <li><code>prop</code> defines incoming data needed for rendering</li>
 <li><code>temp</code> can hold transient rendering concerns that should not be encoded into the URL</li>
 <li><code>use</code> declares request-container dependencies, matching handler dependency injection</li>
 <li><code>inherit</code> references reactive fields from an ancestor component or the HTTP session</li>
 </ul>
 <p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
+<p>For URL path mapping with <code>route</code>, see <a href="reference/state.html">State</a>.</p>
 <p>Container dependencies are plain collaborators:</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">use</span> <span class="ss">:current_user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>

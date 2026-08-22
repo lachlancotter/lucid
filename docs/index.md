@@ -99,10 +99,14 @@ For setup options across Rack, Sinatra, and the planned Rails integration, see
 
 Start here:
 
+- [Overview](index.md): Understand Lucid's core model and request flow.
 - [Why Lucid?](why.md): Understand the problems Lucid is designed to solve.
 - [Getting Started](getting_started.md): Install Lucid, choose a Rack or
   Sinatra runtime, and understand the planned Rails integration.
 - [Hello World](hello.md): Build the smallest useful Lucid application.
+
+Concepts:
+
 - [Architecture](architecture.md): Trace the command, navigation, and rendering
   loops.
 - [Features](features.md): Organize Lucid code around
@@ -114,19 +118,22 @@ Start here:
   event publication in handlers.
 - [Client Behavior](client_behavior.md): Use JavaScript for local behavior
   without creating a second application model.
-- [JavaScript and Stimulus](javascript_and_stimulus.md): Add idiomatic browser
-  behavior to Caju apps while keeping server-rendered state in Ruby.
+
+Tutorial:
+
 - [Tutorial](tutorial/01-create-the-board-feature.md): Build a tiny kanban board
   while decomposing the app by feature.
 
 Reference:
 
-- [State](reference/state.md): Work with URL-backed state, state maps, and nested
+- [State](reference/state.md): Work with URL-mapped state, state maps, and nested
   component state.
 - [Templates](reference/templates.md): Use the template context, helpers, and
   multipart form support.
 - [Forms](reference/forms.md): Build message forms with field helpers, scoped
   names, values, IDs, and validation errors.
+- [JavaScript and Stimulus](javascript_and_stimulus.md): Add idiomatic browser
+  behavior to Caju apps while keeping server-rendered state in Ruby.
 - [Handler Patterns](reference/handler-patterns.md): Structure handlers with
   `use`, `with_*`, `when_*`, events, transactions, and handler specs.
 - [Configuration](reference/configuration.md): Configure application settings,

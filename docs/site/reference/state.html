@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>State | Lucid Documentation</title>
-    <meta name="description" content="Reference for URL-backed state, state maps, and nested component state.">
+    <meta name="description" content="Reference for URL-mapped state, state maps, and nested component state.">
     <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
@@ -23,14 +23,21 @@
 <a href="../why.html">Why Lucid?</a>
 <a href="../getting_started.html">Getting Started</a>
 <a href="../hello.html">Hello World</a>
-<a href="../architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="../architecture.html">Architecture</a>
 <a href="../features.html">Features</a>
 <a href="../messages.html">Messages</a>
 <a href="../components.html">Components</a>
 <a href="../handlers.html">Handlers</a>
 <a href="../client_behavior.html">Client Behavior</a>
-<a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
-<a href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Tutorial</p>
+  <a href="../tutorial/01-create-the-board-feature.html">Tutorial</a>
 </div>
 
 <div class="rail-group">
@@ -38,6 +45,7 @@
   <a class="active" aria-current="page" href="../reference/state.html">State</a>
 <a href="../reference/templates.html">Templates</a>
 <a href="../reference/forms.html">Forms</a>
+<a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="../reference/handler-patterns.html">Handler Patterns</a>
 <a href="../reference/configuration.html">Configuration</a>
 </div>
@@ -51,20 +59,49 @@
           <header class="doc-header">
             <p class="section-label">Reference</p>
             <h1>State</h1>
-            <p class="lede">Reference for URL-backed state, state maps, and nested component state.</p>
+            <p class="lede">Reference for URL-mapped state, state maps, and nested component state.</p>
           </header>
 
           <p>Lucid treats UI state as a first-class concern.</p>
 <p>The framework is built around the idea that the current UI can be reconstructed from request state, which can often be represented in the URL.</p>
 <h2 id="state-mapping">State Mapping</h2>
-<p>Each component class can define a state map that tells Lucid how to encode and decode its state.</p>
-<p>Lucid supports two broad mapping modes:</p>
+<p>Each component class can define a state map that tells Lucid how to project component state into a URL and read it back into state.</p>
+<p>This is different from a traditional Rails-style route, where the route is usually treated as a fixed address for a resource or controller action. In Lucid, the URL is a projection of the current component state. Changing the mapping changes how that state is represented in the browser, without changing the messages, handlers, or component behavior that make up the application.</p>
+<p>Two APIs work together:</p>
 <ul>
-<li>path segments with <code>path</code></li>
-<li>query parameters with <code>param</code> or <code>query</code></li>
+<li><code>param</code> declares typed state that can be represented in the URL</li>
+<li><code>route</code> selects which params are represented as path segments</li>
 </ul>
+<p>Params that are not selected by <code>route</code> are represented as query parameters.</p>
 <p><code>Lucid::State::Map</code> is responsible for these rules.</p>
-<h2 id="why-url-backed-state-matters">Why URL-Backed State Matters</h2>
+<h3 id="url-mapped-state-with-param">URL-Mapped State With <code>param</code></h3>
+<p><code>param</code> declares typed component state that participates in URL mapping. It is agnostic about whether a value appears in the path or in the query string.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SearchView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span>
+  <span class="n">param</span> <span class="ss">:page</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>When no <code>route</code> uses these params, Lucid projects them as query parameters. With <code>query: &quot;ruby&quot;</code> and <code>page: 2</code>, this state can be encoded as <code>/?query=ruby&amp;page=2</code>. Default values are omitted from generated URLs.</p>
+<h3 id="path-projection-with-route">Path Projection With <code>route</code></h3>
+<p>Use <code>route</code> in a component class to select which params should be projected into the URL path.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">PostView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">route</span> <span class="s2">"posts/:post_id"</span>
+
+  <span class="n">param</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+  <span class="n">param</span> <span class="ss">:tab</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"overview"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>With <code>post_id: 42</code>, this component&#39;s URL path is <code>/posts/42</code>. Because <code>tab</code> is not part of the route pattern, Lucid keeps it as a query parameter when it does not have its default value.</p>
+<p>Route patterns can contain:</p>
+<ul>
+<li>dynamic segments, written as <code>:param_name</code></li>
+<li>literal segments, written as plain path text</li>
+</ul>
+<p>For example:</p>
+<pre><code class="language-ruby"><span class="n">route</span> <span class="s2">":account_id/projects/:project_id"</span></code></pre>
+<p>Dynamic route segments must correspond to component state declared with <code>param</code>. If Lucid needs to build a URL and the required value is missing, URL generation fails instead of silently producing an incomplete path.</p>
+<p>Leading and trailing slashes are optional. These are equivalent:</p>
+<pre><code class="language-ruby"><span class="n">route</span> <span class="s2">"posts/:post_id"</span>
+<span class="n">route</span> <span class="s2">"/posts/:post_id/"</span></code></pre>
+<h2 id="why-url-mapped-state-matters">Why URL-Mapped State Matters</h2>
 <p>When UI state is encoded into the URL:</p>
 <ul>
 <li>browser navigation works naturally</li>
@@ -75,6 +112,21 @@
 <h2 id="nested-state">Nested State</h2>
 <p>Components compose, so state composes too.</p>
 <p><code>Lucid::State::Writer</code> walks the component tree, applying each component&#39;s state map and nesting scope to produce a URL that reflects the visible UI state.</p>
+<p>A parent route can include one nested component in the path with the <code>nest:</code> option:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">route</span> <span class="s2">"projects/:project_id"</span><span class="p">,</span> <span class="ss">nest: :task</span>
+
+  <span class="n">param</span> <span class="ss">:project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+
+  <span class="n">nest</span> <span class="ss">:task</span> <span class="k">do</span>
+    <span class="no">Class</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">route</span> <span class="s2">"tasks/:task_id"</span>
+
+      <span class="n">param</span> <span class="ss">:task_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>That lets a single component tree produce a path such as <code>/projects/12/tasks/7</code>. Nested components that are not part of the active route still keep their URL-mapped state, but Lucid projects it outside the path.</p>
 
 
           <nav class="page-nav" aria-label="Previous and next pages">

@@ -23,14 +23,21 @@
 <a href="why.html">Why Lucid?</a>
 <a class="active" aria-current="page" href="getting_started.html">Getting Started</a>
 <a href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
 <a href="client_behavior.html">Client Behavior</a>
-<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
-<a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Tutorial</p>
+  <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
 </div>
 
 <div class="rail-group">
@@ -38,6 +45,7 @@
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
 <a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
@@ -62,7 +70,7 @@
 <li>typed messages for user and system intent</li>
 <li>handlers for command-side effects</li>
 <li>components for stateful server-rendered HTML</li>
-<li>URL-backed view state</li>
+<li>URL-mapped view state</li>
 <li>server-decided HTML updates for HTMX requests</li>
 <li>helpers for links, forms, nested components, and response effects</li>
 </ul>
@@ -123,7 +131,7 @@
 <span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
   <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
 <span class="k">end</span></code></pre>
-<p><code>GET /</code> renders the component from URL-backed state. A Caju link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
+<p><code>GET /</code> renders the component from URL-mapped state. A Caju link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
 <h2 id="add-a-layout">Add a Layout</h2>
 <p>For partial updates, load HTMX once in the document head and boost the document body. A common pattern is to make the configured root component an application layout and nest the page component inside it.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ApplicationLayout</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>

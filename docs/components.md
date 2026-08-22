@@ -28,7 +28,7 @@ logic. That belongs in handlers.
 
 Lucid distinguishes between internal component state and external inputs.
 
-- `param` defines URL-backed state
+- `param` defines URL-mapped state
 - `prop` defines incoming data needed for rendering
 - `temp` can hold transient rendering concerns that should not be encoded into
   the URL
@@ -39,6 +39,8 @@ Lucid distinguishes between internal component state and external inputs.
 
 Typed declarations matter because Lucid rebuilds components from request state
 on every cycle.
+
+For URL path mapping with `route`, see [State](reference/state.md).
 
 Container dependencies are plain collaborators:
 

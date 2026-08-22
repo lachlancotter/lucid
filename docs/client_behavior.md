@@ -17,7 +17,7 @@ That includes:
 - navigation and view-state changes represented by `Link` messages
 - mutations represented by `Command` messages
 - domain changes represented by `Event` messages
-- URL-backed UI state
+- URL-mapped UI state
 - server-rendered component updates
 - redirects and response effects
 
