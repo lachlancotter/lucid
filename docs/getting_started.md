@@ -107,6 +107,37 @@ end
 normal URL under `/@/`, and following it sends a typed `Link` message back to
 the component tree.
 
+## Add a Layout
+
+For partial updates, load HTMX once in the document head and boost the document
+body. A common pattern is to make the configured root component an application
+layout and nest the page component inside it.
+
+```ruby
+class ApplicationLayout < Caju::Component::Base
+  nest(:page) { HomePage }
+
+  element do
+    html do
+      head do
+        script(**HTMX::LIB)
+      end
+
+      body(HTMX.boost) do
+        subcomponent(:page)
+      end
+    end
+  end
+end
+
+class ExampleApp < Caju::App
+  set :component_class, ApplicationLayout
+end
+```
+
+`script(**HTMX::LIB)` emits the bundled HTMX script attributes. `body(HTMX.boost)`
+adds the HTMX attributes Lucid expects for boosted links and forms.
+
 ## Rack
 
 Because `Caju::App` is a Rack app, a plain Rack entrypoint can mount a Caju

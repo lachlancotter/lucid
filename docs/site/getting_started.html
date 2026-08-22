@@ -123,6 +123,28 @@
   <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
 <span class="k">end</span></code></pre>
 <p><code>GET /</code> renders the component from URL-backed state. A Caju link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
+<h2 id="add-a-layout">Add a Layout</h2>
+<p>For partial updates, load HTMX once in the document head and boost the document body. A common pattern is to make the configured root component an application layout and nest the page component inside it.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ApplicationLayout</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span> <span class="p">{</span> <span class="no">HomePage</span> <span class="p">}</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">html</span> <span class="k">do</span>
+      <span class="n">head</span> <span class="k">do</span>
+        <span class="n">script</span><span class="p">(</span><span class="o">**</span><span class="no">HTMX</span><span class="o">::</span><span class="no">LIB</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">body</span><span class="p">(</span><span class="no">HTMX</span><span class="p">.</span><span class="nf">boost</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">subcomponent</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">ApplicationLayout</span>
+<span class="k">end</span></code></pre>
+<p><code>script(**HTMX::LIB)</code> emits the bundled HTMX script attributes. <code>body(HTMX.boost)</code> adds the HTMX attributes Lucid expects for boosted links and forms.</p>
 <h2 id="rack">Rack</h2>
 <p>Because <code>Caju::App</code> is a Rack app, a plain Rack entrypoint can mount a Caju application directly.</p>
 <pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
