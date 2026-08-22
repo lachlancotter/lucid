@@ -22,7 +22,7 @@ class HomePage < Lucid::Component::Base
 end
 ```
 
-This component declares URL-backed state with `param` and renders HTML from
+This component declares URL-mapped state with `param` and renders HTML from
 that state.
 
 ## A Link Message

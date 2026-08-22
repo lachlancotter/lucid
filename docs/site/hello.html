@@ -23,14 +23,21 @@
 <a href="why.html">Why Lucid?</a>
 <a href="getting_started.html">Getting Started</a>
 <a class="active" aria-current="page" href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
 <a href="client_behavior.html">Client Behavior</a>
-<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
-<a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Tutorial</p>
+  <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
 </div>
 
 <div class="rail-group">
@@ -38,6 +45,7 @@
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
 <a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
@@ -69,7 +77,7 @@
     <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
   <span class="k">end</span>
 <span class="k">end</span></code></pre>
-<p>This component declares URL-backed state with <code>param</code> and renders HTML from that state.</p>
+<p>This component declares URL-mapped state with <code>param</code> and renders HTML from that state.</p>
 <h2 id="a-link-message">A Link Message</h2>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
   <span class="n">validate</span> <span class="k">do</span>

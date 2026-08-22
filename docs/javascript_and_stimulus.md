@@ -21,7 +21,7 @@ server renders:
 - navigation through `Link` messages
 - mutations through `Command` messages
 - domain notifications through `Event` messages
-- URL-backed view state
+- URL-mapped view state
 - validation, authorization, persistence, and redirects
 - server-rendered component updates
 

@@ -12,13 +12,12 @@ PAGES = [
   { title: "Why Lucid?", label: "Why Lucid?", source: "why.md", output: "why.html", section: "Start Here" },
   { title: "Getting Started", label: "Getting Started", source: "getting_started.md", output: "getting_started.html", section: "Start Here" },
   { title: "Hello World", label: "Hello World", source: "hello.md", output: "hello.html", section: "Start Here" },
-  { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Start Here" },
-  { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Start Here" },
-  { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Start Here" },
-  { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Start Here" },
-  { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Start Here" },
-  { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Start Here" },
-  { title: "JavaScript and Stimulus", label: "JavaScript and Stimulus", source: "javascript_and_stimulus.md", output: "javascript_and_stimulus.html", section: "Start Here" },
+  { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Concepts" },
+  { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Concepts" },
+  { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Concepts" },
+  { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Concepts" },
+  { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Concepts" },
+  { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Concepts" },
   { title: "Create the Board Feature", label: "1. Create the Board", source: "tutorial/01-create-the-board-feature.md", output: "tutorial/01-create-the-board-feature.html", section: "Tutorial" },
   { title: "Render Columns", label: "2. Render Columns", source: "tutorial/02-render-columns.md", output: "tutorial/02-render-columns.html", section: "Tutorial" },
   { title: "Add Cards", label: "3. Add Cards", source: "tutorial/03-add-cards.md", output: "tutorial/03-add-cards.html", section: "Tutorial" },
@@ -30,6 +29,7 @@ PAGES = [
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
+  { title: "JavaScript and Stimulus", label: "JavaScript and Stimulus", source: "javascript_and_stimulus.md", output: "javascript_and_stimulus.html", section: "Reference" },
   { title: "Handler Patterns", label: "Handler Patterns", source: "reference/handler-patterns.md", output: "reference/handler-patterns.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
@@ -221,7 +221,7 @@ def nav_html(current_page)
     tutorial_page?(page) && page != TUTORIAL_ENTRY_PAGE
   end
 
-  nav_pages.group_by { |page| tutorial_page?(page) ? "Start Here" : page[:section] }.map do |section, pages|
+  nav_pages.group_by { |page| page[:section] }.map do |section, pages|
     links = pages.map do |page|
       active_page = page == current_page || (tutorial_page?(page) && tutorial_page?(current_page))
       active = active_page ? %( class="active" aria-current="page") : ""
@@ -279,7 +279,7 @@ def page_intro(page)
   when "tutorial/08-test-the-workflows.html"
     "Test the board, column, and card workflows."
   when "reference/state.html"
-    "Reference for URL-backed state, state maps, and nested component state."
+    "Reference for URL-mapped state, state maps, and nested component state."
   when "reference/templates.html"
     "Reference for Lucid templates, rendering context, helpers, and multipart forms."
   when "reference/forms.html"
@@ -512,13 +512,20 @@ def render_index_page
               <a href="why.html">Why Lucid?</a>
               <a href="getting_started.html">Getting Started</a>
               <a href="hello.html">Hello World</a>
+            </div>
+
+            <div class="rail-group">
+              <p class="rail-title">Concepts</p>
               <a href="architecture.html">Architecture</a>
               <a href="features.html">Features</a>
               <a href="messages.html">Messages</a>
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
               <a href="client_behavior.html">Client Behavior</a>
-              <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+            </div>
+
+            <div class="rail-group">
+              <p class="rail-title">Tutorial</p>
               <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
             </div>
 
@@ -527,6 +534,7 @@ def render_index_page
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
               <a href="reference/forms.html">Forms</a>
+              <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
               <a href="reference/handler-patterns.html">Handler Patterns</a>
               <a href="reference/configuration.html">Configuration</a>
             </div>
@@ -694,6 +702,10 @@ def render_index_page
                 <h2 id="next">Next steps</h2>
                 <h3>Start here</h3>
                 <div class="link-list">
+                  <a href="index.html">
+                    <strong>Overview</strong>
+                    <span>Understand Lucid's core model and request flow.</span>
+                  </a>
                   <a href="why.html">
                     <strong>Why Lucid?</strong>
                     <span>Understand the problems Lucid is designed to solve.</span>
@@ -706,6 +718,10 @@ def render_index_page
                     <strong>Hello World</strong>
                     <span>Build the smallest useful Lucid application.</span>
                   </a>
+                </div>
+
+                <h3>Concepts</h3>
+                <div class="link-list">
                   <a href="architecture.html">
                     <strong>Architecture</strong>
                     <span>Trace the command, navigation, and rendering loops.</span>
@@ -733,10 +749,10 @@ def render_index_page
                     <strong>Client Behavior</strong>
                     <span>Use JavaScript for local behavior without creating a second app model.</span>
                   </a>
-                  <a href="javascript_and_stimulus.html">
-                    <strong>JavaScript and Stimulus</strong>
-                    <span>Add idiomatic browser behavior while keeping server-rendered state in Ruby.</span>
-                  </a>
+                </div>
+
+                <h3>Tutorial</h3>
+                <div class="link-list">
                   <a href="tutorial/01-create-the-board-feature.html">
                     <strong>Tutorial</strong>
                     <span>Build a tiny kanban board while decomposing the app by feature.</span>
@@ -748,7 +764,7 @@ def render_index_page
                   <a href="reference/state.html">
                     <strong>State</strong>
                     <span>
-                      Work with URL-backed state, state maps, and nested component
+                      Work with URL-mapped state, state maps, and nested component
                       state.
                     </span>
                   </a>
@@ -764,6 +780,10 @@ def render_index_page
                       Build message forms with field helpers, scoped names, values,
                       IDs, and validation errors.
                     </span>
+                  </a>
+                  <a href="javascript_and_stimulus.html">
+                    <strong>JavaScript and Stimulus</strong>
+                    <span>Add idiomatic browser behavior while keeping server-rendered state in Ruby.</span>
                   </a>
                   <a href="reference/handler-patterns.html">
                     <strong>Handler Patterns</strong>
