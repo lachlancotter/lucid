@@ -18,6 +18,7 @@ PAGES = [
   { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Start Here" },
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Start Here" },
   { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Start Here" },
+  { title: "JavaScript and Stimulus", label: "JavaScript and Stimulus", source: "javascript_and_stimulus.md", output: "javascript_and_stimulus.html", section: "Start Here" },
   { title: "Create the Board Feature", label: "1. Create the Board", source: "tutorial/01-create-the-board-feature.md", output: "tutorial/01-create-the-board-feature.html", section: "Tutorial" },
   { title: "Render Columns", label: "2. Render Columns", source: "tutorial/02-render-columns.md", output: "tutorial/02-render-columns.html", section: "Tutorial" },
   { title: "Add Cards", label: "3. Add Cards", source: "tutorial/03-add-cards.md", output: "tutorial/03-add-cards.html", section: "Tutorial" },
@@ -259,6 +260,8 @@ def page_intro(page)
     "Use handlers for effectful command behavior, policies, redirects, and event publication."
   when "client_behavior.html"
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
+  when "javascript_and_stimulus.html"
+    "Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model."
   when "tutorial/01-create-the-board-feature.html"
     "Start a tiny kanban app by creating the board feature."
   when "tutorial/02-render-columns.html"
@@ -515,6 +518,7 @@ def render_index_page
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
               <a href="client_behavior.html">Client Behavior</a>
+              <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
               <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
             </div>
 
@@ -728,6 +732,10 @@ def render_index_page
                   <a href="client_behavior.html">
                     <strong>Client Behavior</strong>
                     <span>Use JavaScript for local behavior without creating a second app model.</span>
+                  </a>
+                  <a href="javascript_and_stimulus.html">
+                    <strong>JavaScript and Stimulus</strong>
+                    <span>Add idiomatic browser behavior while keeping server-rendered state in Ruby.</span>
                   </a>
                   <a href="tutorial/01-create-the-board-feature.html">
                     <strong>Tutorial</strong>

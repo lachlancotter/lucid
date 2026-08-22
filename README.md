@@ -234,6 +234,7 @@ The documentation set is intentionally small:
 - [Components](docs/components.md)
 - [Handlers](docs/handlers.md)
 - [Client Behavior](docs/client_behavior.md)
+- [JavaScript and Stimulus](docs/javascript_and_stimulus.md)
 - [Reference: State](docs/reference/state.md)
 - [Reference: Templates](docs/reference/templates.md)
 - [Reference: Forms](docs/reference/forms.md)
