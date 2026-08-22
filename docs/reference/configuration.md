@@ -15,6 +15,28 @@ The main settings are:
 - `session_class`: the wrapper class for the Rack session
 - `app_root`: the URL base path for the application
 
+The `component_class` is often an application layout rather than a page-specific
+component. Put shared document structure there, include HTMX in the head, and
+render the active page inside a boosted body:
+
+```ruby
+class ApplicationLayout < Lucid::Component::Base
+  nest(:page) { HomePage }
+
+  element do
+    html do
+      head do
+        script(**HTMX::LIB)
+      end
+
+      body(HTMX.boost) do
+        subcomponent(:page)
+      end
+    end
+  end
+end
+```
+
 ## Container
 
 The container is created per request and provides request-scoped collaborators

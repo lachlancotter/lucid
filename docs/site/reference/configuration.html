@@ -64,6 +64,22 @@
 <li><code>session_class</code>: the wrapper class for the Rack session</li>
 <li><code>app_root</code>: the URL base path for the application</li>
 </ul>
+<p>The <code>component_class</code> is often an application layout rather than a page-specific component. Put shared document structure there, include HTMX in the head, and render the active page inside a boosted body:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ApplicationLayout</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span> <span class="p">{</span> <span class="no">HomePage</span> <span class="p">}</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">html</span> <span class="k">do</span>
+      <span class="n">head</span> <span class="k">do</span>
+        <span class="n">script</span><span class="p">(</span><span class="o">**</span><span class="no">HTMX</span><span class="o">::</span><span class="no">LIB</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">body</span><span class="p">(</span><span class="no">HTMX</span><span class="p">.</span><span class="nf">boost</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">subcomponent</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <h2 id="container">Container</h2>
 <p>The container is created per request and provides request-scoped collaborators such as:</p>
 <ul>
