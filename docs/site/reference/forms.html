@@ -73,30 +73,49 @@
 <span class="k">end</span></code></pre>
 <p>The <code>add_card_form</code> parameter is the evaluated <code>Lucid::HTTP::FormModel</code>. Declare form models as template parameters instead of reading them by calling component methods from inside the template body.</p>
 <p>The generated <code>&lt;form&gt;</code> action and method come from the message class. Lucid also adds hidden fields for the component path, form name, and CSRF token when one is available.</p>
-<p>Named templates follow the same rule: pass the form model as an argument when rendering the template.</p>
+<h2 id="fields-in-templates-and-components">Fields In Templates And Components</h2>
+<p>Use <code>fields_for</code> when rendering fields from an existing form model or scoped form context. It yields a fresh <code>Lucid::HTML::Form::Builder</code> bound to the current template and does not render a <code>&lt;form&gt;</code> tag or hidden form metadata.</p>
+<p>Named templates should receive <code>form.context</code>, then call <code>fields_for</code>.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">BoardView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">echo</span><span class="p">(</span><span class="ss">:add_card_form</span><span class="p">,</span> <span class="no">AddCard</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span>
     <span class="n">form</span><span class="p">.</span><span class="nf">merge_default</span><span class="p">(</span><span class="ss">title: </span><span class="s2">""</span><span class="p">)</span>
   <span class="k">end</span>
 
   <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="n">add_card_form</span><span class="o">|</span>
-    <span class="n">template</span><span class="p">(</span><span class="ss">:add_card_fields</span><span class="p">,</span> <span class="n">add_card_form</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="n">template</span><span class="p">(</span><span class="ss">:add_card_fields</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">add_card_form</span><span class="o">|</span>
     <span class="n">form_for</span> <span class="n">add_card_form</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
-      <span class="n">f</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="ss">:title</span><span class="p">)</span>
+      <span class="n">template</span><span class="p">(</span><span class="ss">:add_card_fields</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="nf">context</span><span class="p">)</span>
       <span class="n">f</span><span class="p">.</span><span class="nf">submit</span><span class="p">(</span><span class="s2">"Add card"</span><span class="p">)</span>
     <span class="k">end</span>
   <span class="k">end</span>
+
+  <span class="n">template</span><span class="p">(</span><span class="ss">:add_card_fields</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">form_context</span><span class="o">|</span>
+    <span class="n">fields_for</span> <span class="n">form_context</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+      <span class="n">f</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="ss">:title</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
 <span class="k">end</span></code></pre>
+<p><code>Lucid::HTML::Form::Context</code> is a portable value object containing the form model and current field path. Use <code>scoped(name)</code> to create a nested context that can be passed through templates or component props.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AddressFields</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:form_context</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">instance</span><span class="p">(</span><span class="no">Lucid</span><span class="o">::</span><span class="no">HTML</span><span class="o">::</span><span class="no">Form</span><span class="o">::</span><span class="no">Context</span><span class="p">)</span>
+
+  <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="n">form_context</span><span class="o">|</span>
+    <span class="n">fields_for</span> <span class="n">form_context</span><span class="p">.</span><span class="nf">scoped</span><span class="p">(</span><span class="ss">:address</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+      <span class="n">f</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="ss">:street</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Passing a <code>Lucid::HTML::Form::Builder</code> directly to a named template or component prop is deprecated. Pass <code>form.context</code> and call <code>fields_for</code> instead.</p>
 <h2 id="field-names-and-ids">Field Names and IDs</h2>
 <p>In the examples below, variables such as <code>profile_form</code> and <code>settings_form</code> are template parameters whose form models include the fields being rendered.</p>
-<p>At the top level, a field named <code>:title</code> renders with <code>name=&quot;title&quot;</code> and <code>id=&quot;title&quot;</code>. Scoped builders generate nested parameter names and underscore joined IDs.</p>
+<p>At the top level, a field named <code>:title</code> renders with <code>name=&quot;title&quot;</code> and <code>id=&quot;title&quot;</code>. Scoped builders and scoped contexts generate nested parameter names and underscore joined IDs.</p>
 <pre><code class="language-ruby"><span class="n">form_for</span> <span class="n">profile_form</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
   <span class="n">f</span><span class="p">.</span><span class="nf">scoped</span><span class="p">(</span><span class="ss">:profile</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">profile</span><span class="o">|</span>
     <span class="n">profile</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">value: </span><span class="s2">""</span><span class="p">)</span>
   <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">fields_for</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">HTML</span><span class="o">::</span><span class="no">Form</span><span class="o">::</span><span class="no">Context</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">profile_form</span><span class="p">).</span><span class="nf">scoped</span><span class="p">(</span><span class="ss">:profile</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">profile</span><span class="o">|</span>
+  <span class="n">profile</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">value: </span><span class="s2">""</span><span class="p">)</span>
 <span class="k">end</span></code></pre>
 <p>The nested text field renders as <code>name=&quot;profile[name]&quot;</code> and <code>id=&quot;profile_name&quot;</code>.</p>
 <p>Every field helper accepts additional HTML attributes. Attributes passed by the caller override the builder defaults, including generated IDs.</p>

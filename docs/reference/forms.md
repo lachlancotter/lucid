@@ -36,8 +36,13 @@ The generated `<form>` action and method come from the message class. Lucid also
 adds hidden fields for the component path, form name, and CSRF token when one is
 available.
 
-Named templates follow the same rule: pass the form model as an argument when
-rendering the template.
+## Fields In Templates And Components
+
+Use `fields_for` when rendering fields from an existing form model or scoped
+form context. It yields a fresh `Lucid::HTML::Form::Builder` bound to the
+current template and does not render a `<form>` tag or hidden form metadata.
+
+Named templates should receive `form.context`, then call `fields_for`.
 
 ```ruby
 class BoardView < Lucid::Component::Base
@@ -46,17 +51,38 @@ class BoardView < Lucid::Component::Base
   end
 
   element do |add_card_form|
-    template(:add_card_fields, add_card_form)
+    form_for add_card_form do |f|
+      template(:add_card_fields, f.context)
+      f.submit("Add card")
+    end
   end
 
-  template(:add_card_fields) do |add_card_form|
-    form_for add_card_form do |f|
+  template(:add_card_fields) do |form_context|
+    fields_for form_context do |f|
       f.text(:title)
-      f.submit("Add card")
     end
   end
 end
 ```
+
+`Lucid::HTML::Form::Context` is a portable value object containing the form
+model and current field path. Use `scoped(name)` to create a nested context that
+can be passed through templates or component props.
+
+```ruby
+class AddressFields < Lucid::Component::Base
+  prop :form_context, Types.instance(Lucid::HTML::Form::Context)
+
+  element do |form_context|
+    fields_for form_context.scoped(:address) do |f|
+      f.text(:street)
+    end
+  end
+end
+```
+
+Passing a `Lucid::HTML::Form::Builder` directly to a named template or component
+prop is deprecated. Pass `form.context` and call `fields_for` instead.
 
 ## Field Names and IDs
 
@@ -64,14 +90,18 @@ In the examples below, variables such as `profile_form` and `settings_form` are
 template parameters whose form models include the fields being rendered.
 
 At the top level, a field named `:title` renders with `name="title"` and
-`id="title"`. Scoped builders generate nested parameter names and underscore
-joined IDs.
+`id="title"`. Scoped builders and scoped contexts generate nested parameter
+names and underscore joined IDs.
 
 ```ruby
 form_for profile_form do |f|
   f.scoped(:profile) do |profile|
     profile.text(:name, value: "")
   end
+end
+
+fields_for Lucid::HTML::Form::Context.new(profile_form).scoped(:profile) do |profile|
+  profile.text(:name, value: "")
 end
 ```
 
