@@ -256,6 +256,85 @@ Keep event construction inline unless the payload is large enough that it
 obscures the workflow. Extract helper methods only when they improve readability
 in a concrete way.
 
+## Process Managers
+
+Use process managers when one completed workflow should decide whether to start
+another command workflow.
+
+A command handler should own the command it performs. Its `perform` block should
+resolve dependencies, check preconditions, apply the write, and publish events
+that describe what happened. It should not directly dispatch another command.
+
+```ruby
+class ProjectHandler < Lucid::Handler
+  perform CreateProject do |cmd|
+    with_workspace(cmd) do |workspace|
+      project = workspace.projects.create!(name: cmd[:name])
+
+      publish ProjectCreated.new(
+        project_id: project.id,
+        workspace_id: workspace.id,
+        creator_id: cmd[:creator_id]
+      )
+    end
+  end
+end
+```
+
+A process manager listens to those events with `subscribe` and decides which
+command messages, if any, should be dispatched next.
+
+```ruby
+class ProjectSetupProcess < Lucid::Handler
+  subscribe ProjectCreated do |event|
+    dispatch CreateFirstTask.new(
+      project_id: event[:project_id],
+      creator_id: event[:creator_id]
+    )
+
+    dispatch NotifyProjectCreated.new(
+      project_id: event[:project_id],
+      workspace_id: event[:workspace_id]
+    )
+  end
+end
+```
+
+This keeps command handlers focused on facts they can prove and keeps workflow
+coordination in one place. The event becomes the contract between the completed
+write and any follow-up behavior.
+
+Use a process manager when:
+
+- follow-up work depends on an event rather than direct user input
+- one event may fan out to multiple commands
+- the follow-up decision has its own business rules
+- the workflow should be easy to extend without editing the original command
+  handler
+
+Keep process managers thin. They should inspect the event, apply coordination
+rules, and dispatch command messages. They should not duplicate the persistence
+write owned by the command handler, and they should not reach into another
+handler's private helpers.
+
+Avoid dispatching commands directly from `perform` blocks:
+
+```ruby
+perform CreateProject do |cmd|
+  project = Project.create!(name: cmd[:name])
+  dispatch CreateFirstTask.new(project_id: project.id)
+end
+```
+
+Publish an event instead, then coordinate follow-up work from a subscriber:
+
+```ruby
+perform CreateProject do |cmd|
+  project = Project.create!(name: cmd[:name])
+  publish ProjectCreated.new(project_id: project.id)
+end
+```
+
 ## Testing
 
 Use handler specs to verify behavior, not implementation details.
@@ -339,5 +418,7 @@ Avoid:
 - mixing dependency resolution into the mutation block
 - using exceptions for expected missing-record paths
 - testing private handler methods directly
+- dispatching commands directly from `perform` blocks instead of publishing
+  events and coordinating follow-up work from `subscribe` blocks
 - wrapping `verify_handler` in extra assertions for normal behavior coverage
 - omitting module wiring coverage for newly recruited commands
