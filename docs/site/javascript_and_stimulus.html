@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JavaScript and Stimulus | Lucid Documentation</title>
+    <meta name="description" content="Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
+<a href="hello.html">Hello World</a>
+<a href="architecture.html">Architecture</a>
+<a href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a href="client_behavior.html">Client Behavior</a>
+<a class="active" aria-current="page" href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>JavaScript and Stimulus</h1>
+            <p class="lede">Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model.</p>
+          </header>
+
+          <p>Caju is JavaScript-framework agnostic. It does not require a client-side application framework, and it does not ask JavaScript to duplicate the server-side component model.</p>
+<p>When a Caju app needs browser behavior, Stimulus is the recommended default. Its controller-per-element architecture fits Caju&#39;s rendering cycle: the server can replace component HTML, and Stimulus can connect new controllers to the new DOM without preserving a separate client-side application tree.</p>
+<p>Existing Lucid applications can use the same guidance. The public <code>Caju::</code> namespace is preferred for new application code while the gem continues to support <code>Lucid::</code>.</p>
+<h2 id="the-boundary">The Boundary</h2>
+<p>Caju should own behavior that changes application state or affects what the server renders:</p>
+<ul>
+<li>navigation through <code>Link</code> messages</li>
+<li>mutations through <code>Command</code> messages</li>
+<li>domain notifications through <code>Event</code> messages</li>
+<li>URL-backed view state</li>
+<li>validation, authorization, persistence, and redirects</li>
+<li>server-rendered component updates</li>
+</ul>
+<p>JavaScript should own local browser behavior:</p>
+<ul>
+<li>focus and selection management</li>
+<li>keyboard shortcuts</li>
+<li>disclosure and transition details</li>
+<li>button busy states</li>
+<li>drag previews and drop highlighting</li>
+<li>measuring, positioning, and viewport-only behavior</li>
+<li>integration with browser APIs</li>
+</ul>
+<p>If a behavior must survive a refresh, be shareable in a URL, affect permissions, drive server rendering, or change durable data, model it in Caju. If it only improves the immediate feel of an already-modeled interaction, keep it in JavaScript.</p>
+<h2 id="why-stimulus-fits">Why Stimulus Fits</h2>
+<p>Stimulus is a small layer around HTML. Controllers attach to elements through <code>data-controller</code>, read targets and values from the DOM, and handle browser events declared in markup.</p>
+<p>That maps cleanly to Caju because:</p>
+<ul>
+<li>Caju components render the HTML that declares the behavior</li>
+<li>Stimulus controllers connect when that HTML enters the page</li>
+<li>HTMX swaps replace DOM islands without preserving client-side component state</li>
+<li>controller state can stay local to a rendered element</li>
+<li>the server remains the source of truth for application state</li>
+</ul>
+<p>This keeps JavaScript close to the markup it enhances while leaving messages, handlers, and server-rendered state in Ruby.</p>
+<h2 id="rendering-stimulus-attributes">Rendering Stimulus Attributes</h2>
+<p>Caju templates are Ruby blocks, so Stimulus attributes can be rendered as normal HTML attributes.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">div</span><span class="p">(</span>
+      <span class="s2">"data-controller"</span><span class="p">:</span> <span class="s2">"menu"</span><span class="p">,</span>
+      <span class="s2">"data-menu-open-class"</span><span class="p">:</span> <span class="s2">"is-open"</span>
+    <span class="p">)</span> <span class="k">do</span>
+      <span class="n">button</span><span class="p">(</span>
+        <span class="ss">type: </span><span class="s2">"button"</span><span class="p">,</span>
+        <span class="s2">"data-action"</span><span class="p">:</span> <span class="s2">"menu#toggle"</span><span class="p">,</span>
+        <span class="s2">"data-menu-target"</span><span class="p">:</span> <span class="s2">"button"</span>
+      <span class="p">)</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Account"</span> <span class="p">}</span>
+
+      <span class="n">nav</span><span class="p">(</span><span class="s2">"data-menu-target"</span><span class="p">:</span> <span class="s2">"panel"</span><span class="p">,</span> <span class="ss">hidden: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">a</span><span class="p">(</span><span class="ss">href: </span><span class="s2">"/settings"</span><span class="p">)</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Settings"</span> <span class="p">}</span>
+        <span class="n">a</span><span class="p">(</span><span class="ss">href: </span><span class="s2">"/sign-out"</span><span class="p">)</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Sign out"</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>The controller can manage the local open/closed presentation without becoming the owner of the account menu&#39;s durable state.</p>
+<pre><code class="language-javascript"><span class="k">import</span> <span class="p">{</span> <span class="nx">Controller</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">@hotwired/stimulus</span><span class="dl">"</span>
+
+<span class="k">export</span> <span class="k">default</span> <span class="kd">class</span> <span class="nc">extends</span> <span class="nx">Controller</span> <span class="p">{</span>
+  <span class="kd">static</span> <span class="nx">targets</span> <span class="o">=</span> <span class="p">[</span><span class="dl">"</span><span class="s2">button</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">panel</span><span class="dl">"</span><span class="p">]</span>
+  <span class="kd">static</span> <span class="nx">classes</span> <span class="o">=</span> <span class="p">[</span><span class="dl">"</span><span class="s2">open</span><span class="dl">"</span><span class="p">]</span>
+
+  <span class="nf">toggle</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">open</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">panelTarget</span><span class="p">.</span><span class="nx">hidden</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="nx">panelTarget</span><span class="p">.</span><span class="nx">hidden</span> <span class="o">=</span> <span class="o">!</span><span class="nx">open</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">element</span><span class="p">.</span><span class="nx">classList</span><span class="p">.</span><span class="nf">toggle</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">openClass</span><span class="p">,</span> <span class="nx">open</span><span class="p">)</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">buttonTarget</span><span class="p">.</span><span class="nf">setAttribute</span><span class="p">(</span><span class="dl">"</span><span class="s2">aria-expanded</span><span class="dl">"</span><span class="p">,</span> <span class="nc">String</span><span class="p">(</span><span class="nx">open</span><span class="p">))</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre>
+<h2 id="progressive-enhancement">Progressive Enhancement</h2>
+<p>Start with HTML that works without custom JavaScript. Then use Stimulus to make the interaction faster, clearer, or more tactile.</p>
+<p>For example, a sortable list should still expose Caju commands for the actual move. Stimulus can handle drag gestures, drop indicators, and submitting the existing command when the user drops an item.</p>
+<pre><code class="language-ruby"><span class="n">form_for</span> <span class="n">move_card_form</span><span class="p">,</span>
+  <span class="s2">"data-controller"</span><span class="p">:</span> <span class="s2">"sortable-card"</span><span class="p">,</span>
+  <span class="s2">"data-action"</span><span class="p">:</span> <span class="s2">"drop-&gt;sortable-card#submit"</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">hidden</span><span class="p">(</span><span class="ss">:card_id</span><span class="p">,</span> <span class="ss">value: </span><span class="n">card</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">hidden</span><span class="p">(</span><span class="ss">:column_id</span><span class="p">,</span> <span class="ss">value: </span><span class="n">column</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+  <span class="n">button</span><span class="p">(</span><span class="ss">type: </span><span class="s2">"submit"</span><span class="p">)</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Move here"</span> <span class="p">}</span>
+<span class="k">end</span></code></pre>
+<p>The command remains the durable behavior. The controller only changes how the user gets to that command.</p>
+<h2 id="keep-controllers-disposable">Keep Controllers Disposable</h2>
+<p>Caju and HTMX may replace a component&#39;s DOM after a message is handled. Stimulus controllers should assume that <code>connect</code> and <code>disconnect</code> can happen often.</p>
+<p>Prefer controllers that:</p>
+<ul>
+<li>initialize from DOM attributes, targets, and values</li>
+<li>clean up timers, observers, and global listeners in <code>disconnect</code></li>
+<li>treat local fields as temporary browser state</li>
+<li>submit Caju links or commands rather than mutating application data directly</li>
+<li>tolerate the server replacing their element after a request</li>
+</ul>
+<p>Avoid controllers that:</p>
+<ul>
+<li>cache server data that should be rendered by Caju</li>
+<li>keep navigation state outside the URL or component params</li>
+<li>build a parallel component hierarchy in JavaScript</li>
+<li>depend on DOM nodes surviving a Caju update</li>
+<li>manually coordinate HTMX swap targets that Caju can infer from components</li>
+</ul>
+<h2 id="working-with-htmx">Working With HTMX</h2>
+<p>Caju uses HTMX as the browser transport and swap layer. Stimulus should not need to take over that transport for normal links and forms.</p>
+<p>Use Stimulus when you need local browser behavior before or after a request, such as disabling a button, updating an ARIA attribute, or preparing a hidden field from a drag interaction. Let Caju helpers render the link or form that submits the message.</p>
+<p>When a controller needs to react to HTMX lifecycle events, keep that reaction local to the element it enhances and avoid coupling it to distant component markup.</p>
+<h2 id="asset-tooling">Asset Tooling</h2>
+<p>Caju does not prescribe an asset pipeline. Use the JavaScript tooling that fits the host application:</p>
+<ul>
+<li>import maps for small Rack or Rails applications</li>
+<li>a bundler when the app already has one</li>
+<li>the host framework&#39;s asset pipeline when Caju is mounted inside a larger app</li>
+</ul>
+<p>The important constraint is architectural, not tooling-specific: JavaScript should enhance the HTML Caju renders, not replace Caju&#39;s message-driven state model.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="client_behavior.html">
+  <span>Previous</span>
+  <strong>Client Behavior</strong>
+</a>
+<a href="tutorial/01-create-the-board-feature.html">
+  <span>Next</span>
+  <strong>1. Create the Board</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

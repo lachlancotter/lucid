@@ -114,6 +114,8 @@ Start here:
   event publication in handlers.
 - [Client Behavior](client_behavior.md): Use JavaScript for local behavior
   without creating a second application model.
+- [JavaScript and Stimulus](javascript_and_stimulus.md): Add idiomatic browser
+  behavior to Caju apps while keeping server-rendered state in Ruby.
 - [Tutorial](tutorial/01-create-the-board-feature.md): Build a tiny kanban board
   while decomposing the app by feature.
 
