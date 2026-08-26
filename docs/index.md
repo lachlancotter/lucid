@@ -119,10 +119,18 @@ Concepts:
 - [Client Behavior](client_behavior.md): Use JavaScript for local behavior
   without creating a second application model.
 
-Tutorial:
+Patterns:
 
-- [Tutorial](tutorial/01-create-the-board-feature.md): Build a tiny kanban board
-  while decomposing the app by feature.
+- [Master Detail](patterns/master-detail.md): Coordinate list selection, detail
+  state, and empty states.
+- [Modals](patterns/modals.md): Manage modal state, command submission,
+  validation, and closing behavior.
+- [Pagination](patterns/pagination.md): Carry page params, result metadata, and
+  next/previous navigation.
+- [Progressive Filter](patterns/progressive-filter.md): Compose filters, search
+  state, reset behavior, and results.
+- [Process Manager](patterns/process-manager.md): Represent long-running
+  workflows, events, status updates, and progress views.
 
 Reference:
 
