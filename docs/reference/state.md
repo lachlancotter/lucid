@@ -25,6 +25,9 @@ Params that are not selected by `route` are represented as query parameters.
 
 `Lucid::State::Map` is responsible for these rules.
 
+For the broader distinction between URL-mapped params, external props, and
+transient temps, see [Components](../components.md).
+
 ### URL-Mapped State With `param`
 
 `param` declares typed component state that participates in URL mapping. It is

@@ -96,6 +96,34 @@
 <li><code>inherit</code> references reactive fields from an ancestor component or the HTTP session</li>
 </ul>
 <p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
+<h3 id="choosing-param-prop-or-temp">Choosing Param, Prop, or Temp</h3>
+<p>Use <code>param</code> for state that belongs to the component and should survive request boundaries. Params are part of the component&#39;s deep state, can be represented in the URL, and are the right choice for navigation and view configuration:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectBoard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+  <span class="n">param</span> <span class="ss">:filter</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"open"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+  <span class="n">param</span> <span class="ss">:page</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Good candidates for <code>param</code> include selected IDs, tabs, filters, sort order, pagination, and other state that should be preserved by refresh, back/forward navigation, or a shared link.</p>
+<p>Use <code>prop</code> for data that is supplied by a parent component or by the request container and is needed to render this component. Props describe data flow into a component; they do not define the component&#39;s URL state.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectCard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+  <span class="n">prop</span> <span class="ss">:selected</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Bool</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Good candidates for <code>prop</code> include records, value objects, form contexts, precomputed counts, permission flags, and callbacks or component classes passed into nested components.</p>
+<p>Use <code>temp</code> for transient server-side rendering concerns that should not be encoded into the URL or passed down as parent-owned input. Temps are useful for values produced while handling a message or event, such as temporary status, flash-like rendering state, or lazy-loading placeholders.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SyncStatus</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">temp</span> <span class="ss">:notice</span>
+
+  <span class="n">on</span><span class="p">(</span><span class="no">SyncCompleted</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">touch</span> <span class="ss">notice: </span><span class="s2">"Sync complete"</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>A useful test is to ask who owns the value and whether a URL should carry it:</p>
+<ul>
+<li>use <code>param</code> when the component owns the value and the browser history or URL should reflect it</li>
+<li>use <code>prop</code> when another component or collaborator owns the value and this component only needs it for rendering</li>
+<li>use <code>temp</code> when the value is local to the current render cycle and should disappear instead of becoming durable state</li>
+</ul>
 <p>For URL path mapping with <code>route</code>, see <a href="reference/state.html">State</a>. For guidance on where query methods belong, see <a href="models.html">Models</a>.</p>
 <p>Container dependencies are plain collaborators:</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>

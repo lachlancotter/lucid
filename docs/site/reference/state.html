@@ -79,6 +79,7 @@
 </ul>
 <p>Params that are not selected by <code>route</code> are represented as query parameters.</p>
 <p><code>Lucid::State::Map</code> is responsible for these rules.</p>
+<p>For the broader distinction between URL-mapped params, external props, and transient temps, see <a href="../components.html">Components</a>.</p>
 <h3 id="url-mapped-state-with-param">URL-Mapped State With <code>param</code></h3>
 <p><code>param</code> declares typed component state that participates in URL mapping. It is agnostic about whether a value appears in the path or in the query string.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SearchView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>

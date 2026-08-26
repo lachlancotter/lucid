@@ -40,6 +40,63 @@ Lucid distinguishes between internal component state and external inputs.
 Typed declarations matter because Lucid rebuilds components from request state
 on every cycle.
 
+### Choosing Param, Prop, or Temp
+
+Use `param` for state that belongs to the component and should survive request
+boundaries. Params are part of the component's deep state, can be represented in
+the URL, and are the right choice for navigation and view configuration:
+
+```ruby
+class ProjectBoard < Lucid::Component::Base
+  param :project_id, Types.integer
+  param :filter, Types.string.default("open".freeze)
+  param :page, Types.integer.default(1)
+end
+```
+
+Good candidates for `param` include selected IDs, tabs, filters, sort order,
+pagination, and other state that should be preserved by refresh, back/forward
+navigation, or a shared link.
+
+Use `prop` for data that is supplied by a parent component or by the request
+container and is needed to render this component. Props describe data flow into
+a component; they do not define the component's URL state.
+
+```ruby
+class ProjectCard < Lucid::Component::Base
+  prop :project, Types::Any
+  prop :selected, Types::Bool.default(false)
+end
+```
+
+Good candidates for `prop` include records, value objects, form contexts,
+precomputed counts, permission flags, and callbacks or component classes passed
+into nested components.
+
+Use `temp` for transient server-side rendering concerns that should not be
+encoded into the URL or passed down as parent-owned input. Temps are useful for
+values produced while handling a message or event, such as temporary status,
+flash-like rendering state, or lazy-loading placeholders.
+
+```ruby
+class SyncStatus < Lucid::Component::Base
+  temp :notice
+
+  on(SyncCompleted) do
+    touch notice: "Sync complete"
+  end
+end
+```
+
+A useful test is to ask who owns the value and whether a URL should carry it:
+
+- use `param` when the component owns the value and the browser history or URL
+  should reflect it
+- use `prop` when another component or collaborator owns the value and this
+  component only needs it for rendering
+- use `temp` when the value is local to the current render cycle and should
+  disappear instead of becoming durable state
+
 For URL path mapping with `route`, see [State](reference/state.md).
 For guidance on where query methods belong, see [Models](models.md).
 
