@@ -146,6 +146,11 @@
 <p>Components primarily respond to <code>Link</code> messages with <code>to</code> blocks. These blocks typically call <code>update</code> to change component state.</p>
 <p>Components can also respond to <code>Event</code> messages with <code>on</code> blocks so the UI tracks domain changes without manual refresh code.</p>
 <h2 id="rendering">Rendering</h2>
+<h3 id="view-functions-signals-and-helpers">View Functions, Signals, and Helpers</h3>
+<p>Use signals for values that define rendering dependencies. Signals give Lucid a data dependency path, so when that value is touched, the component templates that depend on it can update.</p>
+<p>If changing a value should trigger a refresh of the component or one of its templates, expose it as a signal.</p>
+<p>Use helpers for template-facing presentation functions that do not define data dependency paths, such as formatting values, choosing labels, or selecting CSS classes.</p>
+<p>Only methods called directly from templates need to use the <code>helper</code> construct. Methods called from <code>let</code> blocks, helper methods, or other component methods can remain regular Ruby methods.</p>
 <p>Lucid components render HTML through <code>Lucid::HTML::Template</code>, which provides helpers such as:</p>
 <ul>
 <li><code>link_to</code></li>
