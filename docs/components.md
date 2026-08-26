@@ -136,6 +136,23 @@ tracks domain changes without manual refresh code.
 
 ## Rendering
 
+### View Functions, Signals, and Helpers
+
+Use signals for values that define rendering dependencies. Signals give Lucid a
+data dependency path, so when that value is touched, the component templates that
+depend on it can update.
+
+If changing a value should trigger a refresh of the component or one of its
+templates, expose it as a signal.
+
+Use helpers for template-facing presentation functions that do not define data
+dependency paths, such as formatting values, choosing labels, or selecting CSS
+classes.
+
+Only methods called directly from templates need to use the `helper` construct.
+Methods called from `let` blocks, helper methods, or other component methods can
+remain regular Ruby methods.
+
 Lucid components render HTML through `Lucid::HTML::Template`, which provides
 helpers such as:
 
