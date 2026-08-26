@@ -575,232 +575,12 @@ blockquote p:last-child {
   color: var(--ink);
 }
 
-.tutorial-shell {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-}
-
-.tutorial-rail {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  height: 100vh;
-  padding: 32px 22px;
-  border-right: 1px solid var(--line);
-  overflow-y: auto;
-}
-
-.tutorial-steps {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tutorial-steps li + li {
-  margin-top: 0;
-}
-
-.tutorial-steps a {
-  position: relative;
-  display: grid;
-  gap: 4px;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: 10px 12px;
-}
-
-.tutorial-steps a:hover,
-.tutorial-steps a.active {
-  border-color: var(--line);
-  background: var(--surface);
-  text-decoration: none;
-}
-
-.tutorial-steps a.active {
-  border-color: var(--line-strong);
-}
-
-.tutorial-steps a.active::before {
-  content: "";
-  position: absolute;
-  top: 14px;
-  left: -4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.tutorial-steps span,
-.tutorial-header-link span {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.tutorial-steps strong,
-.tutorial-header-link strong {
-  color: var(--ink);
-  font-size: 0.94rem;
-  line-height: 1.35;
-}
-
-.tutorial-content {
-  min-width: 0;
-  padding: 0 0 88px;
-}
-
-.tutorial-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: center;
-  margin: 0 0 38px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(248, 250, 249, 0.94);
-  padding: 22px 42px;
-  backdrop-filter: blur(14px);
-}
-
-.tutorial-header h1 {
-  font-size: 1.6rem;
-  line-height: 1.18;
-}
-
-.tutorial-header .section-label {
-  margin-bottom: 6px;
-}
-
-.tutorial-header-nav {
-  display: flex;
-  gap: 10px;
-  justify-content: end;
-}
-
-.tutorial-header-link {
-  display: grid;
-  gap: 3px;
-  min-width: 148px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  padding: 10px 12px;
-}
-
-.tutorial-header-link:hover {
-  border-color: var(--line-strong);
-  text-decoration: none;
-}
-
-.tutorial-layout {
-  display: grid;
-  grid-template-columns: minmax(320px, 0.86fr) minmax(380px, 1.14fr);
-  gap: 34px;
-  align-items: start;
-  padding: 0 0 0 42px;
-}
-
-.tutorial-instructions,
-.tutorial-example {
-  min-width: 0;
-}
-
-.tutorial-instructions {
-  max-width: 680px;
-}
-
-.tutorial-instructions .lede {
-  margin-bottom: 28px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--line);
-}
-
-.tutorial-instructions h2:first-of-type {
-  margin-top: 0;
-}
-
-.tutorial-example {
-  position: sticky;
-  top: 118px;
-  max-height: calc(100vh - 154px);
-  overflow: auto;
-  border-left: 1px solid var(--line);
-  background: var(--code-bg);
-}
-
-.tutorial-example-header {
-  display: flex;
-  align-items: center;
-  min-height: 42px;
-  background: var(--bg);
-  padding-left: 20px;
-}
-
-.tutorial-example-header .section-label {
-  margin-bottom: 0;
-}
-
-.tutorial-example pre {
-  width: 100%;
-  min-height: calc(100vh - 196px);
-  margin: 0;
-  border-radius: 0;
-  padding: 20px;
-}
-
-.tutorial-example p {
-  margin: 0;
-  background: var(--bg);
-  color: #3f4b46;
-  padding: 0 20px 18px;
-}
-
-.tutorial-example pre + p {
-  background: var(--code-bg);
-  color: #9da7b1;
-  padding-top: 18px;
-}
-
-.tutorial-empty-code {
-  display: grid;
-  min-height: 240px;
-  place-items: center;
-  border: 1px dashed var(--line-strong);
-  border-radius: 0;
-  background: var(--code-bg);
-  padding: 24px;
-  text-align: center;
-}
-
-.tutorial-empty-code p {
-  margin: 0;
-  background: transparent;
-  color: #9da7b1;
-  font-weight: 650;
-  padding: 0;
-}
-
 @media (max-width: 900px) {
   .site-shell {
     grid-template-columns: 1fr;
   }
 
-  .tutorial-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .docs-rail,
-  .tutorial-rail {
+  .docs-rail {
     position: static;
     display: block;
     height: auto;
@@ -834,68 +614,12 @@ blockquote p:last-child {
     transform: translateX(-50%);
   }
 
-  .tutorial-steps {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-
-  .tutorial-steps li {
-    min-width: 184px;
-  }
-
-  .tutorial-steps a.active::before {
-    left: 12px;
-    top: auto;
-    bottom: -3px;
-  }
-
   .github-link {
     margin-top: 14px;
   }
 
   .content {
     padding: 40px 24px 72px;
-  }
-
-  .tutorial-content {
-    padding: 0 0 72px;
-  }
-
-  .tutorial-header {
-    position: static;
-    grid-template-columns: 1fr;
-    margin: 0 0 34px;
-    padding: 28px 24px 22px;
-  }
-
-  .tutorial-header-nav {
-    justify-content: stretch;
-  }
-
-  .tutorial-header-link {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .tutorial-layout {
-    grid-template-columns: 1fr;
-    padding: 0 24px;
-  }
-
-  .tutorial-instructions {
-    max-width: none;
-  }
-
-  .tutorial-example {
-    position: static;
-    max-height: none;
-    overflow: visible;
-  }
-
-  .tutorial-example pre {
-    min-height: 0;
   }
 
   .page-nav {
@@ -908,30 +632,8 @@ blockquote p:last-child {
     padding: 34px 18px 64px;
   }
 
-  .tutorial-content {
-    padding: 0 0 64px;
-  }
-
   h1 {
     font-size: 2.2rem;
-  }
-
-  .tutorial-header {
-    margin: 0 0 30px;
-    padding: 24px 18px 20px;
-  }
-
-  .tutorial-layout {
-    padding: 0 18px;
-  }
-
-  .tutorial-header h1 {
-    font-size: 1.45rem;
-  }
-
-  .tutorial-header-nav {
-    grid-template-columns: 1fr;
-    display: grid;
   }
 
   h2 {

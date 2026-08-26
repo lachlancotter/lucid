@@ -18,14 +18,11 @@ PAGES = [
   { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Concepts" },
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Concepts" },
   { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Concepts" },
-  { title: "Create the Board Feature", label: "1. Create the Board", source: "tutorial/01-create-the-board-feature.md", output: "tutorial/01-create-the-board-feature.html", section: "Tutorial" },
-  { title: "Render Columns", label: "2. Render Columns", source: "tutorial/02-render-columns.md", output: "tutorial/02-render-columns.html", section: "Tutorial" },
-  { title: "Add Cards", label: "3. Add Cards", source: "tutorial/03-add-cards.md", output: "tutorial/03-add-cards.html", section: "Tutorial" },
-  { title: "Move Cards", label: "4. Move Cards", source: "tutorial/04-move-cards.md", output: "tutorial/04-move-cards.html", section: "Tutorial" },
-  { title: "Rename Columns", label: "5. Rename Columns", source: "tutorial/05-rename-columns.md", output: "tutorial/05-rename-columns.html", section: "Tutorial" },
-  { title: "Decompose by Feature", label: "6. Decompose by Feature", source: "tutorial/06-decompose-by-feature.md", output: "tutorial/06-decompose-by-feature.html", section: "Tutorial" },
-  { title: "Enhance with Drag and Drop", label: "7. Drag and Drop", source: "tutorial/07-enhance-with-drag-and-drop.md", output: "tutorial/07-enhance-with-drag-and-drop.html", section: "Tutorial" },
-  { title: "Test the Workflows", label: "8. Test Workflows", source: "tutorial/08-test-the-workflows.md", output: "tutorial/08-test-the-workflows.html", section: "Tutorial" },
+  { title: "Master Detail", label: "Master Detail", source: "patterns/master-detail.md", output: "patterns/master-detail.html", section: "Patterns" },
+  { title: "Modals", label: "Modals", source: "patterns/modals.md", output: "patterns/modals.html", section: "Patterns" },
+  { title: "Pagination", label: "Pagination", source: "patterns/pagination.md", output: "patterns/pagination.html", section: "Patterns" },
+  { title: "Progressive Filter", label: "Progressive Filter", source: "patterns/progressive-filter.md", output: "patterns/progressive-filter.html", section: "Patterns" },
+  { title: "Process Manager", label: "Process Manager", source: "patterns/process-manager.md", output: "patterns/process-manager.html", section: "Patterns" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
@@ -35,15 +32,9 @@ PAGES = [
 ].freeze
 
 PAGE_BY_SOURCE = PAGES.to_h { |page| [page[:source], page] }
-TUTORIAL_PAGES = PAGES.select { |page| page[:source].start_with?("tutorial/") }.freeze
-TUTORIAL_ENTRY_PAGE = TUTORIAL_PAGES.first
 
 def escape_html(value)
   CGI.escapeHTML(value)
-end
-
-def tutorial_page?(page)
-  page[:source].start_with?("tutorial/")
 end
 
 def page_depth(page)
@@ -202,31 +193,11 @@ def render_markdown(markdown, from_page)
   [title, html]
 end
 
-def tutorial_markdown_parts(markdown, from_page)
-  lines = markdown.lines.map(&:chomp)
-  title = lines.first&.start_with?("# ") ? lines.shift.delete_prefix("# ").strip : from_page[:title]
-  example_index = lines.index { |line| line.match?(/\A##\s+Example\s*\z/) }
-
-  instruction_lines = example_index ? lines.first(example_index) : lines
-  example_lines = example_index ? lines[(example_index + 1)..] : []
-  _, instructions = render_markdown(instruction_lines.join("\n"), from_page)
-  _, example = render_markdown(Array(example_lines).join("\n"), from_page)
-  has_example_code = Array(example_lines).any? { |line| line.start_with?("```") }
-
-  [title, instructions, example, has_example_code]
-end
-
 def nav_html(current_page)
-  nav_pages = PAGES.reject do |page|
-    tutorial_page?(page) && page != TUTORIAL_ENTRY_PAGE
-  end
-
-  nav_pages.group_by { |page| page[:section] }.map do |section, pages|
+  PAGES.group_by { |page| page[:section] }.map do |section, pages|
     links = pages.map do |page|
-      active_page = page == current_page || (tutorial_page?(page) && tutorial_page?(current_page))
-      active = active_page ? %( class="active" aria-current="page") : ""
-      label = tutorial_page?(page) ? "Tutorial" : page[:label]
-      %(<a#{active} href="#{relative_href(current_page, page)}">#{escape_html(label)}</a>)
+      active = page == current_page ? %( class="active" aria-current="page") : ""
+      %(<a#{active} href="#{relative_href(current_page, page)}">#{escape_html(page[:label])}</a>)
     end.join("\n")
 
     <<~HTML
@@ -262,22 +233,16 @@ def page_intro(page)
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
   when "javascript_and_stimulus.html"
     "Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model."
-  when "tutorial/01-create-the-board-feature.html"
-    "Start a tiny kanban app by creating the board feature."
-  when "tutorial/02-render-columns.html"
-    "Render the default kanban columns inside the board."
-  when "tutorial/03-add-cards.html"
-    "Create cards through a Lucid command workflow."
-  when "tutorial/04-move-cards.html"
-    "Move cards between columns with server-rendered controls."
-  when "tutorial/05-rename-columns.html"
-    "Add a column-owned editing workflow."
-  when "tutorial/06-decompose-by-feature.html"
-    "Organize the tutorial app around board, column, and card features."
-  when "tutorial/07-enhance-with-drag-and-drop.html"
-    "Layer drag-and-drop JavaScript onto the existing card movement workflow."
-  when "tutorial/08-test-the-workflows.html"
-    "Test the board, column, and card workflows."
+  when "patterns/master-detail.html"
+    "A complete pattern for coordinated list selection, detail state, and empty states."
+  when "patterns/modals.html"
+    "A complete pattern for modal state, command submission, validation, and closing behavior."
+  when "patterns/pagination.html"
+    "A complete pattern for page params, result metadata, and next/previous navigation."
+  when "patterns/progressive-filter.html"
+    "A complete pattern for incremental filters, search state, reset behavior, and results."
+  when "patterns/process-manager.html"
+    "A complete pattern for long-running workflows, events, status updates, and progress views."
   when "reference/state.html"
     "Reference for URL-mapped state, state maps, and nested component state."
   when "reference/templates.html"
@@ -302,8 +267,7 @@ def previous_next_pages(page, pages)
 end
 
 def previous_next(page)
-  pages = tutorial_page?(page) ? TUTORIAL_PAGES : PAGES.reject { |candidate| tutorial_page?(candidate) && candidate != TUTORIAL_ENTRY_PAGE }
-  previous_page, next_page = previous_next_pages(page, pages)
+  previous_page, next_page = previous_next_pages(page, PAGES)
 
   [previous_page, next_page].compact.map do |target|
     direction = target == previous_page ? "Previous" : "Next"
@@ -316,122 +280,8 @@ def previous_next(page)
   end.join
 end
 
-def tutorial_steps_html(current_page)
-  TUTORIAL_PAGES.map.with_index(1) do |page, index|
-    active = page == current_page ? %( class="active" aria-current="page") : ""
-
-    <<~HTML
-      <li>
-        <a#{active} href="#{relative_href(current_page, page)}">
-          <span>Step #{index}</span>
-          <strong>#{escape_html(page[:title])}</strong>
-        </a>
-      </li>
-    HTML
-  end.join
-end
-
-def tutorial_header_nav(page)
-  previous_page, next_page = previous_next_pages(page, TUTORIAL_PAGES)
-  links = []
-
-  if previous_page
-    links << <<~HTML
-      <a class="tutorial-header-link" href="#{relative_href(page, previous_page)}">
-        <span>Previous</span>
-        <strong>#{escape_html(previous_page[:label])}</strong>
-      </a>
-    HTML
-  end
-
-  if next_page
-    links << <<~HTML
-      <a class="tutorial-header-link" href="#{relative_href(page, next_page)}">
-        <span>Next</span>
-        <strong>#{escape_html(next_page[:label])}</strong>
-      </a>
-    HTML
-  end
-
-  links.join
-end
-
-def tutorial_example_html(example, has_example_code)
-  return example if has_example_code
-
-  <<~HTML
-    <div class="tutorial-empty-code">
-      <p>No example code for this step yet.</p>
-    </div>
-  HTML
-end
-
-def render_tutorial_page(page)
-  source = File.read(File.join(ROOT, page[:source]))
-  title, instructions, example, has_example_code = tutorial_markdown_parts(source, page)
-
-  <<~HTML
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>#{escape_html(title)} | Lucid Documentation</title>
-        <meta name="description" content="#{escape_html(page_intro(page))}">
-        <link rel="stylesheet" href="#{stylesheet_href(page)}">
-      </head>
-      <body>
-        <a class="skip-link" href="#main">Skip to content</a>
-
-        <div class="tutorial-shell">
-          <aside class="tutorial-rail" aria-label="Tutorial steps">
-            <a class="brand" href="#{relative_href(page, PAGES.first)}" aria-label="Lucid documentation home">
-              <span class="brand-mark" aria-hidden="true">L</span>
-              <span>Lucid</span>
-            </a>
-
-            <p class="rail-title">Tutorial</p>
-            <ol class="tutorial-steps">
-              #{tutorial_steps_html(page)}
-            </ol>
-
-            <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
-          </aside>
-
-          <main id="main" class="tutorial-content">
-            <header class="tutorial-header">
-              <div>
-                <p class="section-label">#{escape_html(page[:label])}</p>
-                <h1>#{escape_html(title)}</h1>
-              </div>
-              <nav class="tutorial-header-nav" aria-label="Previous and next tutorial steps">
-                #{tutorial_header_nav(page)}
-              </nav>
-            </header>
-
-            <article class="tutorial-layout">
-              <section class="tutorial-instructions" aria-label="Tutorial instructions">
-                <p class="lede">#{escape_html(page_intro(page))}</p>
-                #{instructions}
-              </section>
-
-              <aside class="tutorial-example" aria-label="Example code">
-                <div class="tutorial-example-header">
-                  <p class="section-label">Example Code</p>
-                </div>
-                #{tutorial_example_html(example, has_example_code)}
-              </aside>
-            </article>
-          </main>
-        </div>
-      </body>
-    </html>
-  HTML
-end
-
 def render_page(page)
   return render_index_page if page[:output] == "index.html"
-  return render_tutorial_page(page) if tutorial_page?(page)
 
   source = File.read(File.join(ROOT, page[:source]))
   title, body = render_markdown(source, page)
@@ -525,8 +375,12 @@ def render_index_page
             </div>
 
             <div class="rail-group">
-              <p class="rail-title">Tutorial</p>
-              <a href="tutorial/01-create-the-board-feature.html">Tutorial</a>
+              <p class="rail-title">Patterns</p>
+              <a href="patterns/master-detail.html">Master Detail</a>
+              <a href="patterns/modals.html">Modals</a>
+              <a href="patterns/pagination.html">Pagination</a>
+              <a href="patterns/progressive-filter.html">Progressive Filter</a>
+              <a href="patterns/process-manager.html">Process Manager</a>
             </div>
 
             <div class="rail-group">
@@ -751,11 +605,27 @@ def render_index_page
                   </a>
                 </div>
 
-                <h3>Tutorial</h3>
+                <h3>Patterns</h3>
                 <div class="link-list">
-                  <a href="tutorial/01-create-the-board-feature.html">
-                    <strong>Tutorial</strong>
-                    <span>Build a tiny kanban board while decomposing the app by feature.</span>
+                  <a href="patterns/master-detail.html">
+                    <strong>Master Detail</strong>
+                    <span>Coordinate list selection, detail state, and empty states.</span>
+                  </a>
+                  <a href="patterns/modals.html">
+                    <strong>Modals</strong>
+                    <span>Manage modal state, command submission, validation, and closing behavior.</span>
+                  </a>
+                  <a href="patterns/pagination.html">
+                    <strong>Pagination</strong>
+                    <span>Carry page params, result metadata, and next/previous navigation.</span>
+                  </a>
+                  <a href="patterns/progressive-filter.html">
+                    <strong>Progressive Filter</strong>
+                    <span>Compose filters, search state, reset behavior, and results.</span>
+                  </a>
+                  <a href="patterns/process-manager.html">
+                    <strong>Process Manager</strong>
+                    <span>Represent long-running workflows, events, status updates, and progress views.</span>
                   </a>
                 </div>
 
