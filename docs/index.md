@@ -116,6 +116,8 @@ Concepts:
   and render HTML.
 - [Handlers](handlers.md): Put command-side behavior, policies, redirects, and
   event publication in handlers.
+- [Models](models.md): Keep model classes focused on invariants while placing
+  view-shaped queries near the components that render them.
 - [Client Behavior](client_behavior.md): Use JavaScript for local behavior
   without creating a second application model.
 

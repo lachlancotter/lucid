@@ -41,6 +41,7 @@ Typed declarations matter because Lucid rebuilds components from request state
 on every cycle.
 
 For URL path mapping with `route`, see [State](reference/state.md).
+For guidance on where query methods belong, see [Models](models.md).
 
 Container dependencies are plain collaborators:
 

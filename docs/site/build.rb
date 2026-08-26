@@ -17,6 +17,7 @@ PAGES = [
   { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Concepts" },
   { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Concepts" },
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Concepts" },
+  { title: "Models", label: "Models", source: "models.md", output: "models.html", section: "Concepts" },
   { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Concepts" },
   { title: "Master Detail", label: "Master Detail", source: "patterns/master-detail.md", output: "patterns/master-detail.html", section: "Patterns" },
   { title: "Modals", label: "Modals", source: "patterns/modals.md", output: "patterns/modals.html", section: "Patterns" },
@@ -229,6 +230,8 @@ def page_intro(page)
     "Learn how components hold typed state, compose views, and render HTML."
   when "handlers.html"
     "Use handlers for effectful command behavior, policies, redirects, and event publication."
+  when "models.html"
+    "Keep models focused on invariants while components own view-shaped queries."
   when "client_behavior.html"
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
   when "javascript_and_stimulus.html"
@@ -371,6 +374,7 @@ def render_index_page
               <a href="messages.html">Messages</a>
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
+              <a href="models.html">Models</a>
               <a href="client_behavior.html">Client Behavior</a>
             </div>
 
@@ -598,6 +602,10 @@ def render_index_page
                       Put command-side behavior, policies, redirects, and event
                       publication in handlers.
                     </span>
+                  </a>
+                  <a href="models.html">
+                    <strong>Models</strong>
+                    <span>Keep model classes focused on invariants while components own view-shaped queries.</span>
                   </a>
                   <a href="client_behavior.html">
                     <strong>Client Behavior</strong>
