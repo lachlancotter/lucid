@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Models | Lucid Documentation</title>
+    <meta name="description" content="Keep models focused on invariants while components own view-shaped queries.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
+<a href="hello.html">Hello World</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
+<a href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a class="active" aria-current="page" href="models.html">Models</a>
+<a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Concepts</p>
+            <h1>Models</h1>
+            <p class="lede">Keep models focused on invariants while components own view-shaped queries.</p>
+          </header>
+
+          <p>Lucid does not provide an ORM or model layer. Most applications will use ActiveRecord or another persistence library, but Lucid keeps the responsibility boundary the same: models own domain invariants, handlers own writes, and components own the query shape needed to render a view.</p>
+<h2 id="what-models-are-for">What Models Are For</h2>
+<p>Model classes should define facts that are true wherever the model is used.</p>
+<p>They are a good place for:</p>
+<ul>
+<li>associations</li>
+<li>unconditional validations</li>
+<li>persistence-level invariants</li>
+<li>small convenience methods that apply updates to the model itself</li>
+</ul>
+<p>They are not the best place for every query a screen might need. View-specific queries often encode sorting, filtering, preloading, pagination, projection, and empty-state concerns that only make sense for one component.</p>
+<h2 id="queries-belong-near-views">Queries Belong Near Views</h2>
+<p>In traditional MVC applications, it is common to collect query scopes and finder methods on model classes because controllers and templates both reach through the model layer for data. In Lucid, components are the rendering boundary, so the recommended default is to define query methods in the components that render their results.</p>
+<p>That keeps the query close to the shape of the HTML it supports. A component can query exactly the records, columns, ordering, and preloads its template needs without turning the model class into a catalog of screen-specific scopes.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectActivity</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+
+  <span class="k">def</span> <span class="nf">activities</span>
+    <span class="no">Activity</span>
+      <span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">project_id: </span><span class="n">project_id</span><span class="p">)</span>
+      <span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:actor</span><span class="p">)</span>
+      <span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :desc</span><span class="p">)</span>
+      <span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Use model-level scopes when they describe reusable domain concepts, not one view&#39;s presentation needs. For example, <code>Task.open</code> can be a good model scope if &quot;open&quot; is part of the domain language. <code>Task.visible_in_dashboard_order</code> is usually a component concern unless that ordering is meaningful across the whole application.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="handlers.html">
+  <span>Previous</span>
+  <strong>Handlers</strong>
+</a>
+<a href="client_behavior.html">
+  <span>Next</span>
+  <strong>Client Behavior</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

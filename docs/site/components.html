@@ -32,6 +32,7 @@
 <a href="messages.html">Messages</a>
 <a class="active" aria-current="page" href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
 <a href="client_behavior.html">Client Behavior</a>
 </div>
 
@@ -95,7 +96,7 @@
 <li><code>inherit</code> references reactive fields from an ancestor component or the HTTP session</li>
 </ul>
 <p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
-<p>For URL path mapping with <code>route</code>, see <a href="reference/state.html">State</a>.</p>
+<p>For URL path mapping with <code>route</code>, see <a href="reference/state.html">State</a>. For guidance on where query methods belong, see <a href="models.html">Models</a>.</p>
 <p>Container dependencies are plain collaborators:</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
   <span class="n">use</span> <span class="ss">:current_user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
