@@ -191,7 +191,7 @@ def page_intro(page)
   when "index.html"
     "Lucid is a Ruby framework for building reactive, hypermedia applications with a message-driven architecture."
   when "why.html"
-    "The design pressure that led Lucid toward messages, handlers, and components."
+    "Why web application architecture is stuck between SPA complexity and server-driven compromise, and how Lucid offers another path."
   when "hello.html"
     "Build the smallest useful Lucid application and see how state, links, and rendering connect."
   when "architecture.html"

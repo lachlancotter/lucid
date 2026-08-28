@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Why Lucid? | Lucid Documentation</title>
-    <meta name="description" content="The design pressure that led Lucid toward messages, handlers, and components.">
+    <meta name="description" content="Why web application architecture is stuck between SPA complexity and server-driven compromise, and how Lucid offers another path.">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -46,32 +46,78 @@
           <header class="doc-header">
             <p class="section-label">Start Here</p>
             <h1>Why Lucid?</h1>
-            <p class="lede">The design pressure that led Lucid toward messages, handlers, and components.</p>
+            <p class="lede">Why web application architecture is stuck between SPA complexity and server-driven compromise, and how Lucid offers another path.</p>
           </header>
 
-          <p>Lucid exists to make interactive server-rendered applications easier to design, change, and reason about.</p>
-<p>Traditional Ruby web applications usually spread one user interaction across several tightly coupled layers:</p>
+          <p>Web application architecture is lost.</p>
+<p>That sounds dramatic, but it explains the state of modern application development better than the usual debates about frameworks. Teams are still trying to answer a basic question:</p>
+<blockquote><p>Where should application behavior live?</p></blockquote>
+<p>The last decade has produced two dominant answers. One answer says the browser should own the application. The other says the server should keep control and send HTML. Both answers are useful. Both lead to compromise.</p>
+<p>Lucid exists because there is a better way to build rich web applications. But seeing it requires setting aside some familiar assumptions about routes, controllers, APIs, client-side state, and what hypermedia can be.</p>
+<p>You need to forget what you thought you knew about web development.</p>
+<h2 id="the-core-tension">The Core Tension</h2>
+<p>Rich applications need state, interaction, and coordination. A user opens panels, edits forms, changes filters, submits commands, sees validation errors, triggers side effects, and expects the page to update in the right places.</p>
+<p>Classic server-driven applications are good at business behavior. The server can load records, enforce permissions, run transactions, publish events, and render HTML from trusted state. But traditional MVC frameworks tend to model interaction through routes and controller actions. As the UI becomes more stateful, that model starts to stretch.</p>
+<p>Client-heavy applications solve the interaction problem by moving the center of gravity into the browser. They give the UI a component model, local state, and precise control over what changes on screen. But they do this by splitting the application into two systems: a front end and a back end.</p>
+<p>That split is where much of the complexity begins.</p>
+<h2 id="the-server-driven-compromise">The Server-Driven Compromise</h2>
+<p>Rails-style MVC gives Ruby applications a clear default shape: routes receive requests, controllers coordinate work, models hold persistence logic, and views render HTML.</p>
+<p>That shape works well when interactions are page-shaped. It becomes more awkward when a single user action is really a change in interface state.</p>
+<p>In a richer UI, one interaction can require coordinated changes across:</p>
 <ul>
-<li>routes define URL structure</li>
-<li>controllers interpret requests</li>
-<li>views generate links and forms against route helpers</li>
-<li>client code fills the gaps when the UI becomes more dynamic</li>
+<li>route definitions</li>
+<li>controller actions</li>
+<li>params and session state</li>
+<li>templates and partials</li>
+<li>route helpers in forms and links</li>
+<li>JavaScript that patches over missing interactivity</li>
 </ul>
-<p>That model works, but it creates friction as the interface grows more stateful. Navigation state leaks into routes, rendering decisions creep into controllers, and refactors often require coordinated changes across URLs, controllers, templates, and JavaScript.</p>
-<p>Lucid takes a different approach.</p>
-<h2 id="the-problem-lucid-solves">The Problem Lucid Solves</h2>
-<p>Lucid is designed for applications where HTML is still the right output format, but the UI behaves more like a living interface than a stack of static pages.</p>
-<p>In those applications, the hard problems are usually:</p>
+<p>Over time, the controller becomes the place that knows too much. It knows which workflow branch the user is in, which partials need to render, which params represent view state, which redirect returns the user to the right place, and which browser behavior is expected to finish the interaction.</p>
+<p>The problem is not server rendering. The problem is that MVC expresses user intent indirectly through endpoints. Behavior that should belong to the product model gets smeared across routes, controllers, templates, and client-side helpers.</p>
+<h2 id="the-spa-compromise">The SPA Compromise</h2>
+<p>SPA frameworks respond to that pressure by giving the browser a real application model. Components own view state. Client-side routers coordinate navigation. Local state managers decide what should update. The UI can feel fast and coherent because the browser is now the application runtime.</p>
+<p>But that power introduces complexity from two main sources: the toolchain and the API.</p>
+<p>The toolchain is the visible part. A SPA brings a build system, package graph, compiler, bundler, dev server, asset pipeline, hydration model, and deployment surface. Some of that can be hidden behind framework defaults, but it is still part of the architecture.</p>
+<p>The API is the deeper problem. Once the application is split into front end and back end, those two systems need an interface. That interface is the API, and APIs are hard to get right.</p>
+<p>The architect is forced into a choice:</p>
 <ul>
-<li>expressing user intent cleanly</li>
-<li>keeping business logic out of rendering code</li>
-<li>representing UI state in a way the browser can navigate</li>
-<li>updating only the parts of the page that changed</li>
-<li>avoiding route and controller coupling as features evolve</li>
+<li>Design an API that serves the exact needs of the front end, at the cost of coupling and churn.</li>
+<li>Design a more primitive, stable API, at the expense of more state and logic on the front end.</li>
 </ul>
-<p>Lucid addresses those problems by centering the UI around messages and components instead of controller actions.</p>
-<h2 id="the-core-shift">The Core Shift</h2>
-<p>Lucid organizes the application around three concepts:</p>
+<p>The first option keeps the client simpler, but every product change can ripple through the API. The second option keeps the API cleaner, but the browser must assemble more behavior from lower-level primitives. Either way, the product now lives across a boundary that must be designed, versioned, tested, secured, and maintained.</p>
+<p>For many business applications, that is a high price to pay. The server is still the best place to coordinate business effects, and HTML is still the best representation to send to the browser. A full SPA solves interactivity by creating more architecture than the product should need.</p>
+<h2 id="the-hypermedia-correction">The Hypermedia Correction</h2>
+<p>HTMX and similar tools offer a compelling correction. They return attention to hypermedia: links, forms, HTTP, and server-rendered HTML.</p>
+<p>That matters. It reminds us that the browser already understands how to submit requests, receive markup, update navigation state, and display documents. You do not always need a client-side application shell just to make a page feel alive.</p>
+<p>HTMX makes incremental updates natural. A link or form can request a fragment, swap a target, and avoid a full page reload. It brings much of the feel of a modern interface back to server-rendered applications.</p>
+<p>But HTMX is not a complete application architecture.</p>
+<p>As an HTMX-heavy interface grows, behavior can become encoded in:</p>
+<ul>
+<li>endpoint names</li>
+<li>template boundaries</li>
+<li>DOM IDs and swap targets</li>
+<li>request headers</li>
+<li>response fragments</li>
+<li>local JavaScript events and hooks</li>
+</ul>
+<p>The coupling has moved rather than disappeared. Instead of views knowing route helpers and controllers knowing pages, templates know DOM targets, endpoints know fragment shapes, and refactors require careful alignment between server responses and client-side swap behavior.</p>
+<p>HTMX brings us back to hypermedia, but it does not by itself answer the deeper architectural question. It does not give the application a typed model for user intent, a component state model, or a domain event flow for reactive updates. Those choices remain up to each application.</p>
+<h2 id="what-a-better-solution-needs">What a Better Solution Needs</h2>
+<p>An ideal architecture would keep the strengths of server-driven HTML without falling back into route and controller coupling.</p>
+<p>It would preserve hypermedia, but give it a stronger application model.</p>
+<p>It would let the server coordinate business behavior, but stop making controllers the center of every interaction.</p>
+<p>It would support rich, targeted updates, but avoid making DOM swap mechanics the core abstraction.</p>
+<p>It would make user intent explicit. A view should be able to say what the user is trying to do without knowing which endpoint, controller, fragment, or client store will handle it.</p>
+<p>It would keep UI state navigable. The URL should be able to describe the interface the user is looking at, rather than hiding that state in sessions, temporary controller branches, or client-only stores.</p>
+<p>It would separate three things that are often tangled together:</p>
+<ul>
+<li>intent</li>
+<li>effects</li>
+<li>rendering</li>
+</ul>
+<p>That is the shape Lucid is designed around.</p>
+<h2 id="the-lucid-shift">The Lucid Shift</h2>
+<p>Lucid organizes applications around three concepts:</p>
 <ul>
 <li><code>Messages</code> describe intent</li>
 <li><code>Handlers</code> apply effects</li>
@@ -79,23 +125,27 @@
 </ul>
 <p>This changes the main question from:</p>
 <blockquote><p>Which controller action should handle this URL?</p></blockquote>
+<p>or:</p>
+<blockquote><p>Which client-side state transition should this event trigger?</p></blockquote>
+<p>or:</p>
+<blockquote><p>Which fragment should this endpoint return, and where should it be swapped?</p></blockquote>
 <p>to:</p>
 <blockquote><p>What is the user trying to do, and which parts of the system care?</p></blockquote>
-<p>That shift matters because intent is usually more stable than route structure. When your code speaks in terms of <code>ShowEditForm</code>, <code>DeletePost</code>, or <code>PostDeleted</code>, the system becomes easier to extend and refactor.</p>
+<p>That shift matters because intent is usually more stable than routes, API shapes, or DOM targets. When your code speaks in terms of <code>ShowEditForm</code>, <code>DeletePost</code>, or <code>PostDeleted</code>, the system becomes easier to extend and refactor.</p>
 <h2 id="why-messages-matter">Why Messages Matter</h2>
-<p>Messages decouple interactions from URLs.</p>
-<p>Instead of binding a link directly to a route helper or controller action, you create a value object that expresses the interaction. Lucid then encodes that message into HTTP and decodes it back on the server.</p>
-<p>This buys you several things:</p>
+<p>Messages decouple interactions from endpoints.</p>
+<p>Instead of binding a link directly to a route helper, controller action, API call, or swap target, you create a value object that expresses the interaction. Lucid then encodes that message into HTTP and decodes it back on the server.</p>
+<p>This gives the application a vocabulary for behavior:</p>
 <ul>
-<li>views do not need hard-coded knowledge of route structure</li>
-<li>multiple handlers can react to the same command or event</li>
-<li>links and commands become reusable application vocabulary</li>
-<li>tests can focus on intent and effects instead of route plumbing</li>
+<li>links represent navigation intent</li>
+<li>commands represent requested mutations</li>
+<li>events represent things that happened</li>
 </ul>
+<p>Views can describe intent without knowing transport details. Handlers can react to commands. Components can react to link messages and published events. Tests can focus on behavior and effects instead of route plumbing or browser-side wiring.</p>
 <h2 id="why-components-matter">Why Components Matter</h2>
 <p>Lucid components are the rendering layer. They hold typed state, compose into trees, and render HTML using Ruby templates.</p>
-<p>Because components rebuild from request state on each cycle, the URL can become a truthful representation of the current UI. That makes browser navigation work more naturally and reduces the need for hidden session-driven UI state.</p>
-<p>Components also react directly to link messages and published events, which gives the system a reactive feel without forcing you into a client-side SPA architecture.</p>
+<p>Because components rebuild from request state on each cycle, the URL can become a truthful representation of the current UI. Browser navigation works more naturally, and the application needs less hidden session state or client-only view state.</p>
+<p>Components also react directly to messages and events. That gives the interface a reactive feel without turning the browser into the application runtime and without making fragment swaps the main design primitive.</p>
 <h2 id="why-handlers-matter">Why Handlers Matter</h2>
 <p>Handlers own command-side behavior:</p>
 <ul>
@@ -106,32 +156,20 @@
 <li>issuing redirects or other response effects</li>
 </ul>
 <p>This keeps business logic out of templates and component rendering paths, while still allowing the UI to update automatically in response to domain events.</p>
-<h2 id="where-lucid-fits">Where Lucid Fits</h2>
-<p>Lucid is not trying to replace every part of your stack.</p>
-<p>It fits best when you want:</p>
-<ul>
-<li>Ruby-driven HTML rendering</li>
-<li>richer interactions than classic full-page request cycles</li>
-<li>a hypermedia approach instead of a full client-side SPA</li>
-<li>explicit separation between intent, effects, and rendering</li>
-</ul>
-<p>It is less compelling if your application is primarily:</p>
-<ul>
-<li>a JSON API</li>
-<li>a static content site</li>
-<li>a fully client-owned SPA where the server only exposes data endpoints</li>
-</ul>
-<h2 id="the-payoff">The Payoff</h2>
-<p>Lucid trades familiar MVC conventions for a model that is better aligned with interactive hypermedia applications.</p>
-<p>The main benefits are:</p>
+<h2 id="there-is-a-better-way">There Is A Better Way</h2>
+<p>Lucid is not trying to make Rails more dynamic, rebuild a SPA in Ruby, or wrap HTMX with nicer syntax.</p>
+<p>It is a different model for interactive hypermedia applications.</p>
+<p>The payoff is:</p>
 <ul>
 <li>less coupling between views, routes, and business logic</li>
-<li>URLs derived from state instead of handwritten navigation plumbing</li>
-<li>cleaner composition of UI behavior</li>
-<li>easier refactoring as features grow</li>
-<li>server-rendered interactivity without abandoning HTML as the primary medium</li>
+<li>a typed vocabulary for user and system intent</li>
+<li>URLs derived from component state</li>
+<li>business effects isolated in handlers</li>
+<li>reactive server-rendered updates without a client-owned application shell</li>
+<li>hypermedia without making DOM swap mechanics the center of the design</li>
 </ul>
-<p>If those problems are the ones making your application difficult to evolve, Lucid is the right abstraction to explore next.</p>
+<p>If the current choices feel unsatisfying, that is because the usual categories are too small. The web does not need to choose between static MVC pages, client-owned SPAs, and ad hoc fragment swapping.</p>
+<p>There is a better way. Lucid is an attempt to make that way concrete.</p>
 
 
           <nav class="page-nav" aria-label="Previous and next pages">
