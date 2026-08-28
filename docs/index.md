@@ -123,16 +123,21 @@ Concepts:
 
 Patterns:
 
+- [Authentication](patterns/authentication.md): Coordinate sign-in, sign-out,
+  sessions, and access state.
 - [Master Detail](patterns/master-detail.md): Coordinate list selection, detail
   state, and empty states.
 - [Modals](patterns/modals.md): Manage modal state, command submission,
   validation, and closing behavior.
 - [Pagination](patterns/pagination.md): Carry page params, result metadata, and
   next/previous navigation.
+- [Polling](patterns/polling.md): Refresh server-rendered state on an interval.
 - [Progressive Filter](patterns/progressive-filter.md): Compose filters, search
   state, reset behavior, and results.
 - [Process Manager](patterns/process-manager.md): Represent long-running
   workflows, events, status updates, and progress views.
+- [Toasts](patterns/toasts.md): Display transient feedback after commands and
+  events.
 
 Reference:
 
