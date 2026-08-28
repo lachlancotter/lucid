@@ -147,6 +147,26 @@ class ProjectDetail < Lucid::Component::Base
 end
 ```
 
+The row key is the stable identity for each rendered project. If a published
+event only affects one project row, the list can use `for` on the collection nest
+to load that project without querying every row:
+
+```ruby
+class ProjectList < Lucid::Component::Base
+  let(:projects) { Project.all }
+
+  nest(:project_rows) do
+    ProjectListItem[].
+      enum(:projects, as: :project).
+      for(ProjectRenamed) { |event| Project.find(event.project_id) }
+  end
+end
+```
+
+Lucid passes the event to the targeted row component, and `key { project.id }`
+keeps the targeted row's DOM and nested state identity aligned with the normal
+full-list render.
+
 The list does not need to know the URL for a project. It names the interaction
 with `SelectProject`, and Lucid turns that message plus the resulting component
 state into the correct URL and replacement behavior. The manager owns selection

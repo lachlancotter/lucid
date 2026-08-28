@@ -188,6 +188,17 @@
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span></code></pre>
+<p>The row key is the stable identity for each rendered project. If a published event only affects one project row, the list can use <code>for</code> on the collection nest to load that project without querying every row:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectList</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span> <span class="p">{</span> <span class="no">Project</span><span class="p">.</span><span class="nf">all</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ProjectListItem</span><span class="p">[].</span>
+      <span class="nf">enum</span><span class="p">(</span><span class="ss">:projects</span><span class="p">,</span> <span class="ss">as: :project</span><span class="p">).</span>
+      <span class="nf">for</span><span class="p">(</span><span class="no">ProjectRenamed</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">event</span><span class="o">|</span> <span class="no">Project</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="nf">project_id</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Lucid passes the event to the targeted row component, and <code>key { project.id }</code> keeps the targeted row&#39;s DOM and nested state identity aligned with the normal full-list render.</p>
 <p>The list does not need to know the URL for a project. It names the interaction with <code>SelectProject</code>, and Lucid turns that message plus the resulting component state into the correct URL and replacement behavior. The manager owns selection state, passes the selected ID into the list, and chooses the right detail-area component for the current selection. The list owns the collection query and markup, each row owns item markup, and each detail-area component only needs the state it renders.</p>
 <h2 id="empty-and-missing-states">Empty And Missing States</h2>
 <p>Master/detail screens need intentional fallback states:</p>

@@ -134,6 +134,68 @@ typically call `update` to change component state.
 Components can also respond to `Event` messages with `on` blocks so the UI
 tracks domain changes without manual refresh code.
 
+### Message Propagation
+
+When a component receives a message, Lucid applies that message to the component
+and then propagates it to nested child components. Each child receives the same
+message and can apply its own state changes with `to` or `on` handlers.
+
+Collection nests are the exception to this default rule. Lucid does not load a
+full collection just to propagate every message through every child, because
+that would often run expensive queries for components that do not need to
+change.
+
+When a message should propagate to children in a collection nest, declare that
+case explicitly with `for` and provide the loader for the affected item or items.
+The child components built by `for` receive the same message, so their `on` or
+`to` handlers still run.
+
+Collection nests normally enumerate their collection when the parent component is
+built:
+
+```ruby
+class ProjectList < Lucid::Component::Base
+  let(:projects) { Project.all }
+
+  nest(:project_rows) do
+    ProjectRow[].enum(:projects, as: :project)
+  end
+end
+```
+
+For messages that affect known records, `for` defines the message-time loader:
+
+```ruby
+class ProjectList < Lucid::Component::Base
+  let(:projects) { Project.all }
+
+  nest(:project_rows) do
+    ProjectRow[].
+      enum(:projects, as: :project).
+      for(ProjectRenamed) { |event| Project.find(event.project_id) }
+  end
+end
+```
+
+The `for` block should return one item or an enumerable of items.
+
+Define a stable key on the collection child so the targeted render has the same
+state and DOM identity as the child produced by the full collection render:
+
+```ruby
+class ProjectRow < Lucid::Component::Base
+  prop :project, Types::Any
+
+  key { project.id }
+
+  on(ProjectRenamed) { replace }
+end
+```
+
+Use model identity for collection keys, not the row's position in the current
+query result. Positional keys make targeted updates fragile when filtering,
+sorting, or pagination changes the collection order.
+
 ## Rendering
 
 ### View Functions, Signals, and Helpers
