@@ -27,6 +27,8 @@ Params that are not selected by `route` are represented as query parameters.
 
 For the broader distinction between URL-mapped params, external props, and
 transient temps, see [Components](../components.md).
+For type helpers, defaults, and optional values in declarations, see
+[Types](types.md).
 
 ### URL-Mapped State With `param`
 

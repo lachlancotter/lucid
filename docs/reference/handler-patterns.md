@@ -77,12 +77,14 @@ gateways, clients, adapters, or other external dependencies.
 
 ```ruby
 class TaskHandler < Lucid::Handler
-  use :task_notifier, Types.Instance(TaskNotifier)
+  use :task_notifier, Types.instance(TaskNotifier)
 end
 ```
 
 Do not use `use` for records loaded from application persistence. Resolve those
 inside the handler with `with_*` methods.
+
+For the type helpers accepted by `use`, see [Types](types.md).
 
 ## Dependency Resolution
 

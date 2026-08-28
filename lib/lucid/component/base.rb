@@ -4,6 +4,7 @@ module Lucid
     # Base class for Lucid components.
     #
     class Base
+      extend TypeHelpers
 
       include Callbacks
       include StateMapping

@@ -40,6 +40,9 @@ Lucid distinguishes between internal component state and external inputs.
 Typed declarations matter because Lucid rebuilds components from request state
 on every cycle.
 
+For the available type helpers, defaults, optional values, and dry-types
+boundary rules, see [Types](reference/types.md).
+
 ### Choosing Param, Prop, or Temp
 
 Use `param` for state that belongs to the component and should survive request

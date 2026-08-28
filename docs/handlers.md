@@ -44,6 +44,9 @@ already exposes:
 
 Applications can add more dependencies through the request container.
 
+`use` declarations are typed. For dry-types helpers and dependency declaration
+examples, see [Types](reference/types.md).
+
 ## Policies
 
 Handlers can adopt policy classes and are expected to call `with_permission`
