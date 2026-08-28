@@ -21,19 +21,40 @@
   <p class="rail-title">Start Here</p>
   <a href="index.html">Overview</a>
 <a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
 <a class="active" aria-current="page" href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
 <a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/authentication.html">Authentication</a>
+<a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/polling.html">Polling</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+<a href="patterns/toasts.html">Toasts</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
 
@@ -49,49 +70,51 @@
             <p class="lede">Build the smallest useful Lucid application and see how state, links, and rendering connect.</p>
           </header>
 
-          <p>The smallest useful Lucid application has three parts:</p>
+          <p>This walkthrough builds the smallest useful Lucid application. For setup options across Rack, Sinatra, and the planned Rails integration, start with <a href="getting_started.html">Getting Started</a>.</p>
+<p>A tiny Lucid app has three parts:</p>
 <ul>
 <li>a root component</li>
 <li>one or more messages</li>
 <li>an app configured to render that component</li>
 </ul>
 <h2 id="a-tiny-component">A Tiny Component</h2>
-<pre><code>class HomePage &lt; Lucid::Component::Base
-  param :name, Types.string.default(&quot;world&quot;.freeze)
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
-  template do |name|
-    html {
-      body {
-        h1 { text &quot;Hello, #{name}&quot; }
-      }
-    }
-  end
-end</code></pre>
-<p>This component declares URL-backed state with <code>param</code> and renders HTML from that state.</p>
+  <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>This component declares URL-mapped state with <code>param</code> and renders HTML from that state.</p>
 <h2 id="a-link-message">A Link Message</h2>
-<pre><code>class GreetPerson &lt; Lucid::Link
-  param :name, String
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <h2 id="handling-the-link">Handling the Link</h2>
-<pre><code>class HomePage &lt; Lucid::Component::Base
-  param :name, Types.string.default(&quot;world&quot;.freeze)
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
 
-  to GreetPerson do |msg|
-    update(name: msg.name)
-  end
-end</code></pre>
+  <span class="n">to</span> <span class="no">GreetPerson</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">update</span><span class="p">(</span><span class="ss">name: </span><span class="n">msg</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
 <p>Now navigation is expressed as intent instead of route manipulation.</p>
 <h2 id="wiring-the-app">Wiring the App</h2>
-<pre><code>class ExampleApp &lt; Lucid::App
-  set :component_class, HomePage
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span></code></pre>
+<p>Run the app directly with Sinatra:</p>
+<pre><code class="language-ruby"><span class="no">ExampleApp</span><span class="p">.</span><span class="nf">run!</span> <span class="k">if</span> <span class="vg">$PROGRAM_NAME</span> <span class="o">==</span> <span class="kp">__FILE__</span></code></pre>
 <p>With that in place:</p>
 <ul>
 <li><code>GET /</code> renders the default component state</li>
-<li><code>GET /@/greet_person?name=Lucid</code> applies the link message</li>
+<li><code>GET /@/greet-person?name=Lucid</code> applies the link message</li>
 </ul>
 <p>From there, the next concepts to learn are:</p>
 <ul>
+<li><a href="getting_started.html">Getting Started</a></li>
 <li><a href="architecture.html">Architecture</a></li>
 <li><a href="features.html">Features</a></li>
 <li><a href="messages.html">Messages</a></li>
@@ -101,9 +124,9 @@ end</code></pre>
 
 
           <nav class="page-nav" aria-label="Previous and next pages">
-            <a href="why.html">
+            <a href="getting_started.html">
   <span>Previous</span>
-  <strong>Why Lucid?</strong>
+  <strong>Getting Started</strong>
 </a>
 <a href="architecture.html">
   <span>Next</span>

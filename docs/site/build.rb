@@ -2,6 +2,7 @@
 
 require "cgi"
 require "fileutils"
+require "rouge"
 
 ROOT = File.expand_path("..", __dir__)
 SITE_ROOT = __dir__
@@ -9,15 +10,28 @@ SITE_ROOT = __dir__
 PAGES = [
   { title: "Overview", label: "Overview", source: "index.md", output: "index.html", section: "Start Here" },
   { title: "Why Lucid?", label: "Why Lucid?", source: "why.md", output: "why.html", section: "Start Here" },
+  { title: "Getting Started", label: "Getting Started", source: "getting_started.md", output: "getting_started.html", section: "Start Here" },
   { title: "Hello World", label: "Hello World", source: "hello.md", output: "hello.html", section: "Start Here" },
-  { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Start Here" },
-  { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Start Here" },
-  { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Start Here" },
-  { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Start Here" },
-  { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Start Here" },
-  { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Start Here" },
+  { title: "Architecture", label: "Architecture", source: "architecture.md", output: "architecture.html", section: "Concepts" },
+  { title: "Features", label: "Features", source: "features.md", output: "features.html", section: "Concepts" },
+  { title: "Messages", label: "Messages", source: "messages.md", output: "messages.html", section: "Concepts" },
+  { title: "Components", label: "Components", source: "components.md", output: "components.html", section: "Concepts" },
+  { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Concepts" },
+  { title: "Models", label: "Models", source: "models.md", output: "models.html", section: "Concepts" },
+  { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Concepts" },
+  { title: "Authentication", label: "Authentication", source: "patterns/authentication.md", output: "patterns/authentication.html", section: "Patterns" },
+  { title: "Master Detail", label: "Master Detail", source: "patterns/master-detail.md", output: "patterns/master-detail.html", section: "Patterns" },
+  { title: "Modals", label: "Modals", source: "patterns/modals.md", output: "patterns/modals.html", section: "Patterns" },
+  { title: "Pagination", label: "Pagination", source: "patterns/pagination.md", output: "patterns/pagination.html", section: "Patterns" },
+  { title: "Polling", label: "Polling", source: "patterns/polling.md", output: "patterns/polling.html", section: "Patterns" },
+  { title: "Progressive Filter", label: "Progressive Filter", source: "patterns/progressive-filter.md", output: "patterns/progressive-filter.html", section: "Patterns" },
+  { title: "Process Manager", label: "Process Manager", source: "patterns/process-manager.md", output: "patterns/process-manager.html", section: "Patterns" },
+  { title: "Toasts", label: "Toasts", source: "patterns/toasts.md", output: "patterns/toasts.html", section: "Patterns" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
+  { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
+  { title: "JavaScript and Stimulus", label: "JavaScript and Stimulus", source: "javascript_and_stimulus.md", output: "javascript_and_stimulus.html", section: "Reference" },
+  { title: "Handler Patterns", label: "Handler Patterns", source: "reference/handler-patterns.md", output: "reference/handler-patterns.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
 ].freeze
 
@@ -65,6 +79,15 @@ def slug(text)
   text.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/\A-|-+\z/, "")
 end
 
+def render_code_block(code_lines, language)
+  code = code_lines.join("\n")
+  lexer = language && Rouge::Lexer.find_fancy(language, "example.#{language}")
+  language_class = lexer ? %( class="language-#{escape_html(lexer.tag)}") : ""
+  highlighted = lexer ? Rouge::Formatters::HTML.new.format(lexer.lex(code)) : escape_html(code)
+
+  "<pre><code#{language_class}>#{highlighted}</code></pre>\n"
+end
+
 def render_markdown(markdown, from_page)
   lines = markdown.lines.map(&:chomp)
   title = lines.first&.start_with?("# ") ? lines.shift.delete_prefix("# ").strip : from_page[:title]
@@ -73,6 +96,7 @@ def render_markdown(markdown, from_page)
   list_type = nil
   list_items = []
   in_code = false
+  code_language = nil
   code_lines = []
 
   flush_paragraph = lambda do
@@ -96,8 +120,9 @@ def render_markdown(markdown, from_page)
   lines.each do |line|
     if in_code
       if line.start_with?("```")
-        html << "<pre><code>#{escape_html(code_lines.join("\n"))}</code></pre>\n"
+        html << render_code_block(code_lines, code_language)
         code_lines.clear
+        code_language = nil
         in_code = false
       else
         code_lines << line
@@ -105,10 +130,11 @@ def render_markdown(markdown, from_page)
       next
     end
 
-    if line.start_with?("```")
+    if (match = line.match(/\A```\s*([A-Za-z0-9_+.-]+)?/))
       flush_paragraph.call
       flush_list.call
       in_code = true
+      code_language = match[1]
       next
     end
 
@@ -167,6 +193,7 @@ def render_markdown(markdown, from_page)
 
   flush_paragraph.call
   flush_list.call
+  html << render_code_block(code_lines, code_language) if in_code
   [title, html]
 end
 
@@ -192,6 +219,8 @@ def page_intro(page)
     "Lucid is a Ruby framework for building reactive, hypermedia applications with a message-driven architecture."
   when "why.html"
     "Why web application architecture is stuck between SPA complexity and server-driven compromise, and how Lucid offers another path."
+  when "getting_started.html"
+    "Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration."
   when "hello.html"
     "Build the smallest useful Lucid application and see how state, links, and rendering connect."
   when "architecture.html"
@@ -204,12 +233,36 @@ def page_intro(page)
     "Learn how components hold typed state, compose views, and render HTML."
   when "handlers.html"
     "Use handlers for effectful command behavior, policies, redirects, and event publication."
+  when "models.html"
+    "Keep models focused on invariants while components own view-shaped queries."
   when "client_behavior.html"
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
+  when "javascript_and_stimulus.html"
+    "Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model."
+  when "patterns/authentication.html"
+    "A complete pattern for sign-in, sign-out, sessions, and access state."
+  when "patterns/master-detail.html"
+    "A complete pattern for coordinated list selection, detail state, and empty states."
+  when "patterns/modals.html"
+    "A complete pattern for modal state, command submission, validation, and closing behavior."
+  when "patterns/pagination.html"
+    "A complete pattern for page params, result metadata, and next/previous navigation."
+  when "patterns/polling.html"
+    "A complete pattern for refreshing server-rendered state on an interval."
+  when "patterns/progressive-filter.html"
+    "A complete pattern for incremental filters, search state, reset behavior, and results."
+  when "patterns/process-manager.html"
+    "A complete pattern for long-running workflows, events, status updates, and progress views."
+  when "patterns/toasts.html"
+    "A complete pattern for transient feedback after commands and events."
   when "reference/state.html"
-    "Reference for URL-backed state, state maps, and nested component state."
+    "Reference for URL-mapped state, state maps, and nested component state."
   when "reference/templates.html"
     "Reference for Lucid templates, rendering context, helpers, and multipart forms."
+  when "reference/forms.html"
+    "Reference for form models, form_for, field helpers, values, IDs, and errors."
+  when "reference/handler-patterns.html"
+    "Reference for handler structure, dependencies, preconditions, events, transactions, and specs."
   when "reference/configuration.html"
     "Reference for application settings, request containers, and extension points."
   else
@@ -217,10 +270,16 @@ def page_intro(page)
   end
 end
 
+def previous_next_pages(page, pages)
+  index = pages.index(page)
+  previous_page = index&.positive? ? pages[index - 1] : nil
+  next_page = index && index < pages.length - 1 ? pages[index + 1] : nil
+
+  [previous_page, next_page]
+end
+
 def previous_next(page)
-  index = PAGES.index(page)
-  previous_page = index&.positive? ? PAGES[index - 1] : nil
-  next_page = index && index < PAGES.length - 1 ? PAGES[index + 1] : nil
+  previous_page, next_page = previous_next_pages(page, PAGES)
 
   [previous_page, next_page].compact.map do |target|
     direction = target == previous_page ? "Previous" : "Next"
@@ -286,7 +345,7 @@ def render_page(page)
 end
 
 def render_index_page
-  (<<~HTML).gsub(/^    /, "")
+  html = <<~HTML
     <!doctype html>
     <html lang="en">
       <head>
@@ -313,19 +372,40 @@ def render_index_page
               <p class="rail-title">Start Here</p>
               <a class="active" href="index.html">Overview</a>
               <a href="why.html">Why Lucid?</a>
+              <a href="getting_started.html">Getting Started</a>
               <a href="hello.html">Hello World</a>
+            </div>
+
+            <div class="rail-group">
+              <p class="rail-title">Concepts</p>
               <a href="architecture.html">Architecture</a>
               <a href="features.html">Features</a>
               <a href="messages.html">Messages</a>
               <a href="components.html">Components</a>
               <a href="handlers.html">Handlers</a>
+              <a href="models.html">Models</a>
               <a href="client_behavior.html">Client Behavior</a>
+            </div>
+
+            <div class="rail-group">
+              <p class="rail-title">Patterns</p>
+              <a href="patterns/authentication.html">Authentication</a>
+              <a href="patterns/master-detail.html">Master Detail</a>
+              <a href="patterns/modals.html">Modals</a>
+              <a href="patterns/pagination.html">Pagination</a>
+              <a href="patterns/polling.html">Polling</a>
+              <a href="patterns/progressive-filter.html">Progressive Filter</a>
+              <a href="patterns/process-manager.html">Process Manager</a>
+              <a href="patterns/toasts.html">Toasts</a>
             </div>
 
             <div class="rail-group">
               <p class="rail-title">Reference</p>
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
+              <a href="reference/forms.html">Forms</a>
+              <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+              <a href="reference/handler-patterns.html">Handler Patterns</a>
               <a href="reference/configuration.html">Configuration</a>
             </div>
 
@@ -470,8 +550,7 @@ def render_index_page
               <section aria-labelledby="quickstart">
                 <h2 id="quickstart">Quickstart</h2>
                 <p>From a checkout of this repository, run the included example app:</p>
-                <pre><code>bundle install
-#{'bundle exec ruby examples/hello_world/app.rb'}</code></pre>
+                %%QUICKSTART_CODE%%
                 <p>Then open <code>http://localhost:4567</code>.</p>
                 <p>
                   This repository quickstart requires Ruby <code>3.2.8</code> and
@@ -482,20 +561,37 @@ def render_index_page
                   For the full walkthrough, continue to
                   <a href="hello.html">Hello World</a>.
                 </p>
+                <p>
+                  For setup options across Rack, Sinatra, and the planned Rails
+                  integration, see
+                  <a href="getting_started.html">Getting Started</a>.
+                </p>
               </section>
 
               <section aria-labelledby="next">
                 <h2 id="next">Next steps</h2>
                 <h3>Start here</h3>
                 <div class="link-list">
+                  <a href="index.html">
+                    <strong>Overview</strong>
+                    <span>Understand Lucid's core model and request flow.</span>
+                  </a>
                   <a href="why.html">
                     <strong>Why Lucid?</strong>
                     <span>Understand the problems Lucid is designed to solve.</span>
+                  </a>
+                  <a href="getting_started.html">
+                    <strong>Getting Started</strong>
+                    <span>Install Lucid and choose a Rack or Sinatra runtime.</span>
                   </a>
                   <a href="hello.html">
                     <strong>Hello World</strong>
                     <span>Build the smallest useful Lucid application.</span>
                   </a>
+                </div>
+
+                <h3>Concepts</h3>
+                <div class="link-list">
                   <a href="architecture.html">
                     <strong>Architecture</strong>
                     <span>Trace the command, navigation, and rendering loops.</span>
@@ -519,9 +615,37 @@ def render_index_page
                       publication in handlers.
                     </span>
                   </a>
+                  <a href="models.html">
+                    <strong>Models</strong>
+                    <span>Keep model classes focused on invariants while components own view-shaped queries.</span>
+                  </a>
                   <a href="client_behavior.html">
                     <strong>Client Behavior</strong>
                     <span>Use JavaScript for local behavior without creating a second app model.</span>
+                  </a>
+                </div>
+
+                <h3>Patterns</h3>
+                <div class="link-list">
+                  <a href="patterns/master-detail.html">
+                    <strong>Master Detail</strong>
+                    <span>Coordinate list selection, detail state, and empty states.</span>
+                  </a>
+                  <a href="patterns/modals.html">
+                    <strong>Modals</strong>
+                    <span>Manage modal state, command submission, validation, and closing behavior.</span>
+                  </a>
+                  <a href="patterns/pagination.html">
+                    <strong>Pagination</strong>
+                    <span>Carry page params, result metadata, and next/previous navigation.</span>
+                  </a>
+                  <a href="patterns/progressive-filter.html">
+                    <strong>Progressive Filter</strong>
+                    <span>Compose filters, search state, reset behavior, and results.</span>
+                  </a>
+                  <a href="patterns/process-manager.html">
+                    <strong>Process Manager</strong>
+                    <span>Represent long-running workflows, events, status updates, and progress views.</span>
                   </a>
                 </div>
 
@@ -530,7 +654,7 @@ def render_index_page
                   <a href="reference/state.html">
                     <strong>State</strong>
                     <span>
-                      Work with URL-backed state, state maps, and nested component
+                      Work with URL-mapped state, state maps, and nested component
                       state.
                     </span>
                   </a>
@@ -538,6 +662,24 @@ def render_index_page
                     <strong>Templates</strong>
                     <span>
                       Use the template context, helpers, and multipart form support.
+                    </span>
+                  </a>
+                  <a href="reference/forms.html">
+                    <strong>Forms</strong>
+                    <span>
+                      Build message forms with field helpers, scoped names, values,
+                      IDs, and validation errors.
+                    </span>
+                  </a>
+                  <a href="javascript_and_stimulus.html">
+                    <strong>JavaScript and Stimulus</strong>
+                    <span>Add idiomatic browser behavior while keeping server-rendered state in Ruby.</span>
+                  </a>
+                  <a href="reference/handler-patterns.html">
+                    <strong>Handler Patterns</strong>
+                    <span>
+                      Structure handlers with dependencies, preconditions, events,
+                      transactions, and specs.
                     </span>
                   </a>
                   <a href="reference/configuration.html">
@@ -555,6 +697,13 @@ def render_index_page
       </body>
     </html>
   HTML
+
+  quickstart_code = render_code_block(
+    ["bundle install", "bundle exec ruby examples/hello_world/app.rb"],
+    "sh"
+  ).rstrip
+
+  html.sub("            %%QUICKSTART_CODE%%", quickstart_code)
 end
 
 PAGES.each do |page|

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Master Detail | Lucid Documentation</title>
+    <meta name="description" content="A complete pattern for coordinated list selection, detail state, and empty states.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../getting_started.html">Getting Started</a>
+<a href="../hello.html">Hello World</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="../architecture.html">Architecture</a>
+<a href="../features.html">Features</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+<a href="../models.html">Models</a>
+<a href="../client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="../patterns/authentication.html">Authentication</a>
+<a class="active" aria-current="page" href="../patterns/master-detail.html">Master Detail</a>
+<a href="../patterns/modals.html">Modals</a>
+<a href="../patterns/pagination.html">Pagination</a>
+<a href="../patterns/polling.html">Polling</a>
+<a href="../patterns/progressive-filter.html">Progressive Filter</a>
+<a href="../patterns/process-manager.html">Process Manager</a>
+<a href="../patterns/toasts.html">Toasts</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a href="../reference/templates.html">Templates</a>
+<a href="../reference/forms.html">Forms</a>
+<a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="../reference/handler-patterns.html">Handler Patterns</a>
+<a href="../reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Patterns</p>
+            <h1>Master Detail</h1>
+            <p class="lede">A complete pattern for coordinated list selection, detail state, and empty states.</p>
+          </header>
+
+          <p>Master/detail views show a collection beside the selected record. They are a good fit when the user needs to scan a list, move between records quickly, and keep surrounding context visible while inspecting one item.</p>
+<p>In Lucid, model the selected record as component state. The list sends a <code>Link</code> message, the component maps that message into a selected ID, and the template renders the detail area from the current state.</p>
+<h2 id="shape">Shape</h2>
+<p>A master/detail component usually has:</p>
+<ul>
+<li>a <code>param</code> for the selected record ID</li>
+<li>a <code>Link</code> message that describes selection intent</li>
+<li>a <code>to</code> handler that copies the link ID into component state</li>
+<li>list and detail components declared with <code>nest</code></li>
+<li>a dynamic detail nest selected with a <code>case</code> statement</li>
+<li>repeated list rows rendered with <code>subcomponents</code></li>
+<li>detail content rendered with <code>subcomponent</code></li>
+<li>explicit empty and missing-record states</li>
+</ul>
+<p>Use a <code>param</code> for the selected ID when the selection should survive refresh, back/forward navigation, or shared URLs.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SelectProject</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Link</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:selected_project_id</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:integer</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<h2 id="component-state">Component State</h2>
+<p>Keep declaration-time APIs in the component class body. Params, nested components, and link handlers describe the component&#39;s state model before any template runs.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectsManager</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:selected_project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">optional</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+
+  <span class="n">to</span> <span class="no">SelectProject</span><span class="p">,</span> <span class="ss">:selected_project_id</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:selected_project</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">selected_project_id</span><span class="o">|</span> <span class="no">Project</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">selected_project_id</span><span class="p">)</span> <span class="k">if</span> <span class="n">selected_project_id</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_list</span><span class="p">)</span> <span class="p">{</span> <span class="no">ProjectList</span><span class="p">[</span><span class="ss">:selected_project_id</span><span class="p">]</span> <span class="p">}</span>
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_detail</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">selected_project_id</span><span class="p">,</span> <span class="n">selected_project</span><span class="o">|</span>
+    <span class="k">case</span>
+    <span class="k">when</span> <span class="n">selected_project</span>
+      <span class="no">ProjectDetail</span><span class="p">[</span><span class="ss">project: :selected_project</span><span class="p">]</span>
+    <span class="k">when</span> <span class="n">selected_project_id</span>
+      <span class="no">MissingProject</span><span class="p">[</span><span class="ss">selected_project_id: :selected_project_id</span><span class="p">]</span>
+    <span class="k">else</span>
+      <span class="no">NoProjectSelected</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>The selected ID is view state, not a mutation. Selecting an item should normally be a <code>Link</code>, not a <code>Command</code>. Save commands, deletes, comments, and other business effects still belong in handlers.</p>
+<h2 id="template-composition">Template Composition</h2>
+<p>Use template-time APIs inside <code>element</code> and named templates. This keeps markup composition separate from the class-level declarations that define state and message handling.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectsManager</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">section</span><span class="p">(</span><span class="ss">class: </span><span class="s2">"master-detail"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">subcomponent</span><span class="p">(</span><span class="ss">:project_list</span><span class="p">)</span>
+      <span class="n">subcomponent</span><span class="p">(</span><span class="ss">:project_detail</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ProjectList</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:selected_project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">optional</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span> <span class="p">{</span> <span class="no">Project</span><span class="p">.</span><span class="nf">all</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ProjectListItem</span><span class="p">[</span><span class="ss">:selected_project_id</span><span class="p">].</span><span class="nf">enum</span><span class="p">(</span><span class="ss">:projects</span><span class="p">,</span> <span class="ss">as: :project</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">nav</span><span class="p">(</span><span class="ss">class: </span><span class="s2">"master-detail-list"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="k">if</span> <span class="n">projects</span><span class="p">.</span><span class="nf">any?</span>
+        <span class="n">subcomponents</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nb">p</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"No projects yet."</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ProjectListItem</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+  <span class="n">prop</span> <span class="ss">:selected_project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">optional</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+
+  <span class="n">key</span> <span class="p">{</span> <span class="n">project</span><span class="p">.</span><span class="nf">id</span> <span class="p">}</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">link_to</span><span class="p">(</span>
+      <span class="no">SelectProject</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">selected_project_id: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span><span class="p">),</span>
+      <span class="ss">class: </span><span class="n">project</span><span class="p">.</span><span class="nf">id</span> <span class="o">==</span> <span class="n">selected_project_id</span> <span class="p">?</span> <span class="s2">"selected"</span> <span class="p">:</span> <span class="kp">nil</span>
+    <span class="p">)</span> <span class="k">do</span>
+      <span class="n">h2</span> <span class="p">{</span> <span class="n">text</span> <span class="n">project</span><span class="p">.</span><span class="nf">name</span> <span class="p">}</span>
+      <span class="nb">p</span> <span class="p">{</span> <span class="n">text</span> <span class="n">project</span><span class="p">.</span><span class="nf">status</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">NoProjectSelected</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">article</span><span class="p">(</span><span class="ss">class: </span><span class="s2">"master-detail-panel"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="nb">p</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Select a project to view its details."</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">MissingProject</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:selected_project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">article</span><span class="p">(</span><span class="ss">class: </span><span class="s2">"master-detail-panel"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="nb">p</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Project </span><span class="si">#{</span><span class="n">selected_project_id</span><span class="si">}</span><span class="s2"> could not be found."</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ProjectDetail</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">article</span><span class="p">(</span><span class="ss">class: </span><span class="s2">"master-detail-panel"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">h2</span> <span class="p">{</span> <span class="n">text</span> <span class="n">project</span><span class="p">.</span><span class="nf">name</span> <span class="p">}</span>
+      <span class="nb">p</span> <span class="p">{</span> <span class="n">text</span> <span class="n">project</span><span class="p">.</span><span class="nf">description</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>The row key is the stable identity for each rendered project. If a published event only affects one project row, the list can use <code>for</code> on the collection nest to load that project without querying every row:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectList</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span> <span class="p">{</span> <span class="no">Project</span><span class="p">.</span><span class="nf">all</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ProjectListItem</span><span class="p">[].</span>
+      <span class="nf">enum</span><span class="p">(</span><span class="ss">:projects</span><span class="p">,</span> <span class="ss">as: :project</span><span class="p">).</span>
+      <span class="nf">for</span><span class="p">(</span><span class="no">ProjectRenamed</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">event</span><span class="o">|</span> <span class="no">Project</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="nf">project_id</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Lucid passes the event to the targeted row component, and <code>key { project.id }</code> keeps the targeted row&#39;s DOM and nested state identity aligned with the normal full-list render.</p>
+<p>The list does not need to know the URL for a project. It names the interaction with <code>SelectProject</code>, and Lucid turns that message plus the resulting component state into the correct URL and replacement behavior. The manager owns selection state, passes the selected ID into the list, and chooses the right detail-area component for the current selection. The list owns the collection query and markup, each row owns item markup, and each detail-area component only needs the state it renders.</p>
+<h2 id="empty-and-missing-states">Empty And Missing States</h2>
+<p>Master/detail screens need intentional fallback states:</p>
+<ul>
+<li>no records: render an empty list state and leave the detail panel neutral</li>
+<li>no selection: invite the user to select a record</li>
+<li>stale selection: show that the selected record no longer exists</li>
+<li>first load: optionally select the first record by default when the workflow benefits from immediate detail content</li>
+</ul>
+<p>Only auto-select the first record when that behavior is stable and unsurprising. If the selection has meaning in browser history or in a shared link, prefer an explicit user selection.</p>
+<h2 id="data-and-mutations">Data And Mutations</h2>
+<p>Read data in <code>let</code> blocks that support rendering. Keep writes and business effects in command handlers.</p>
+<p>That boundary keeps the master/detail component focused on presentation:</p>
+<ul>
+<li>list components query the master collection</li>
+<li>the selected ID chooses the detail record</li>
+<li><code>Link</code> messages update view state</li>
+<li><code>Command</code> messages change domain state through handlers</li>
+<li>published events can refresh or replace affected components after mutations</li>
+</ul>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../patterns/authentication.html">
+  <span>Previous</span>
+  <strong>Authentication</strong>
+</a>
+<a href="../patterns/modals.html">
+  <span>Next</span>
+  <strong>Modals</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

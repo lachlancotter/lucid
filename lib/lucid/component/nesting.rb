@@ -348,14 +348,16 @@ module Lucid
           end
         rescue StandardError => error
           Logger.exception(@parent, error)
-          @components = [ErrorPage.new({}, error: error)]
+          @components = [ErrorPage.new({}, error: error, collection_index: 0)]
         end
 
         def deep_state
           if collection?
             {}.tap do |result|
-              each_component do |component|
-                result[component.collection_key] = component.deep_state
+              each_component do |component, key|
+                next if component.is_a?(ErrorPage)
+
+                result[key] = component.deep_state
               end
             end
           else
@@ -386,11 +388,15 @@ module Lucid
         end
 
         def with_component (index, retry_on_error: false, &block)
-          yield @components[index]
+          component = @components[index]
+          key       = validate_collection_key!(component)
+          yield component, key
         rescue StandardError => error
           Logger.exception(@parent, error)
           @components[index] = ErrorPage.new({}, error: error, collection_index: index)
-          yield @components[index] if retry_on_error
+          if retry_on_error
+            yield @components[index], validate_collection_key!(@components[index])
+          end
         end
 
         def append (model)
@@ -422,6 +428,16 @@ module Lucid
         end
 
         private
+
+        def validate_collection_key! (component)
+          return unless collection?
+
+          component.collection_key.tap do |key|
+            if key.nil?
+              raise ApplicationError, "Collection component #{component} has nil collection key"
+            end
+          end
+        end
 
         def factory
           normalize_binding(@field.value)

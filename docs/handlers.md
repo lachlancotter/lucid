@@ -30,7 +30,7 @@ If a handler raises unexpectedly, Lucid logs the exception and publishes a
 Handlers can:
 
 - `publish(event)` to broadcast new events
-- `dispatch(command)` to trigger other command flows
+- `dispatch(command)` from event subscribers that coordinate follow-up work
 - `redirect_to(url)` to register a response redirect
 
 ## Dependency Injection
@@ -51,3 +51,8 @@ when policy-gated behavior is executed.
 
 In test and development environments, Lucid will raise if a policy-adopting
 handler skips that permission check.
+
+## Code Style
+
+For concrete implementation and testing conventions, see
+[Handler Patterns](reference/handler-patterns.md).

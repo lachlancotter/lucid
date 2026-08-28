@@ -92,12 +92,21 @@ does not require a database or external services.
 
 For the full walkthrough, continue to [Hello World](hello.md).
 
+For setup options across Rack, Sinatra, and the planned Rails integration, see
+[Getting Started](getting_started.md).
+
 ## Next steps
 
 Start here:
 
+- [Overview](index.md): Understand Lucid's core model and request flow.
 - [Why Lucid?](why.md): Understand the problems Lucid is designed to solve.
+- [Getting Started](getting_started.md): Install Lucid, choose a Rack or
+  Sinatra runtime, and understand the planned Rails integration.
 - [Hello World](hello.md): Build the smallest useful Lucid application.
+
+Concepts:
+
 - [Architecture](architecture.md): Trace the command, navigation, and rendering
   loops.
 - [Features](features.md): Organize Lucid code around
@@ -107,14 +116,40 @@ Start here:
   and render HTML.
 - [Handlers](handlers.md): Put command-side behavior, policies, redirects, and
   event publication in handlers.
+- [Models](models.md): Keep model classes focused on invariants while placing
+  view-shaped queries near the components that render them.
 - [Client Behavior](client_behavior.md): Use JavaScript for local behavior
   without creating a second application model.
 
+Patterns:
+
+- [Authentication](patterns/authentication.md): Coordinate sign-in, sign-out,
+  sessions, and access state.
+- [Master Detail](patterns/master-detail.md): Coordinate list selection, detail
+  state, and empty states.
+- [Modals](patterns/modals.md): Manage modal state, command submission,
+  validation, and closing behavior.
+- [Pagination](patterns/pagination.md): Carry page params, result metadata, and
+  next/previous navigation.
+- [Polling](patterns/polling.md): Refresh server-rendered state on an interval.
+- [Progressive Filter](patterns/progressive-filter.md): Compose filters, search
+  state, reset behavior, and results.
+- [Process Manager](patterns/process-manager.md): Represent long-running
+  workflows, events, status updates, and progress views.
+- [Toasts](patterns/toasts.md): Display transient feedback after commands and
+  events.
+
 Reference:
 
-- [State](reference/state.md): Work with URL-backed state, state maps, and nested
+- [State](reference/state.md): Work with URL-mapped state, state maps, and nested
   component state.
 - [Templates](reference/templates.md): Use the template context, helpers, and
   multipart form support.
+- [Forms](reference/forms.md): Build message forms with field helpers, scoped
+  names, values, IDs, and validation errors.
+- [JavaScript and Stimulus](javascript_and_stimulus.md): Add idiomatic browser
+  behavior to Caju apps while keeping server-rendered state in Ruby.
+- [Handler Patterns](reference/handler-patterns.md): Structure handlers with
+  `use`, `with_*`, `when_*`, events, transactions, and handler specs.
 - [Configuration](reference/configuration.md): Configure application settings,
   request containers, and extension points.

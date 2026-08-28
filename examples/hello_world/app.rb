@@ -1,10 +1,12 @@
 require_relative "../../lib/lucid"
 
-class GreetPerson < Lucid::Link
-  param :name, String
+class GreetPerson < Caju::Link
+  validate do
+    required(:name).filled(:string)
+  end
 end
 
-class HomePage < Lucid::Component::Base
+class HomePage < Caju::Component::Base
   param :name, Types.string.default("world".freeze)
 
   to GreetPerson do |msg|
@@ -13,12 +15,12 @@ class HomePage < Lucid::Component::Base
 
   element do |name|
     h1 { text "Hello, #{name}" }
-    p { text "Lucid rebuilds this component from URL-backed state." }
-    p { link_to GreetPerson.new(name: "Lucid"), "Say hello to Lucid" }
+    p { text "Caju rebuilds this component from URL-backed state." }
+    p { link_to GreetPerson.new(name: "Caju"), "Say hello to Caju" }
   end
 end
 
-class ExampleApp < Lucid::App
+class ExampleApp < Caju::App
   set :component_class, HomePage
 end
 

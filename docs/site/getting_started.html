@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Getting Started | Lucid Documentation</title>
+    <meta name="description" content="Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration.">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="index.html">Overview</a>
+<a href="why.html">Why Lucid?</a>
+<a class="active" aria-current="page" href="getting_started.html">Getting Started</a>
+<a href="hello.html">Hello World</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
+<a href="features.html">Features</a>
+<a href="messages.html">Messages</a>
+<a href="components.html">Components</a>
+<a href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
+<a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/authentication.html">Authentication</a>
+<a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/polling.html">Polling</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+<a href="patterns/toasts.html">Toasts</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="reference/state.html">State</a>
+<a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
+<a href="reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Start Here</p>
+            <h1>Getting Started</h1>
+            <p class="lede">Install Lucid, choose a Rack or Sinatra runtime, and understand the planned Rails integration.</p>
+          </header>
+
+          <p>Caju is a UI framework for Ruby applications that want server-rendered, hypermedia interactions without making routes, controllers, and templates carry all of the interaction design.</p>
+<p>The easiest way to start is to run a Caju app as a Rack application. Today, <code>Caju::App</code> is implemented as a small <code>Sinatra::Base</code> app, so it can run directly with Sinatra or be mounted anywhere a Rack app can be mounted.</p>
+<h2 id="what-caju-provides">What Caju Provides</h2>
+<p>Caju gives your application a message-driven rendering layer:</p>
+<ul>
+<li>typed messages for user and system intent</li>
+<li>handlers for command-side effects</li>
+<li>components for stateful server-rendered HTML</li>
+<li>URL-mapped view state</li>
+<li>server-decided HTML updates for HTMX requests</li>
+<li>helpers for links, forms, nested components, and response effects</li>
+</ul>
+<p>The core idea is that views describe intent through messages. Caju turns those messages into HTTP URLs and form actions, decodes requests back into typed objects, dispatches them, and renders the resulting component state.</p>
+<h2 id="what-caju-does-not-provide">What Caju Does Not Provide</h2>
+<p>Caju is not a full-stack application framework.</p>
+<p>It does not provide:</p>
+<ul>
+<li>an ORM or database migrations</li>
+<li>authentication or authorization systems</li>
+<li>background jobs</li>
+<li>asset compilation</li>
+<li>mailers</li>
+<li>deployment tooling</li>
+<li>a complete Rails-style application skeleton</li>
+</ul>
+<p>Those choices stay in your application. Caju is meant to sit beside your domain model and infrastructure, not replace them.</p>
+<h2 id="what-you-need">What You Need</h2>
+<p>A Caju app needs:</p>
+<ul>
+<li>Ruby and Bundler</li>
+<li>the <code>lucid</code> gem</li>
+<li>a Rack-compatible HTTP runtime</li>
+<li>application code for persistence, authentication, jobs, and services</li>
+<li>HTMX in the browser when you want partial page updates</li>
+<li>optional JavaScript such as Stimulus for local-only behavior</li>
+</ul>
+<p>For a new experiment, the repository examples need no database or external services.</p>
+<h2 id="install-the-gem">Install the Gem</h2>
+<p>Add Lucid to your bundle:</p>
+<pre><code class="language-ruby"><span class="n">gem</span> <span class="s2">"lucid"</span></code></pre>
+<p>The gem keeps the <code>lucid</code> name during the transition from Lucid to Caju. New application code should use <code>Caju::</code>; existing <code>Lucid::</code> code remains supported.</p>
+<p>Then install dependencies:</p>
+<pre><code class="language-shell">bundle <span class="nb">install</span></code></pre>
+<h2 id="build-the-smallest-app">Build the Smallest App</h2>
+<p>A minimal Caju app defines a message, a component, and an app class.</p>
+<pre><code class="language-ruby"><span class="nb">require</span> <span class="s2">"lucid"</span>
+
+<span class="k">class</span> <span class="nc">GreetPerson</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Link</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">HomePage</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"world"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+
+  <span class="n">to</span> <span class="no">GreetPerson</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+    <span class="n">update</span><span class="p">(</span><span class="ss">name: </span><span class="n">msg</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">element</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">h1</span> <span class="p">{</span> <span class="n">text</span> <span class="s2">"Hello, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+    <span class="nb">p</span> <span class="p">{</span> <span class="n">link_to</span> <span class="no">GreetPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Caju"</span><span class="p">),</span> <span class="s2">"Say hello to Caju"</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span></code></pre>
+<p><code>GET /</code> renders the component from URL-mapped state. A Caju link renders as a normal URL under <code>/@/</code>, and following it sends a typed <code>Link</code> message back to the component tree.</p>
+<h2 id="add-a-layout">Add a Layout</h2>
+<p>For partial updates, load HTMX once in the document head and boost the document body. A common pattern is to make the configured root component an application layout and nest the page component inside it.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ApplicationLayout</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span> <span class="p">{</span> <span class="no">HomePage</span> <span class="p">}</span>
+
+  <span class="n">element</span> <span class="k">do</span>
+    <span class="n">html</span> <span class="k">do</span>
+      <span class="n">head</span> <span class="k">do</span>
+        <span class="n">script</span><span class="p">(</span><span class="o">**</span><span class="no">HTMX</span><span class="o">::</span><span class="no">LIB</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">body</span><span class="p">(</span><span class="no">HTMX</span><span class="p">.</span><span class="nf">boost</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">subcomponent</span><span class="p">(</span><span class="ss">:page</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ExampleApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">ApplicationLayout</span>
+<span class="k">end</span></code></pre>
+<p><code>script(**HTMX::LIB)</code> emits the bundled HTMX script attributes. <code>body(HTMX.boost)</code> adds the HTMX attributes Lucid expects for boosted links and forms.</p>
+<h2 id="rack">Rack</h2>
+<p>Because <code>Caju::App</code> is a Rack app, a plain Rack entrypoint can mount a Caju application directly.</p>
+<pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
+
+<span class="k">class</span> <span class="nc">RackBasicApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span>
+
+<span class="n">run</span> <span class="no">RackBasicApp</span></code></pre>
+<p>The repository includes a runnable version at <code>examples/rack_basic/config.ru</code>. From the repository root:</p>
+<pre><code class="language-shell">bundle <span class="nb">exec </span>rackup examples/rack_basic/config.ru</code></pre>
+<p>The repository bundle includes the <code>rackup</code> executable for this example. In your own app, use <code>rackup</code>, Puma, Falcon, Passenger, or any other Rack runtime. If your Rack server supports custom ports, pass its normal port option and open the printed local URL.</p>
+<h2 id="sinatra">Sinatra</h2>
+<p>Caju can also run directly as a Sinatra-style application because <code>Caju::App</code> subclasses <code>Sinatra::Base</code>.</p>
+<pre><code class="language-ruby"><span class="nb">require_relative</span> <span class="s2">"../../lib/lucid"</span>
+
+<span class="k">class</span> <span class="nc">SinatraBasicApp</span> <span class="o">&lt;</span> <span class="no">Caju</span><span class="o">::</span><span class="no">App</span>
+  <span class="n">set</span> <span class="ss">:component_class</span><span class="p">,</span> <span class="no">HomePage</span>
+<span class="k">end</span>
+
+<span class="no">SinatraBasicApp</span><span class="p">.</span><span class="nf">run!</span> <span class="k">if</span> <span class="vg">$PROGRAM_NAME</span> <span class="o">==</span> <span class="kp">__FILE__</span></code></pre>
+<p>The repository includes a runnable version at <code>examples/sinatra_basic/app.rb</code>. From the repository root:</p>
+<pre><code class="language-shell">bundle <span class="nb">exec </span>ruby examples/sinatra_basic/app.rb</code></pre>
+<p>Then open <code>http://localhost:4567</code>.</p>
+<h2 id="rails">Rails</h2>
+<p>Rails integration is planned around a Rails Engine and Rails Controller. That is the intended developer experience, not an implemented API in this pass.</p>
+<p>The goal is for a Rails app to keep Rails ownership of application boot, middleware, routing, assets, persistence, authentication, and deployment, while Lucid owns the interactive UI surface mounted inside that Rails application.</p>
+<p>An intended shape looks like this:</p>
+<pre><code class="language-ruby"><span class="c1"># config/routes.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">mount</span> <span class="no">MyLucidUI</span><span class="o">::</span><span class="no">Engine</span> <span class="o">=&gt;</span> <span class="s2">"/app"</span>
+<span class="k">end</span></code></pre>
+<pre><code class="language-ruby"><span class="k">module</span> <span class="nn">MyLucidUI</span>
+  <span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+    <span class="kp">include</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Rails</span><span class="o">::</span><span class="no">Controller</span>
+
+    <span class="n">lucid_component</span> <span class="no">HomePage</span>
+    <span class="n">lucid_handler</span> <span class="no">ApplicationHandler</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>Until that adapter exists, use the Rack/Sinatra paths for runnable Lucid apps and treat Rails as an integration target.</p>
+<h2 id="where-to-go-next">Where To Go Next</h2>
+<p>Continue to <a href="hello.html">Hello World</a> for a focused walkthrough of the component, message, and app pieces. Then read <a href="architecture.html">Architecture</a> to see how links, commands, handlers, events, and rendering fit together.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="why.html">
+  <span>Previous</span>
+  <strong>Why Lucid?</strong>
+</a>
+<a href="hello.html">
+  <span>Next</span>
+  <strong>Hello World</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

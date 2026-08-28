@@ -21,19 +21,40 @@
   <p class="rail-title">Start Here</p>
   <a href="../index.html">Overview</a>
 <a href="../why.html">Why Lucid?</a>
+<a href="../getting_started.html">Getting Started</a>
 <a href="../hello.html">Hello World</a>
-<a href="../architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="../architecture.html">Architecture</a>
 <a href="../features.html">Features</a>
 <a href="../messages.html">Messages</a>
 <a href="../components.html">Components</a>
 <a href="../handlers.html">Handlers</a>
+<a href="../models.html">Models</a>
 <a href="../client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="../patterns/authentication.html">Authentication</a>
+<a href="../patterns/master-detail.html">Master Detail</a>
+<a href="../patterns/modals.html">Modals</a>
+<a href="../patterns/pagination.html">Pagination</a>
+<a href="../patterns/polling.html">Polling</a>
+<a href="../patterns/progressive-filter.html">Progressive Filter</a>
+<a href="../patterns/process-manager.html">Process Manager</a>
+<a href="../patterns/toasts.html">Toasts</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="../reference/state.html">State</a>
 <a class="active" aria-current="page" href="../reference/templates.html">Templates</a>
+<a href="../reference/forms.html">Forms</a>
+<a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="../reference/handler-patterns.html">Handler Patterns</a>
 <a href="../reference/configuration.html">Configuration</a>
 </div>
 
@@ -78,10 +99,11 @@
 <li><code>subcomponents</code></li>
 </ul>
 <h2 id="file-upload-forms">File Upload Forms</h2>
+<p>For the full form builder API, see <a href="../reference/forms.html">Forms</a>.</p>
 <p>Use <code>multipart: true</code> when a form includes file inputs:</p>
-<pre><code>form_for(upload_form, multipart: true) do |f|
-  f.file(:avatar, accept: &quot;image/*&quot;)
-end</code></pre>
+<pre><code class="language-ruby"><span class="n">form_for</span><span class="p">(</span><span class="n">upload_form</span><span class="p">,</span> <span class="ss">multipart: </span><span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="n">f</span><span class="p">.</span><span class="nf">file</span><span class="p">(</span><span class="ss">:avatar</span><span class="p">,</span> <span class="ss">accept: </span><span class="s2">"image/*"</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
 <p>Uploaded files are supported on <code>POST</code> forms. Rack parses each uploaded file as a hash containing upload metadata and a <code>Tempfile</code>; handlers are responsible for validating the file size and type, then moving or processing the tempfile during the request. Browsers do not repopulate file inputs after validation errors, so file fields do not echo a <code>value</code> from the form model.</p>
 
 
@@ -90,9 +112,9 @@ end</code></pre>
   <span>Previous</span>
   <strong>State</strong>
 </a>
-<a href="../reference/configuration.html">
+<a href="../reference/forms.html">
   <span>Next</span>
-  <strong>Configuration</strong>
+  <strong>Forms</strong>
 </a>
 
           </nav>

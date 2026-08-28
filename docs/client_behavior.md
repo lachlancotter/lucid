@@ -17,7 +17,7 @@ That includes:
 - navigation and view-state changes represented by `Link` messages
 - mutations represented by `Command` messages
 - domain changes represented by `Event` messages
-- URL-backed UI state
+- URL-mapped UI state
 - server-rendered component updates
 - redirects and response effects
 
@@ -41,6 +41,8 @@ Good uses include:
 
 This kind of JavaScript should stay local. It can improve the feel of an
 interaction without becoming the source of truth for application state.
+
+For a practical pattern, see [JavaScript and Stimulus](javascript_and_stimulus.md).
 
 ## HTMX
 

@@ -21,19 +21,40 @@
   <p class="rail-title">Start Here</p>
   <a href="index.html">Overview</a>
 <a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
 <a href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a class="active" aria-current="page" href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
 <a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/authentication.html">Authentication</a>
+<a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/polling.html">Polling</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+<a href="patterns/toasts.html">Toasts</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
 
@@ -44,7 +65,7 @@
       <main id="main" class="content">
         <article class="doc-page">
           <header class="doc-header">
-            <p class="section-label">Start Here</p>
+            <p class="section-label">Concepts</p>
             <h1>Components</h1>
             <p class="lede">Learn how components hold typed state, compose views, and render HTML.</p>
           </header>
@@ -71,22 +92,51 @@
 <h2 id="state-and-props">State and Props</h2>
 <p>Lucid distinguishes between internal component state and external inputs.</p>
 <ul>
-<li><code>param</code> defines URL-backed state</li>
+<li><code>param</code> defines URL-mapped state</li>
 <li><code>prop</code> defines incoming data needed for rendering</li>
 <li><code>temp</code> can hold transient rendering concerns that should not be encoded into the URL</li>
 <li><code>use</code> declares request-container dependencies, matching handler dependency injection</li>
 <li><code>inherit</code> references reactive fields from an ancestor component or the HTTP session</li>
 </ul>
 <p>Typed declarations matter because Lucid rebuilds components from request state on every cycle.</p>
+<h3 id="choosing-param-prop-or-temp">Choosing Param, Prop, or Temp</h3>
+<p>Use <code>param</code> for state that belongs to the component and should survive request boundaries. Params are part of the component&#39;s deep state, can be represented in the URL, and are the right choice for navigation and view configuration:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectBoard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:project_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+  <span class="n">param</span> <span class="ss">:filter</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"open"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+  <span class="n">param</span> <span class="ss">:page</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Good candidates for <code>param</code> include selected IDs, tabs, filters, sort order, pagination, and other state that should be preserved by refresh, back/forward navigation, or a shared link.</p>
+<p>Use <code>prop</code> for data that is supplied by a parent component or by the request container and is needed to render this component. Props describe data flow into a component; they do not define the component&#39;s URL state.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectCard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+  <span class="n">prop</span> <span class="ss">:selected</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Bool</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Good candidates for <code>prop</code> include records, value objects, form contexts, precomputed counts, permission flags, and callbacks or component classes passed into nested components.</p>
+<p>Use <code>temp</code> for transient server-side rendering concerns that should not be encoded into the URL or passed down as parent-owned input. Temps are useful for values produced while handling a message or event, such as temporary status, flash-like rendering state, or lazy-loading placeholders.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SyncStatus</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">temp</span> <span class="ss">:notice</span>
+
+  <span class="n">on</span><span class="p">(</span><span class="no">SyncCompleted</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">touch</span> <span class="ss">notice: </span><span class="s2">"Sync complete"</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>A useful test is to ask who owns the value and whether a URL should carry it:</p>
+<ul>
+<li>use <code>param</code> when the component owns the value and the browser history or URL should reflect it</li>
+<li>use <code>prop</code> when another component or collaborator owns the value and this component only needs it for rendering</li>
+<li>use <code>temp</code> when the value is local to the current render cycle and should disappear instead of becoming durable state</li>
+</ul>
+<p>For URL path mapping with <code>route</code>, see <a href="reference/state.html">State</a>. For guidance on where query methods belong, see <a href="models.html">Models</a>.</p>
 <p>Container dependencies are plain collaborators:</p>
-<pre><code>class AccountMenu &lt; Lucid::Component::Base
-  use :current_user, Types::Any
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AccountMenu</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">use</span> <span class="ss">:current_user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+<span class="k">end</span></code></pre>
 <p>Inherited fields remain reactive UI data:</p>
-<pre><code>class ChildPanel &lt; Lucid::Component::Base
-  inherit :selected_tab
-  inherit :flash, from: :http_session
-end</code></pre>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ChildPanel</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">inherit</span> <span class="ss">:selected_tab</span>
+  <span class="n">inherit</span> <span class="ss">:flash</span><span class="p">,</span> <span class="ss">from: :http_session</span>
+<span class="k">end</span></code></pre>
 <h2 id="composition">Composition</h2>
 <p>Components compose by nesting other components. This gives you:</p>
 <ul>
@@ -98,7 +148,44 @@ end</code></pre>
 <h2 id="responding-to-messages">Responding to Messages</h2>
 <p>Components primarily respond to <code>Link</code> messages with <code>to</code> blocks. These blocks typically call <code>update</code> to change component state.</p>
 <p>Components can also respond to <code>Event</code> messages with <code>on</code> blocks so the UI tracks domain changes without manual refresh code.</p>
+<h3 id="message-propagation">Message Propagation</h3>
+<p>When a component receives a message, Lucid applies that message to the component and then propagates it to nested child components. Each child receives the same message and can apply its own state changes with <code>to</code> or <code>on</code> handlers.</p>
+<p>Collection nests are the exception to this default rule. Lucid does not load a full collection just to propagate every message through every child, because that would often run expensive queries for components that do not need to change.</p>
+<p>When a message should propagate to children in a collection nest, declare that case explicitly with <code>for</code> and provide the loader for the affected item or items. The child components built by <code>for</code> receive the same message, so their <code>on</code> or <code>to</code> handlers still run.</p>
+<p>Collection nests normally enumerate their collection when the parent component is built:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectList</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span> <span class="p">{</span> <span class="no">Project</span><span class="p">.</span><span class="nf">all</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ProjectRow</span><span class="p">[].</span><span class="nf">enum</span><span class="p">(</span><span class="ss">:projects</span><span class="p">,</span> <span class="ss">as: :project</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>For messages that affect known records, <code>for</code> defines the message-time loader:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectList</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:projects</span><span class="p">)</span> <span class="p">{</span> <span class="no">Project</span><span class="p">.</span><span class="nf">all</span> <span class="p">}</span>
+
+  <span class="n">nest</span><span class="p">(</span><span class="ss">:project_rows</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">ProjectRow</span><span class="p">[].</span>
+      <span class="nf">enum</span><span class="p">(</span><span class="ss">:projects</span><span class="p">,</span> <span class="ss">as: :project</span><span class="p">).</span>
+      <span class="nf">for</span><span class="p">(</span><span class="no">ProjectRenamed</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">event</span><span class="o">|</span> <span class="no">Project</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="nf">project_id</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>The <code>for</code> block should return one item or an enumerable of items.</p>
+<p>Define a stable key on the collection child so the targeted render has the same state and DOM identity as the child produced by the full collection render:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectRow</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Any</span>
+
+  <span class="n">key</span> <span class="p">{</span> <span class="n">project</span><span class="p">.</span><span class="nf">id</span> <span class="p">}</span>
+
+  <span class="n">on</span><span class="p">(</span><span class="no">ProjectRenamed</span><span class="p">)</span> <span class="p">{</span> <span class="n">replace</span> <span class="p">}</span>
+<span class="k">end</span></code></pre>
+<p>Use model identity for collection keys, not the row&#39;s position in the current query result. Positional keys make targeted updates fragile when filtering, sorting, or pagination changes the collection order.</p>
 <h2 id="rendering">Rendering</h2>
+<h3 id="view-functions-signals-and-helpers">View Functions, Signals, and Helpers</h3>
+<p>Use signals for values that define rendering dependencies. Signals give Lucid a data dependency path, so when that value is touched, the component templates that depend on it can update.</p>
+<p>If changing a value should trigger a refresh of the component or one of its templates, expose it as a signal.</p>
+<p>Use helpers for template-facing presentation functions that do not define data dependency paths, such as formatting values, choosing labels, or selecting CSS classes.</p>
+<p>Only methods called directly from templates need to use the <code>helper</code> construct. Methods called from <code>let</code> blocks, helper methods, or other component methods can remain regular Ruby methods.</p>
 <p>Lucid components render HTML through <code>Lucid::HTML::Template</code>, which provides helpers such as:</p>
 <ul>
 <li><code>link_to</code></li>

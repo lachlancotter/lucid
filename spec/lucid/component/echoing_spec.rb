@@ -159,6 +159,77 @@ module Lucid
           render          = component.render
           expect(render).to include("data-controller=\"foo\"")
         end
+
+        it "passes form contexts across component boundaries" do
+          child_component_class = Class.new(Component::Base) do
+            prop :form_context, Types.instance(HTML::Form::Context)
+
+            element do |form_context|
+              fields_for form_context do |form|
+                form.text(:foo)
+              end
+            end
+          end
+
+          parent_component_class = Class.new(Component::Base) do
+            echo :foo_form, TestCommand
+            let(:foo_form_context) { |foo_form| HTML::Form::Context.new(foo_form) }
+            nest(:child) { child_component_class[form_context: :foo_form_context] }
+
+            element do
+              subcomponent :child
+            end
+          end
+
+          env       = mock_post_params("/", :foo_form, { foo: "bar" })
+          container = App::Container.new({}, env)
+          render    = parent_component_class.new({}, container: container).render
+          expect(render).to include('<input type="text" name="foo" value="bar" id="foo">')
+        end
+
+        it "passes scoped form contexts across component boundaries" do
+          child_component_class = Class.new(Component::Base) do
+            prop :form_context, Types.instance(HTML::Form::Context)
+
+            element do |form_context|
+              fields_for form_context do |form|
+                form.text(:name)
+              end
+            end
+          end
+
+          parent_component_class = Class.new(Component::Base) do
+            echo(:profile_form, TestCommand) do |form|
+              form.or_default(profile: { name: "Jane" })
+            end
+            let(:profile_form_context) do |profile_form|
+              HTML::Form::Context.new(profile_form).scoped(:profile)
+            end
+            nest(:child) { child_component_class[form_context: :profile_form_context] }
+
+            element do
+              subcomponent :child
+            end
+          end
+
+          render = parent_component_class.new({}).render
+          expect(render).to include(
+             '<input type="text" name="profile[name]" value="Jane" id="profile_name">'
+          )
+        end
+
+        it "warns when a form builder is passed to a component prop" do
+          child_component_class = Class.new(Component::Base) do
+            prop :form_builder, Types::Any
+          end
+          message_type = Class.new(HTTP::Message)
+          params       = HTTP::FormModel.new(message_type, {})
+          renderer     = HTML::Template::RenderContext.new(nil) {}
+          builder      = HTML::Form::Builder.new(renderer, params)
+
+          expect { child_component_class.new({}, form_builder: builder) }.
+             to output(/Passing `Lucid::HTML::Form::Builder` to component props is deprecated/).to_stderr
+        end
       end
 
       context "with default params" do

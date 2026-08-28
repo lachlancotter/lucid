@@ -21,19 +21,40 @@
   <p class="rail-title">Start Here</p>
   <a href="index.html">Overview</a>
 <a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
 <a href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a href="components.html">Components</a>
 <a href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
 <a class="active" aria-current="page" href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/authentication.html">Authentication</a>
+<a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/polling.html">Polling</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+<a href="patterns/toasts.html">Toasts</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
 
@@ -44,7 +65,7 @@
       <main id="main" class="content">
         <article class="doc-page">
           <header class="doc-header">
-            <p class="section-label">Start Here</p>
+            <p class="section-label">Concepts</p>
             <h1>Client Behavior</h1>
             <p class="lede">Draw the boundary between Lucid&#39;s server-driven model and local JavaScript behavior.</p>
           </header>
@@ -58,7 +79,7 @@
 <li>navigation and view-state changes represented by <code>Link</code> messages</li>
 <li>mutations represented by <code>Command</code> messages</li>
 <li>domain changes represented by <code>Event</code> messages</li>
-<li>URL-backed UI state</li>
+<li>URL-mapped UI state</li>
 <li>server-rendered component updates</li>
 <li>redirects and response effects</li>
 </ul>
@@ -76,6 +97,7 @@
 <li>small progressive enhancements around native controls</li>
 </ul>
 <p>This kind of JavaScript should stay local. It can improve the feel of an interaction without becoming the source of truth for application state.</p>
+<p>For a practical pattern, see <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>.</p>
 <h2 id="htmx">HTMX</h2>
 <p>Lucid uses HTMX as the browser-side transport and swap layer.</p>
 <p>Templates should not have to coordinate application behavior through a growing set of HTMX attributes. Components describe messages and render HTML; Lucid decides which parts of the component tree need to be replaced and returns the appropriate response.</p>
@@ -85,13 +107,13 @@
 
 
           <nav class="page-nav" aria-label="Previous and next pages">
-            <a href="handlers.html">
+            <a href="models.html">
   <span>Previous</span>
-  <strong>Handlers</strong>
+  <strong>Models</strong>
 </a>
-<a href="reference/state.html">
+<a href="patterns/authentication.html">
   <span>Next</span>
-  <strong>State</strong>
+  <strong>Authentication</strong>
 </a>
 
           </nav>

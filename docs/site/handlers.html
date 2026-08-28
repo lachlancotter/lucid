@@ -21,19 +21,40 @@
   <p class="rail-title">Start Here</p>
   <a href="index.html">Overview</a>
 <a href="why.html">Why Lucid?</a>
+<a href="getting_started.html">Getting Started</a>
 <a href="hello.html">Hello World</a>
-<a href="architecture.html">Architecture</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="architecture.html">Architecture</a>
 <a href="features.html">Features</a>
 <a href="messages.html">Messages</a>
 <a href="components.html">Components</a>
 <a class="active" aria-current="page" href="handlers.html">Handlers</a>
+<a href="models.html">Models</a>
 <a href="client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="patterns/authentication.html">Authentication</a>
+<a href="patterns/master-detail.html">Master Detail</a>
+<a href="patterns/modals.html">Modals</a>
+<a href="patterns/pagination.html">Pagination</a>
+<a href="patterns/polling.html">Polling</a>
+<a href="patterns/progressive-filter.html">Progressive Filter</a>
+<a href="patterns/process-manager.html">Process Manager</a>
+<a href="patterns/toasts.html">Toasts</a>
 </div>
 
 <div class="rail-group">
   <p class="rail-title">Reference</p>
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
+<a href="reference/forms.html">Forms</a>
+<a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
 </div>
 
@@ -44,7 +65,7 @@
       <main id="main" class="content">
         <article class="doc-page">
           <header class="doc-header">
-            <p class="section-label">Start Here</p>
+            <p class="section-label">Concepts</p>
             <h1>Handlers</h1>
             <p class="lede">Use handlers for effectful command behavior, policies, redirects, and event publication.</p>
           </header>
@@ -72,7 +93,7 @@
 <p>Handlers can:</p>
 <ul>
 <li><code>publish(event)</code> to broadcast new events</li>
-<li><code>dispatch(command)</code> to trigger other command flows</li>
+<li><code>dispatch(command)</code> from event subscribers that coordinate follow-up work</li>
 <li><code>redirect_to(url)</code> to register a response redirect</li>
 </ul>
 <h2 id="dependency-injection">Dependency Injection</h2>
@@ -86,6 +107,8 @@
 <h2 id="policies">Policies</h2>
 <p>Handlers can adopt policy classes and are expected to call <code>with_permission</code> when policy-gated behavior is executed.</p>
 <p>In test and development environments, Lucid will raise if a policy-adopting handler skips that permission check.</p>
+<h2 id="code-style">Code Style</h2>
+<p>For concrete implementation and testing conventions, see <a href="reference/handler-patterns.html">Handler Patterns</a>.</p>
 
 
           <nav class="page-nav" aria-label="Previous and next pages">
@@ -93,9 +116,9 @@
   <span>Previous</span>
   <strong>Components</strong>
 </a>
-<a href="client_behavior.html">
+<a href="models.html">
   <span>Next</span>
-  <strong>Client Behavior</strong>
+  <strong>Models</strong>
 </a>
 
           </nav>

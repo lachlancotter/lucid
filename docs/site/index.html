@@ -24,19 +24,40 @@
           <p class="rail-title">Start Here</p>
           <a class="active" href="index.html">Overview</a>
           <a href="why.html">Why Lucid?</a>
+          <a href="getting_started.html">Getting Started</a>
           <a href="hello.html">Hello World</a>
+        </div>
+
+        <div class="rail-group">
+          <p class="rail-title">Concepts</p>
           <a href="architecture.html">Architecture</a>
           <a href="features.html">Features</a>
           <a href="messages.html">Messages</a>
           <a href="components.html">Components</a>
           <a href="handlers.html">Handlers</a>
+          <a href="models.html">Models</a>
           <a href="client_behavior.html">Client Behavior</a>
+        </div>
+
+        <div class="rail-group">
+          <p class="rail-title">Patterns</p>
+          <a href="patterns/authentication.html">Authentication</a>
+          <a href="patterns/master-detail.html">Master Detail</a>
+          <a href="patterns/modals.html">Modals</a>
+          <a href="patterns/pagination.html">Pagination</a>
+          <a href="patterns/polling.html">Polling</a>
+          <a href="patterns/progressive-filter.html">Progressive Filter</a>
+          <a href="patterns/process-manager.html">Process Manager</a>
+          <a href="patterns/toasts.html">Toasts</a>
         </div>
 
         <div class="rail-group">
           <p class="rail-title">Reference</p>
           <a href="reference/state.html">State</a>
           <a href="reference/templates.html">Templates</a>
+          <a href="reference/forms.html">Forms</a>
+          <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
+          <a href="reference/handler-patterns.html">Handler Patterns</a>
           <a href="reference/configuration.html">Configuration</a>
         </div>
 
@@ -181,8 +202,8 @@
           <section aria-labelledby="quickstart">
             <h2 id="quickstart">Quickstart</h2>
             <p>From a checkout of this repository, run the included example app:</p>
-            <pre><code>bundle install
-bundle exec ruby examples/hello_world/app.rb</code></pre>
+<pre><code class="language-shell">bundle <span class="nb">install
+</span>bundle <span class="nb">exec </span>ruby examples/hello_world/app.rb</code></pre>
             <p>Then open <code>http://localhost:4567</code>.</p>
             <p>
               This repository quickstart requires Ruby <code>3.2.8</code> and
@@ -193,20 +214,37 @@ bundle exec ruby examples/hello_world/app.rb</code></pre>
               For the full walkthrough, continue to
               <a href="hello.html">Hello World</a>.
             </p>
+            <p>
+              For setup options across Rack, Sinatra, and the planned Rails
+              integration, see
+              <a href="getting_started.html">Getting Started</a>.
+            </p>
           </section>
 
           <section aria-labelledby="next">
             <h2 id="next">Next steps</h2>
             <h3>Start here</h3>
             <div class="link-list">
+              <a href="index.html">
+                <strong>Overview</strong>
+                <span>Understand Lucid's core model and request flow.</span>
+              </a>
               <a href="why.html">
                 <strong>Why Lucid?</strong>
                 <span>Understand the problems Lucid is designed to solve.</span>
+              </a>
+              <a href="getting_started.html">
+                <strong>Getting Started</strong>
+                <span>Install Lucid and choose a Rack or Sinatra runtime.</span>
               </a>
               <a href="hello.html">
                 <strong>Hello World</strong>
                 <span>Build the smallest useful Lucid application.</span>
               </a>
+            </div>
+
+            <h3>Concepts</h3>
+            <div class="link-list">
               <a href="architecture.html">
                 <strong>Architecture</strong>
                 <span>Trace the command, navigation, and rendering loops.</span>
@@ -230,9 +268,37 @@ bundle exec ruby examples/hello_world/app.rb</code></pre>
                   publication in handlers.
                 </span>
               </a>
+              <a href="models.html">
+                <strong>Models</strong>
+                <span>Keep model classes focused on invariants while components own view-shaped queries.</span>
+              </a>
               <a href="client_behavior.html">
                 <strong>Client Behavior</strong>
                 <span>Use JavaScript for local behavior without creating a second app model.</span>
+              </a>
+            </div>
+
+            <h3>Patterns</h3>
+            <div class="link-list">
+              <a href="patterns/master-detail.html">
+                <strong>Master Detail</strong>
+                <span>Coordinate list selection, detail state, and empty states.</span>
+              </a>
+              <a href="patterns/modals.html">
+                <strong>Modals</strong>
+                <span>Manage modal state, command submission, validation, and closing behavior.</span>
+              </a>
+              <a href="patterns/pagination.html">
+                <strong>Pagination</strong>
+                <span>Carry page params, result metadata, and next/previous navigation.</span>
+              </a>
+              <a href="patterns/progressive-filter.html">
+                <strong>Progressive Filter</strong>
+                <span>Compose filters, search state, reset behavior, and results.</span>
+              </a>
+              <a href="patterns/process-manager.html">
+                <strong>Process Manager</strong>
+                <span>Represent long-running workflows, events, status updates, and progress views.</span>
               </a>
             </div>
 
@@ -241,7 +307,7 @@ bundle exec ruby examples/hello_world/app.rb</code></pre>
               <a href="reference/state.html">
                 <strong>State</strong>
                 <span>
-                  Work with URL-backed state, state maps, and nested component
+                  Work with URL-mapped state, state maps, and nested component
                   state.
                 </span>
               </a>
@@ -249,6 +315,24 @@ bundle exec ruby examples/hello_world/app.rb</code></pre>
                 <strong>Templates</strong>
                 <span>
                   Use the template context, helpers, and multipart form support.
+                </span>
+              </a>
+              <a href="reference/forms.html">
+                <strong>Forms</strong>
+                <span>
+                  Build message forms with field helpers, scoped names, values,
+                  IDs, and validation errors.
+                </span>
+              </a>
+              <a href="javascript_and_stimulus.html">
+                <strong>JavaScript and Stimulus</strong>
+                <span>Add idiomatic browser behavior while keeping server-rendered state in Ruby.</span>
+              </a>
+              <a href="reference/handler-patterns.html">
+                <strong>Handler Patterns</strong>
+                <span>
+                  Structure handlers with dependencies, preconditions, events,
+                  transactions, and specs.
                 </span>
               </a>
               <a href="reference/configuration.html">

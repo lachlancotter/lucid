@@ -18,7 +18,7 @@ module Lucid
 
       def template
         Papercraft.html do |form_model, form_options|
-          Builder.new(self, form_model).tap do |builder|
+          Builder.new(self, Context.new(form_model)).tap do |builder|
             form({ action: form_model.form_action, method: form_model.http_method }.merge(form_options)) do
               builder.hidden(HTTP::MessageParams::COMPONENT_PATH_PARAM_KEY, value: form_model.component_id)
               builder.hidden(HTTP::MessageParams::FORM_NAME_PARAM_KEY, value: form_model.form_name)
@@ -36,11 +36,35 @@ module Lucid
         options
       end
 
-      class Builder
-        def initialize (renderer, form_model, path = Path.new)
-          @renderer   = renderer
+      class Context
+        attr_reader :form_model, :path
+
+        def initialize (form_model, path = Path.new)
           @form_model = Types.instance(HTTP::FormModel)[form_model]
           @path       = Types.instance(Path)[path]
+        end
+
+        def scoped (name)
+          context = self.class.new(form_model, path.concat(name))
+          if block_given?
+            yield context
+          else
+            context
+          end
+        end
+      end
+
+      class Builder
+        attr_reader :context
+
+        def initialize (renderer, form_model_or_context, path = Path.new)
+          @renderer = renderer
+          @context  = case form_model_or_context
+          when Context
+            form_model_or_context
+          else
+            Context.new(form_model_or_context, path)
+          end
         end
 
         def emit (template)
@@ -48,32 +72,32 @@ module Lucid
         end
 
         def scoped (name)
-          yield Builder.new(@renderer, @form_model, @path.concat(name))
+          yield Builder.new(@renderer, context.scoped(name))
         end
 
         def field_id (key)
           Types.union(String, Symbol)[key]
-          @path.concat(key).join("_")
+          context.path.concat(key).join("_")
         end
 
         def field_name (key)
           Types.union(String, Symbol)[key]
-          if @path.depth == 0
+          if context.path.depth == 0
             key.to_s
           else
-            @path.head.to_s + "[#{ @path.tail.concat(key).components.join('][') }]"
+            context.path.head.to_s + "[#{ context.path.tail.concat(key).components.join('][') }]"
           end
         end
 
         def field_value (key)
           Types.union(String, Symbol)[key]
-          @path.concat(key).inject(@form_model.to_h) do |params, entry|
+          context.path.concat(key).inject(context.form_model.to_h) do |params, entry|
             params.fetch(entry.to_sym) { raise KeyError, "Key not found: #{entry}" }
           end
         end
 
         def errors (key)
-          @path.concat(key).inject(@form_model.errors) do |errors, entry|
+          context.path.concat(key).inject(context.form_model.errors) do |errors, entry|
             # raise KeyError, errors.to_s if errors.is_a?(Array)
             errors.fetch(entry.to_sym) { raise KeyError, "Key not found: #{entry}" }
           end
