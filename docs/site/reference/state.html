@@ -53,6 +53,7 @@
   <a class="active" aria-current="page" href="../reference/state.html">State</a>
 <a href="../reference/templates.html">Templates</a>
 <a href="../reference/forms.html">Forms</a>
+<a href="../reference/types.html">Types</a>
 <a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="../reference/handler-patterns.html">Handler Patterns</a>
 <a href="../reference/configuration.html">Configuration</a>
@@ -82,7 +83,7 @@
 </ul>
 <p>Params that are not selected by <code>route</code> are represented as query parameters.</p>
 <p><code>Lucid::State::Map</code> is responsible for these rules.</p>
-<p>For the broader distinction between URL-mapped params, external props, and transient temps, see <a href="../components.html">Components</a>.</p>
+<p>For the broader distinction between URL-mapped params, external props, and transient temps, see <a href="../components.html">Components</a>. For type helpers, defaults, and optional values in declarations, see <a href="../reference/types.html">Types</a>.</p>
 <h3 id="url-mapped-state-with-param">URL-Mapped State With <code>param</code></h3>
 <p><code>param</code> declares typed component state that participates in URL mapping. It is agnostic about whether a value appears in the path or in the query string.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SearchView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>

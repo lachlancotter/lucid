@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Types | Lucid Documentation</title>
+    <meta name="description" content="Reference for dry-types declarations, coercion, defaults, optional values, and typed boundaries.">
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="site-shell">
+      <aside class="docs-rail" aria-label="Documentation navigation">
+        <a class="brand" href="../index.html" aria-label="Lucid documentation home">
+          <span class="brand-mark" aria-hidden="true">L</span>
+          <span>Lucid</span>
+        </a>
+
+        <div class="rail-group">
+  <p class="rail-title">Start Here</p>
+  <a href="../index.html">Overview</a>
+<a href="../why.html">Why Lucid?</a>
+<a href="../getting_started.html">Getting Started</a>
+<a href="../hello.html">Hello World</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Concepts</p>
+  <a href="../architecture.html">Architecture</a>
+<a href="../features.html">Features</a>
+<a href="../messages.html">Messages</a>
+<a href="../components.html">Components</a>
+<a href="../handlers.html">Handlers</a>
+<a href="../models.html">Models</a>
+<a href="../client_behavior.html">Client Behavior</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Patterns</p>
+  <a href="../patterns/authentication.html">Authentication</a>
+<a href="../patterns/master-detail.html">Master Detail</a>
+<a href="../patterns/modals.html">Modals</a>
+<a href="../patterns/pagination.html">Pagination</a>
+<a href="../patterns/polling.html">Polling</a>
+<a href="../patterns/progressive-filter.html">Progressive Filter</a>
+<a href="../patterns/process-manager.html">Process Manager</a>
+<a href="../patterns/toasts.html">Toasts</a>
+</div>
+
+<div class="rail-group">
+  <p class="rail-title">Reference</p>
+  <a href="../reference/state.html">State</a>
+<a href="../reference/templates.html">Templates</a>
+<a href="../reference/forms.html">Forms</a>
+<a class="active" aria-current="page" href="../reference/types.html">Types</a>
+<a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
+<a href="../reference/handler-patterns.html">Handler Patterns</a>
+<a href="../reference/configuration.html">Configuration</a>
+</div>
+
+
+        <a class="github-link" href="https://github.com/lachlancotter/lucid">GitHub</a>
+      </aside>
+
+      <main id="main" class="content">
+        <article class="doc-page">
+          <header class="doc-header">
+            <p class="section-label">Reference</p>
+            <h1>Types</h1>
+            <p class="lede">Reference for dry-types declarations, coercion, defaults, optional values, and typed boundaries.</p>
+          </header>
+
+          <p>Lucid uses <code>dry-types</code>, <code>dry-struct</code>, and <code>dry-schema</code> to keep application boundaries explicit.</p>
+<p>Most application code uses the <code>Types</code> module that Lucid exposes. It is a thin wrapper around dry-types with a few conveniences for request parameters and Lucid-specific objects.</p>
+<p>Inside Lucid declaration contexts, use <code>type(...)</code> as the concise form. Passing an application class means &quot;an instance of this class&quot;:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">TaskHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">use</span> <span class="ss">:event_bus</span><span class="p">,</span> <span class="n">type</span><span class="p">(</span><span class="no">EventBus</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Calling <code>type</code> without arguments exposes the same helper module for composed types:</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectBoard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:status</span><span class="p">,</span> <span class="n">type</span><span class="p">.</span><span class="nf">enum</span><span class="p">(</span><span class="s2">"open"</span><span class="p">,</span> <span class="s2">"closed"</span><span class="p">).</span><span class="nf">default</span><span class="p">(</span><span class="s2">"open"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+  <span class="n">prop</span> <span class="ss">:tags</span><span class="p">,</span> <span class="n">type</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="no">String</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<h2 id="why-types-matter">Why Types Matter</h2>
+<p>Lucid rebuilds components and messages from request data on every cycle. Type declarations tell Lucid how to coerce incoming values, which values are allowed to be missing, and which defaults should be used when the request does not carry a value.</p>
+<p>Types are part of the contract for:</p>
+<ul>
+<li>component state declared with <code>param</code></li>
+<li>component inputs declared with <code>prop</code></li>
+<li>transient component values declared with <code>temp</code></li>
+<li>request-container dependencies declared with <code>use</code></li>
+<li>session values declared with <code>key</code></li>
+<li>internal framework objects such as handlers, components, form models, and state readers</li>
+</ul>
+<p>Use the narrowest type that describes the boundary. That keeps invalid request state, missing component input, and misconfigured dependencies close to the place where they enter the system.</p>
+<h2 id="common-types">Common Types</h2>
+<p>Lucid defines common parameter-oriented types:</p>
+<pre><code class="language-ruby"><span class="no">Types</span><span class="p">.</span><span class="nf">string</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">integer</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">float</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">bool</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">date</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">time</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">datetime</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">hash</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">symbol</span></code></pre>
+<p>These types are intended for values that may arrive from HTTP params. For example, <code>Types.integer</code> coerces integer-like strings into integers so URL and form values can become typed Ruby data.</p>
+<p>Lucid also exposes helpers for common Ruby and framework shapes:</p>
+<pre><code class="language-ruby"><span class="n">type</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
+<span class="n">type</span><span class="p">(</span><span class="ss">:integer</span><span class="p">)</span>
+<span class="n">type</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="no">String</span><span class="p">)</span>
+<span class="n">type</span><span class="p">.</span><span class="nf">enum</span><span class="p">(</span><span class="s2">"open"</span><span class="p">,</span> <span class="s2">"closed"</span><span class="p">)</span>
+
+<span class="no">Types</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">)</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">instance</span><span class="p">(</span><span class="no">User</span><span class="p">)</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">subclass</span><span class="p">(</span><span class="no">ApplicationHandler</span><span class="p">)</span>
+<span class="no">Types</span><span class="p">.</span><span class="nf">any</span></code></pre>
+<p><code>type(User)</code> and <code>Types.instance(User)</code> accept instances of a class. <code>Types.subclass</code> is useful when a declaration should receive a class object that inherits from a base class.</p>
+<h2 id="defaults-and-optional-values">Defaults and Optional Values</h2>
+<p>Use dry-types defaults when a declaration should have a value even when the request or caller does not provide one.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectBoard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:filter</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">"open"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+  <span class="n">param</span> <span class="ss">:page</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Use <code>.optional</code> when <code>nil</code> is a meaningful value.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectBoard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:selected_card_id</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">optional</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>Prefer defaults for ordinary initial UI state, and reserve optional values for cases where absence has its own meaning.</p>
+<h2 id="component-declarations">Component Declarations</h2>
+<p><code>param</code> declares typed state owned by a component. Params can be represented in the URL and reconstructed from request state.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SearchView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">param</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="s2">""</span><span class="p">.</span><span class="nf">freeze</span><span class="p">)</span>
+  <span class="n">param</span> <span class="ss">:page</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">integer</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p><code>prop</code> declares typed data supplied from outside the component. Props describe data flow into a rendering boundary; they are not URL state.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">ProjectCard</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">prop</span> <span class="ss">:project</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">instance</span><span class="p">(</span><span class="no">Project</span><span class="p">)</span>
+  <span class="n">prop</span> <span class="ss">:selected</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">bool</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p><code>temp</code> declares typed transient rendering state. Temps are useful for values that can change during message or event handling but should not become durable URL state.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">SyncStatus</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">temp</span> <span class="ss">:notice</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">string</span><span class="p">.</span><span class="nf">optional</span><span class="p">.</span><span class="nf">default</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>For guidance on choosing between <code>param</code>, <code>prop</code>, and <code>temp</code>, see <a href="../components.html">Components</a>.</p>
+<h2 id="dependencies">Dependencies</h2>
+<p>Handlers and components use <code>use</code> to declare dependencies supplied by the request container.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">TaskHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
+  <span class="n">use</span> <span class="ss">:task_notifier</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">instance</span><span class="p">(</span><span class="no">TaskNotifier</span><span class="p">)</span>
+<span class="k">end</span></code></pre>
+<p>The type is checked when the dependency is resolved, so a missing or misconfigured collaborator fails at the boundary where the handler or component expects to use it.</p>
+<h2 id="message-validation">Message Validation</h2>
+<p>Messages use a separate <code>validate</code> API backed by <code>Dry::Schema.Params</code>.</p>
+<pre><code class="language-ruby"><span class="k">class</span> <span class="nc">AssignTask</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Command</span>
+  <span class="n">validate</span> <span class="k">do</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:task_id</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:integer</span><span class="p">)</span>
+    <span class="n">required</span><span class="p">(</span><span class="ss">:user_id</span><span class="p">).</span><span class="nf">filled</span><span class="p">(</span><span class="ss">:integer</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre>
+<p>This is still part of Lucid&#39;s typed boundary, but it is not the same API as component <code>param</code> or <code>prop</code> declarations. Message schemas validate external payloads before a message object is used by handlers or components.</p>
+<p>If a submitted command payload is invalid, Lucid publishes a <code>MessageInvalidated</code> event instead of treating the request as a successful command.</p>
+
+
+          <nav class="page-nav" aria-label="Previous and next pages">
+            <a href="../reference/forms.html">
+  <span>Previous</span>
+  <strong>Forms</strong>
+</a>
+<a href="../javascript_and_stimulus.html">
+  <span>Next</span>
+  <strong>JavaScript and Stimulus</strong>
+</a>
+
+          </nav>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

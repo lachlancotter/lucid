@@ -53,6 +53,7 @@
   <a href="reference/state.html">State</a>
 <a href="reference/templates.html">Templates</a>
 <a href="reference/forms.html">Forms</a>
+<a href="reference/types.html">Types</a>
 <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="reference/handler-patterns.html">Handler Patterns</a>
 <a href="reference/configuration.html">Configuration</a>
@@ -113,6 +114,7 @@
 <h2 id="validation">Validation</h2>
 <p>Messages are validated before being turned into runtime objects.</p>
 <p>If a command payload is invalid, Lucid publishes a <code>MessageInvalidated</code> event instead of silently treating it as a successful request.</p>
+<p>Message validation uses <code>Dry::Schema.Params</code>. For how that relates to component <code>param</code> and <code>prop</code> declarations, see <a href="reference/types.html">Types</a>.</p>
 <h2 id="in-practice">In Practice</h2>
 <p>Links are usually handled by components. Commands are usually handled by handlers. Events connect the two by allowing the UI to react after business effects are applied.</p>
 <p>For the next layer down, see:</p>

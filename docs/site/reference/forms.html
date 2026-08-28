@@ -53,6 +53,7 @@
   <a href="../reference/state.html">State</a>
 <a href="../reference/templates.html">Templates</a>
 <a class="active" aria-current="page" href="../reference/forms.html">Forms</a>
+<a href="../reference/types.html">Types</a>
 <a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a href="../reference/handler-patterns.html">Handler Patterns</a>
 <a href="../reference/configuration.html">Configuration</a>
@@ -72,6 +73,7 @@
 
           <p>Lucid forms render message parameters as HTML controls.</p>
 <p>Components declare a form model with <code>form</code> or <code>echo</code>, then pass that form model to templates as a template parameter. Templates render it with <code>form_for</code>. The <code>form_for</code> block receives a <code>Lucid::HTML::Form::Builder</code>.</p>
+<p>Forms submit message payloads, so their validation contract comes from the message class. For the relationship between message schemas and Lucid&#39;s dry-types declarations, see <a href="../reference/types.html">Types</a>.</p>
 <h2 id="form-models">Form Models</h2>
 <p>Use <code>form</code> for a fresh form model and <code>echo</code> when invalid submitted parameters should be rendered back into the form.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">BoardView</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Component</span><span class="o">::</span><span class="no">Base</span>
@@ -214,9 +216,9 @@
   <span>Previous</span>
   <strong>Templates</strong>
 </a>
-<a href="../javascript_and_stimulus.html">
+<a href="../reference/types.html">
   <span>Next</span>
-  <strong>JavaScript and Stimulus</strong>
+  <strong>Types</strong>
 </a>
 
           </nav>

@@ -25,8 +25,9 @@ module Lucid
         # in the component state.
         # 
         def temp (name, type = Types.string.optional.default(nil))
+          temp_type = Types.normalize(type)
           after_initialize do
-            instance_variable_set("@#{name}", type[])
+            instance_variable_set("@#{name}", temp_type[])
             fields[name] = Field.new(self) { instance_variable_get("@#{name}") }
             temps[name] = fields[name]
           end

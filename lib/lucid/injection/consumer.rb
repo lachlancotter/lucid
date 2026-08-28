@@ -1,4 +1,6 @@
 require "dry/struct"
+require "types"
+require "lucid/type_helpers"
 
 module Lucid
   module Injection
@@ -11,6 +13,7 @@ module Lucid
 
       def self.included(base)
         base.extend(ClassMethods)
+        base.extend(TypeHelpers)
       end
 
       def initialize (container)
@@ -58,11 +61,12 @@ module Lucid
         # dependency when it is resolved. The type must be a Dry::Types.
         # 
         def use (name, type)
-          deps_class.attribute(name, Types.normalize(type))
+          dependency_type = Types.normalize(type)
+          deps_class.attribute(name, dependency_type)
           key = deps_class.schema.key(name)
           define_method(name) do
             if @container.key?(name)
-              @container[name]
+              dependency_type[@container[name]]
             else
               # Raise an error unless the dependency is optional.
               MissingDependency.check(key, self, @container)

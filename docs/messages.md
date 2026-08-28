@@ -65,6 +65,9 @@ Messages are validated before being turned into runtime objects.
 If a command payload is invalid, Lucid publishes a `MessageInvalidated` event
 instead of silently treating it as a successful request.
 
+Message validation uses `Dry::Schema.Params`. For how that relates to
+component `param` and `prop` declarations, see [Types](reference/types.md).
+
 ## In Practice
 
 Links are usually handled by components. Commands are usually handled by

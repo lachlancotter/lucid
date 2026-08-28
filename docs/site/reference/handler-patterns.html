@@ -53,6 +53,7 @@
   <a href="../reference/state.html">State</a>
 <a href="../reference/templates.html">Templates</a>
 <a href="../reference/forms.html">Forms</a>
+<a href="../reference/types.html">Types</a>
 <a href="../javascript_and_stimulus.html">JavaScript and Stimulus</a>
 <a class="active" aria-current="page" href="../reference/handler-patterns.html">Handler Patterns</a>
 <a href="../reference/configuration.html">Configuration</a>
@@ -118,9 +119,10 @@
 <h2 id="dependency-injection">Dependency Injection</h2>
 <p>Use <code>use</code> for collaborators supplied by the request container, such as services, gateways, clients, adapters, or other external dependencies.</p>
 <pre><code class="language-ruby"><span class="k">class</span> <span class="nc">TaskHandler</span> <span class="o">&lt;</span> <span class="no">Lucid</span><span class="o">::</span><span class="no">Handler</span>
-  <span class="n">use</span> <span class="ss">:task_notifier</span><span class="p">,</span> <span class="no">Types</span><span class="o">.</span><span class="no">Instance</span><span class="p">(</span><span class="no">TaskNotifier</span><span class="p">)</span>
+  <span class="n">use</span> <span class="ss">:task_notifier</span><span class="p">,</span> <span class="no">Types</span><span class="p">.</span><span class="nf">instance</span><span class="p">(</span><span class="no">TaskNotifier</span><span class="p">)</span>
 <span class="k">end</span></code></pre>
 <p>Do not use <code>use</code> for records loaded from application persistence. Resolve those inside the handler with <code>with_*</code> methods.</p>
+<p>For the type helpers accepted by <code>use</code>, see <a href="../reference/types.html">Types</a>.</p>
 <h2 id="dependency-resolution">Dependency Resolution</h2>
 <p>Use <code>with_*</code> methods for records and other internally managed data that comes from command input.</p>
 <pre><code class="language-ruby"><span class="n">perform</span> <span class="no">AssignTask</span> <span class="k">do</span> <span class="o">|</span><span class="n">cmd</span><span class="o">|</span>

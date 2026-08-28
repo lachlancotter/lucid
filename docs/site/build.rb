@@ -30,6 +30,7 @@ PAGES = [
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
+  { title: "Types", label: "Types", source: "reference/types.md", output: "reference/types.html", section: "Reference" },
   { title: "JavaScript and Stimulus", label: "JavaScript and Stimulus", source: "javascript_and_stimulus.md", output: "javascript_and_stimulus.html", section: "Reference" },
   { title: "Handler Patterns", label: "Handler Patterns", source: "reference/handler-patterns.md", output: "reference/handler-patterns.html", section: "Reference" },
   { title: "Configuration", label: "Configuration", source: "reference/configuration.md", output: "reference/configuration.html", section: "Reference" }
@@ -261,6 +262,8 @@ def page_intro(page)
     "Reference for Lucid templates, rendering context, helpers, and multipart forms."
   when "reference/forms.html"
     "Reference for form models, form_for, field helpers, values, IDs, and errors."
+  when "reference/types.html"
+    "Reference for dry-types declarations, coercion, defaults, optional values, and typed boundaries."
   when "reference/handler-patterns.html"
     "Reference for handler structure, dependencies, preconditions, events, transactions, and specs."
   when "reference/configuration.html"
@@ -404,6 +407,7 @@ def render_index_page
               <a href="reference/state.html">State</a>
               <a href="reference/templates.html">Templates</a>
               <a href="reference/forms.html">Forms</a>
+              <a href="reference/types.html">Types</a>
               <a href="javascript_and_stimulus.html">JavaScript and Stimulus</a>
               <a href="reference/handler-patterns.html">Handler Patterns</a>
               <a href="reference/configuration.html">Configuration</a>
@@ -669,6 +673,13 @@ def render_index_page
                     <span>
                       Build message forms with field helpers, scoped names, values,
                       IDs, and validation errors.
+                    </span>
+                  </a>
+                  <a href="reference/types.html">
+                    <strong>Types</strong>
+                    <span>
+                      Use dry-types declarations for params, props, temps,
+                      dependencies, session data, and message boundaries.
                     </span>
                   </a>
                   <a href="javascript_and_stimulus.html">

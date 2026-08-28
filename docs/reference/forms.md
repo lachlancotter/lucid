@@ -6,6 +6,10 @@ Components declare a form model with `form` or `echo`, then pass that form model
 to templates as a template parameter. Templates render it with `form_for`. The
 `form_for` block receives a `Lucid::HTML::Form::Builder`.
 
+Forms submit message payloads, so their validation contract comes from the
+message class. For the relationship between message schemas and Lucid's
+dry-types declarations, see [Types](types.md).
+
 ## Form Models
 
 Use `form` for a fresh form model and `echo` when invalid submitted parameters

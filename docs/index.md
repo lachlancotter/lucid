@@ -147,6 +147,8 @@ Reference:
   multipart form support.
 - [Forms](reference/forms.md): Build message forms with field helpers, scoped
   names, values, IDs, and validation errors.
+- [Types](reference/types.md): Use dry-types declarations for params, props,
+  temps, dependencies, session data, and message boundaries.
 - [JavaScript and Stimulus](javascript_and_stimulus.md): Add idiomatic browser
   behavior to Caju apps while keeping server-rendered state in Ruby.
 - [Handler Patterns](reference/handler-patterns.md): Structure handlers with

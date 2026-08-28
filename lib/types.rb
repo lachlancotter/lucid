@@ -3,10 +3,25 @@ require "dry/types"
 module Types
   include Dry.Types()
 
+  UNDEFINED = Object.new.freeze
+
   # Primitive types
 
-  %i[string float bool date time datetime hash symbol].each do |name|
-    define_singleton_method(name) { Params.const_get(name.capitalize) }
+  PARAM_TYPES = {
+    string: "String",
+    float: "Float",
+    bool: "Bool",
+    date: "Date",
+    time: "Time",
+    datetime: "DateTime",
+    hash: "Hash",
+    symbol: "Symbol"
+  }.freeze
+
+  NAMED_TYPES = (PARAM_TYPES.keys + [:any, :integer, :array]).freeze
+
+  PARAM_TYPES.each do |name, constant|
+    define_singleton_method(name) { Params.const_get(constant) }
   end
 
   def self.integer
@@ -21,7 +36,7 @@ module Types
   end
 
   def self.array (type = Types::Any)
-    Types::Array.of(type)
+    Types::Array.of(resolve(type))
   end
 
   def self.any
@@ -40,21 +55,68 @@ module Types
     Instance(type)
   end
 
-  # Convert a class to a type.
+  def self.optional (type)
+    resolve(type).optional
+  end
+
+  def self.enum (*values)
+    Types::Any.enum(*values)
+  end
+
+  # Convert a type expression to a dry type.
 
   def self.normalize (type)
-    case type
+    resolve(type)
+  end
+
+  def self.resolve (type, optional: false, default: UNDEFINED)
+    resolved = case type
     when Dry::Types::Type then type
-    else instance(type)
+    when Symbol then named(type)
+    when Class then class_type(type)
+    else unsupported(type)
     end
+
+    resolved = resolved.optional if optional
+    resolved = resolved.default(default) unless default.equal?(UNDEFINED)
+    resolved
+  end
+
+  def self.named (name)
+    return any if name == :any
+    return integer if name == :integer
+    return public_send(name) if NAMED_TYPES.include?(name)
+
+    raise ArgumentError, "Unknown type: #{name.inspect}"
+  end
+
+  def self.class_type (klass)
+    case klass.name
+    when "String" then string
+    when "Integer" then integer
+    when "Float" then float
+    when "TrueClass", "FalseClass" then bool
+    when "Hash" then hash
+    when "Symbol" then symbol
+    when "Array" then array
+    else instance(klass)
+    end
+  end
+
+  def self.unsupported (type)
+    raise ArgumentError, "Invalid type: #{type.inspect}"
+  end
+
+  def self.call (type, **options)
+    resolve(type, **options)
   end
 
   def self.subclass(type)
     Types::Class.constrained(lteq: type)
   end
 
-  def self.union (a, b)
-    Types.instance(a) | Types.instance(b)
+  def self.union (*types)
+    types.map { |type| resolve(type) }.reduce(:|)
   end
 
   # Lucid types....
@@ -86,4 +148,8 @@ module Types
        # Types.instance(Lucid::State::HashStore::Cursor)
     # union(Lucid::State::HashStore::Cursor, Lucid::State::Cursor)
   end
+end
+
+module Lucid
+  Types = ::Types unless const_defined?(:Types, false)
 end

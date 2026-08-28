@@ -10,6 +10,19 @@ module Lucid
 
     describe Consumer do
 
+      it "can be included after requiring the consumer file directly" do
+        script = <<~RUBY
+          require "lucid/injection/consumer"
+
+          Class.new do
+            include Lucid::Injection::Consumer
+            use :foo, type(:string)
+          end
+        RUBY
+
+        expect(system(RbConfig.ruby, "-Ilib", "-e", script)).to be true
+      end
+
       context "valid dependency provided" do
         it "instantiates the consumer" do
           consumer_class  = Class.new(ConsumerBase) { use :foo, Types.string }

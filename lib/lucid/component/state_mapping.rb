@@ -91,10 +91,11 @@ module Lucid
         # Map a query parameter to a state attribute.
         #
         def param (name, type = Types.string.default("".freeze))
-          state_class.attribute(name, type)
+          state_type = Types.normalize(type)
+          state_class.attribute(name, state_type)
           after_initialize { fields[name] = Field.new(self) { state[name] } }
           define_method(name) { fields[name].value }
-          state_map.param(name, type) unless state_map.path?(name)
+          state_map.param(name, state_type) unless state_map.path?(name)
         end
 
         def state_class
