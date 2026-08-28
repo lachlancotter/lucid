@@ -19,11 +19,14 @@ PAGES = [
   { title: "Handlers", label: "Handlers", source: "handlers.md", output: "handlers.html", section: "Concepts" },
   { title: "Models", label: "Models", source: "models.md", output: "models.html", section: "Concepts" },
   { title: "Client Behavior", label: "Client Behavior", source: "client_behavior.md", output: "client_behavior.html", section: "Concepts" },
+  { title: "Authentication", label: "Authentication", source: "patterns/authentication.md", output: "patterns/authentication.html", section: "Patterns" },
   { title: "Master Detail", label: "Master Detail", source: "patterns/master-detail.md", output: "patterns/master-detail.html", section: "Patterns" },
   { title: "Modals", label: "Modals", source: "patterns/modals.md", output: "patterns/modals.html", section: "Patterns" },
   { title: "Pagination", label: "Pagination", source: "patterns/pagination.md", output: "patterns/pagination.html", section: "Patterns" },
+  { title: "Polling", label: "Polling", source: "patterns/polling.md", output: "patterns/polling.html", section: "Patterns" },
   { title: "Progressive Filter", label: "Progressive Filter", source: "patterns/progressive-filter.md", output: "patterns/progressive-filter.html", section: "Patterns" },
   { title: "Process Manager", label: "Process Manager", source: "patterns/process-manager.md", output: "patterns/process-manager.html", section: "Patterns" },
+  { title: "Toasts", label: "Toasts", source: "patterns/toasts.md", output: "patterns/toasts.html", section: "Patterns" },
   { title: "State", label: "State", source: "reference/state.md", output: "reference/state.html", section: "Reference" },
   { title: "Templates", label: "Templates", source: "reference/templates.md", output: "reference/templates.html", section: "Reference" },
   { title: "Forms", label: "Forms", source: "reference/forms.md", output: "reference/forms.html", section: "Reference" },
@@ -236,16 +239,22 @@ def page_intro(page)
     "Draw the boundary between Lucid's server-driven model and local JavaScript behavior."
   when "javascript_and_stimulus.html"
     "Use Stimulus to add idiomatic browser behavior to Caju apps without creating a second application model."
+  when "patterns/authentication.html"
+    "A complete pattern for sign-in, sign-out, sessions, and access state."
   when "patterns/master-detail.html"
     "A complete pattern for coordinated list selection, detail state, and empty states."
   when "patterns/modals.html"
     "A complete pattern for modal state, command submission, validation, and closing behavior."
   when "patterns/pagination.html"
     "A complete pattern for page params, result metadata, and next/previous navigation."
+  when "patterns/polling.html"
+    "A complete pattern for refreshing server-rendered state on an interval."
   when "patterns/progressive-filter.html"
     "A complete pattern for incremental filters, search state, reset behavior, and results."
   when "patterns/process-manager.html"
     "A complete pattern for long-running workflows, events, status updates, and progress views."
+  when "patterns/toasts.html"
+    "A complete pattern for transient feedback after commands and events."
   when "reference/state.html"
     "Reference for URL-mapped state, state maps, and nested component state."
   when "reference/templates.html"
@@ -380,11 +389,14 @@ def render_index_page
 
             <div class="rail-group">
               <p class="rail-title">Patterns</p>
+              <a href="patterns/authentication.html">Authentication</a>
               <a href="patterns/master-detail.html">Master Detail</a>
               <a href="patterns/modals.html">Modals</a>
               <a href="patterns/pagination.html">Pagination</a>
+              <a href="patterns/polling.html">Polling</a>
               <a href="patterns/progressive-filter.html">Progressive Filter</a>
               <a href="patterns/process-manager.html">Process Manager</a>
+              <a href="patterns/toasts.html">Toasts</a>
             </div>
 
             <div class="rail-group">
