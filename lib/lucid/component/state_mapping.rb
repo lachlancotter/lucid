@@ -38,13 +38,28 @@ module Lucid
       # Update state-backed values and invalidate dependent fields.
       #
       protected def update (data)
+        previous_state = @state
         @state = @state.new(data)
-        data.keys.each { |key| field(key).invalidate if field?(key) }
+        data.keys.each do |key|
+          next unless field?(key)
+
+          attribute = self.class.state_class.schema.keys.find { |item| item.name == key }
+          next unless attribute
+
+          field(key).invalidate if typed_state_value_changed?(attribute.type, previous_state[key], @state[key])
+        end
       rescue Dry::Struct::Error => e
         raise StateError.new(self, data, e.message)
       end
 
       private
+
+      def typed_state_value_changed? (type, previous, current)
+        type[previous] != type[current]
+      rescue Dry::Types::CoercionError
+        # Leave invalid pending state to the usual deferred validation.
+        true
+      end
 
       def initialize_state (state)
         validate_state_scope!(state).tap do |scope|
@@ -93,7 +108,7 @@ module Lucid
         def param (name, type = Types.string.default("".freeze))
           state_type = Types.normalize(type)
           state_class.attribute(name, state_type)
-          after_initialize { fields[name] = Field.new(self) { state[name] } }
+          after_initialize { fields[name] = Field.new(self) { state_type[state[name]] } }
           define_method(name) { fields[name].value }
           state_map.param(name, state_type) unless state_map.path?(name)
         end
