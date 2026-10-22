@@ -70,8 +70,9 @@ module Lucid
             @response.headers["HX-Push-Url"] = url(component)
             @response.headers["HX-Retarget"] = changes.primary_target
             @response.headers["HX-Reswap"]   = changes.primary_swap
-            @response.body                   = HtmlBeautifier.beautify(changes.to_s)
           end
+          title = "<title>#{Rack::Utils.escape_html(component.title)}</title>"
+          @response.body = HtmlBeautifier.beautify([title, changes.to_s].reject(&:empty?).join("\n"))
         end
       end
 

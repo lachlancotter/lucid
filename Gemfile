@@ -9,6 +9,7 @@ group :test do
   gem "webdrivers"
   gem "rack-test"
   gem "rackup"
+  gem "webrick"
 end
 
 group :test, :development do
