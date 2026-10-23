@@ -71,8 +71,8 @@ module Lucid
             @response.headers["HX-Retarget"] = changes.primary_target
             @response.headers["HX-Reswap"]   = changes.primary_swap
           end
-          title = "<title>#{Rack::Utils.escape_html(component.title)}</title>"
-          @response.body = HtmlBeautifier.beautify([title, changes.to_s].reject(&:empty?).join("\n"))
+          title = "<title>#{Rack::Utils.escape_html(component.title)}</title>" if component.title_changed?
+          @response.body = HtmlBeautifier.beautify([title, changes.to_s].compact.reject(&:empty?).join("\n"))
         end
       end
 

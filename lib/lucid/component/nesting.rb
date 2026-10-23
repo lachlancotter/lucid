@@ -320,6 +320,13 @@ module Lucid
           @components = []
           @component_class = current_component_class
           @field.invalidate
+          # Bootstrap invalidation rebuilds the factory but is not navigation.
+          @selection_changed = false
+          @field.attach(self) { @selection_changed = true }
+        end
+
+        def selection_changed?
+          @selection_changed
         end
 
         def install (state, messages)
